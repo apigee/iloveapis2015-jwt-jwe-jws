@@ -1,0 +1,28 @@
+<JavaCallout name='JavaCallout-JWT-Parse-RS256-2'>
+  <DisplayName>JavaCallout-JWT-Parse-RS256-2</DisplayName>
+  <Properties>
+    <Property name="algorithm">RS256</Property>
+    <Property name="jwt">{request.formparam.jwt}</Property>
+
+    <!-- public-key used only for algorithm = RS256 -->
+    <Property name="public-key">
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtxlohiBDbI/jejs5WLKe
+    Vpb4SCNM9puY+poGkgMkurPRAUROvjCUYm2g9vXiFQl+ZKfZ2BolfnEYIXXVJjUm
+    zzaX9lBnYK/v9GQz1i2zrxOnSRfhhYEb7F8tvvKWMChK3tArrOXUDdOp2YUZBY2b
+    sl1iBDkc5ul/UgtjhHntA0r2FcUE4kEj2lwU1di9EzJv7sdE/YKPrPtFoNoxmthI
+    OvvEC45QxfNJ6OwpqgSOyKFwE230x8UPKmgGDQmED3PNrio3PlcM0XONDtgBewL0
+    3+OgERo/6JcZbs4CtORrpPxpJd6kvBiDgG07pUxMNKC2EbQGxkXer4bvlyqLiVzt
+    bwIDAQAB
+    -----END PUBLIC KEY-----
+    </Property>
+
+    <!-- claims to verify -->
+    <Property name="claim_iss">http://dinochiesa.net</Property>
+    <Property name="claim_shoesize">8.5</Property>
+
+  </Properties>
+
+  <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
+  <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+</JavaCallout>

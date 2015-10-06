@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="9" name="jwt_signed">
+    <ConfigurationVersion minorVersion="0" majorVersion="4"/>
+    <CreatedAt>1408643295583</CreatedAt>
+    <CreatedBy>DChiesa@apigee.com</CreatedBy>
+    <DisplayName>jwt_signed</DisplayName>
+    <LastModifiedAt>1444168401797</LastModifiedAt>
+    <LastModifiedBy>DChiesa@apigee.com</LastModifiedBy>
+    <Policies/>
+    <ProxyEndpoints>
+        <ProxyEndpoint>default</ProxyEndpoint>
+    </ProxyEndpoints>
+    <Resources/>
+    <TargetServers/>
+    <TargetEndpoints/>
+</APIProxy>

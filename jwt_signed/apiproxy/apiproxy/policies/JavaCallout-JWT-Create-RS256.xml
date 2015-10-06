@@ -1,0 +1,25 @@
+<JavaCallout name='JavaCallout-JWT-Create-RS256' >
+  <DisplayName>JavaCallout-JWT-Create-RS256</DisplayName>
+  <Properties>
+    <Property name="algorithm">RS256</Property>
+
+    <!-- pemfile and private-key-password used only for algorithm = RS256 -->
+    <Property name="pemfile">public-private-keypair1.pem</Property>
+    <Property name="private-key-password">deecee123</Property>
+
+    <!-- standard claims -->
+    <Property name="subject">{apiproxy.name}</Property>
+    <Property name="issuer">http://dinochiesa.net</Property>
+    <Property name="audience">Optional-String-or-URI</Property>
+    <Property name="expiresIn">86400</Property> <!-- in seconds -->
+
+    <!-- custom claims -->
+    <Property name="claim_primarylanguage">English</Property>
+    <Property name="claim_shoesize">8.5</Property>
+    <Property name="claim_motto">Iloveapis</Property>
+
+  </Properties>
+
+  <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
+  <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+</JavaCallout>

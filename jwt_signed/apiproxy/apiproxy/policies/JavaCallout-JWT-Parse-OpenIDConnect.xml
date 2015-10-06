@@ -1,0 +1,28 @@
+<JavaCallout name='JavaCallout-JWT-Parse-OpenIDConnect'>
+  <Properties>
+    <Property name="algorithm">RS256</Property>
+    <Property name="jwt">{request.formparam.jwt}</Property>
+
+    <!-- public-key used only for algorithm = RS256 -->
+    <Property name="public-key">
+    -----BEGIN RSA PUBLIC KEY-----
+    MIIBCgKCAQEAw7Zdfmece8iaB0kiTY8pCtiBtzbptJmP28nSWwtdjRu0f2GFpajv
+    WE4VhfJAjEsOcwYzay7XGN0b+X84BfC8hmCTOj2b2eHT7NsZegFPKRUQzJ9wW8ip
+    n/aDJWMGDuB1XyqT1E7DYqjUCEOD1b4FLpy/xPn6oV/TYOfQ9fZdbE5HGxJUzeku
+    GcOKqOQ8M7wfYHhHHLxGpQVgL0apWuP2gDDOdTtpuld4D2LK1MZK99s9gaSjRHE8
+    JDb1Z4IGhEcEyzkxswVdPndUWzfvWBBWXWxtSUvQGBRkuy1BHOa4sP6FKjWEeeF7
+    gm7UMs2Nm2QUgNZw6xvEDGaLk4KASdIxRQIDAQAB
+    -----END RSA PUBLIC KEY-----
+    </Property>
+
+    <!-- claims to verify -->
+    <Property name="claim_iss">http://server.example.com</Property>
+    <Property name="claim_aud">s6BhdRkqt3</Property>
+    <Property name="claim_nonce">n-0S6_WzA2Mj</Property>
+    <Property name="claim_sub">248289761001</Property>
+
+  </Properties>
+
+  <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
+  <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+</JavaCallout>

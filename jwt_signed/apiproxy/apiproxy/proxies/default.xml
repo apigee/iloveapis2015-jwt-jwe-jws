@@ -1,0 +1,136 @@
+<ProxyEndpoint name="default">
+  <HTTPProxyConnection>
+    <BasePath>/jwt_signed</BasePath>
+    <VirtualHost>default</VirtualHost>
+    <VirtualHost>secure</VirtualHost>
+  </HTTPProxyConnection>
+
+  <FaultRules>
+    <FaultRule name='rule1'>
+      <Condition>jwt_error != null</Condition>
+      <Step>
+        <Name>AssignMessage-PublishError</Name>
+      </Step>
+    </FaultRule>
+  </FaultRules>
+
+  <PreFlow name="PreFlow">
+    <Request>
+    </Request>
+  </PreFlow>
+
+  <PostFlow name="PostFlow"/>
+  <Flows>
+
+    <Flow name="create jwt token HS256">
+      <Condition>(proxy.pathsuffix ~~ "/create-(HS|hs)256$") and (request.verb = "POST")</Condition>
+      <Description>Create a JWT with alg=HS256</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Create-HS256</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Create-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="create jwt token RS256">
+      <Condition>(proxy.pathsuffix ~~ "/create-(RS|rs)256$") and (request.verb = "POST")</Condition>
+      <Description>Create a JWT with alg=RS256</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Create-RS256</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Create-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="create jwt token RS256-2">
+      <Condition>(proxy.pathsuffix ~~ "/create-(RS|rs)256-2$") and (request.verb = "POST")</Condition>
+      <Description>Create a JWT with alg=RS256</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Create-RS256-2</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Create-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="parse + validate a jwt token with alg=RS256">
+      <Condition>(proxy.pathsuffix ~~ "/validate-(RS|rs)256$") and (request.verb = "POST")</Condition>
+      <Description>Parse a JWT with alg=RS256</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Parse-RS256</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="parse + validate a jwt token with alg=RS256-2">
+      <Condition>(proxy.pathsuffix ~~ "/validate-(RS|rs)256-2$") and (request.verb = "POST")</Condition>
+      <Description>Parse a JWT with alg=RS256 (Flavor 2)</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Parse-RS256-2</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+      </Response>
+    </Flow>
+
+
+    <Flow name="parse + validate a jwt token with alg=HS256">
+      <Condition>(proxy.pathsuffix ~~ "/validate-(HS|hs)256$") and (request.verb = "POST")</Condition>
+      <Description>Parse a JWT with alg=HS256</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Parse-HS256</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="parse + validate a jwt token with alg=HS256 (2)">
+      <Condition>(proxy.pathsuffix ~~ "/validate-(HS|hs)256-2$") and (request.verb = "POST")</Condition>
+      <Description>Parse a JWT with alg=HS256 (2)</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Parse-HS256-2</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="parse the JWT from the OpenID Connect spec">
+      <Condition>(proxy.pathsuffix ~~ "/validate-openid$") and (request.verb = "POST")</Condition>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Parse-OpenIDConnect</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="parse + validate alg=RS256-3">
+      <Condition>(proxy.pathsuffix ~~ "/validate-ms$") and (request.verb = "POST")</Condition>
+      <Description>Parse a JWT created by Azure Active Directory</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Parse-RS256-3</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name='unknown request'>
+      <Request>
+        <Step><Name>RaiseFault-UnknownRequest</Name></Step>
+      </Request>
+      <Response/>
+    </Flow>
+
+  </Flows>
+
+  <!-- catch all route -->
+  <RouteRule name="no-route"/>
+
+</ProxyEndpoint>

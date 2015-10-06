@@ -1,0 +1,27 @@
+<AssignMessage name='AssignMessage-JWT-Create-Response'>
+  <DisplayName>AssignMessage JWT Create Response</DisplayName>
+  <Description>respond with JWT</Description>
+  <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+  <Remove>
+    <Headers>
+      <!-- in this proxy, there is no target, therefore request headers
+           get copied into the response. These make no sense, so let's remove
+           them. -->
+
+      <Header name='Accept'/>
+      <Header name='X-Forwarded-For'/>
+      <Header name='X-Forwarded-Port'/>
+      <Header name='X-Forwarded-Proto'/>
+      <Header name='User-Agent'/>
+    </Headers>
+  </Remove>
+  <Set>
+    <Payload contentType='application/json'
+             variablePrefix='%' variableSuffix='#'><![CDATA[{
+  "jwt" : "%jwt_jwt#"
+}
+]]></Payload>
+    <StatusCode>200</StatusCode>
+    <ReasonPhrase>OK</ReasonPhrase>
+  </Set>
+</AssignMessage>
