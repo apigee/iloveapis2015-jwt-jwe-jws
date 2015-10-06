@@ -120,8 +120,6 @@ form of properties on the policy.  Some examples follow.
       <Property name="issuer">http://dinochiesa.net</Property>
       <Property name="audience">{desired_jwt_audience}</Property>
       <Property name="expiresIn">86400</Property> <!-- in seconds -->
-      <!-- used as a component of the names of output variables -->
-      <Property name="stepname">JavaCallout-JWT-Create</Property>
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
@@ -143,10 +141,7 @@ The values for the properties can be specified as string values, or
 as variables to de-reference, when placed inside curly braces.
 
 It emits the underscore-separated JWT into the variable named
-    jwt_{stepname}_jwt
-
-Therefore, in this case, the variable holding the JWT will be:
-    jwt_JavaCallout-JWT-Create_jwt
+    jwt_jwt
 
 
 **Generate a JWT using RS256**
@@ -374,9 +369,6 @@ Do this by specifying Property elements with name attributes that begin with cla
 
       <!-- name of var that holds the jwt -->
       <Property name="jwt">{request.formparam.jwt}</Property>
-
-      <!-- used as a component of the names of output variables -->
-      <Property name="stepname">JavaCallout-JWT-Parse</Property>
 
       <!-- name of the pemfile. This must be a resource in the JAR! 
       <Property name="pemfile">rsa-public.pem</Property>
