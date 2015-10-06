@@ -1,0 +1,10 @@
+
+**/Icon*
+**/Icon
+*/Icon
+Icon
+
+**/target/
+**/*.jar
+**/*.class
+
