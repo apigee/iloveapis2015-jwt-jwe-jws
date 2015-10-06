@@ -452,9 +452,11 @@ You can also specify a serialized X509 certificate which contains the public key
 ```
 
 If you specify both the public-key and the certificate in the configuration, the public-key will be used and the certificate will be ignored. 
+The serialized version of the certificate can include line-breaks and spaces.
 
 
-*Notes*
+More Notes:
+--------
 
 - This callout does not support JWT with encrypted claim sets. 
 - This callout does not support ES256 algorithms
