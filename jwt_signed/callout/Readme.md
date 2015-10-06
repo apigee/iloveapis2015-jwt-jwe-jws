@@ -143,6 +143,9 @@ as variables to de-reference, when placed inside curly braces.
 It emits the underscore-separated JWT into the variable named
     jwt_jwt
 
+There is no way to set the "issued at" (iat) time.  The iat time automatically 
+gets the value accurately indicating when the JWT is generated.
+
 
 **Generate a JWT using RS256**
 
@@ -189,6 +192,8 @@ Specify the private RSA key inside the policy configuration, like this:
 
 The private key need not be encrypted. If it is, obviously you need to
 specify the private-key-password. That password can be (should be!) a variable - specify it in curly braces in that case. You should retrieve it from secure storage before invoking this policy. 
+
+The resulting JWT is signed with RSA, using the designated private-key. 
 
 
 **Generate a JWT using RS256 - specify PEM file as resource in JAR**
@@ -453,3 +458,11 @@ You can also specify a serialized X509 certificate which contains the public key
 ```
 
 If you specify both the public-key and the certificate in the configuration, the public-key will be used and the certificate will be ignored. 
+
+
+*Notes*
+
+- This callout does not support JWT with encrypted claim sets. 
+- This callout does not support ES256 algorithms
+
+
