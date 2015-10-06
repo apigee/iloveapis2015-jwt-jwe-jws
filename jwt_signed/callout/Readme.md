@@ -1,8 +1,8 @@
-Friday, 26 September 2014, 08:34
+# jwt_signed callout
 
 This directory contains the Java source code and Java jars required to
-compile a Java callout for Apigee Edge that does JWT generation and
-parsing / validation.
+compile a Java callout for Apigee Edge that does generation and
+parsing / validation of signed JWT. It uses the Nimbus library for JOSE. 
 
 Usage:
 --------
@@ -41,7 +41,7 @@ These instructions describe how to do either.
                  continueOnError='false' async='false'>
       <DisplayName>Java JWT Creator</DisplayName>
       <Properties>...</Properties>
-      <ClassName>com.apigee.jwt.JWT_Creator_Callout</ClassName>
+      <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
       <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
     </JavaCallout>
    ```
@@ -109,24 +109,24 @@ form of properties on the policy.  Some examples follow.
 
 **Generate a JWT using HS256**
 ```xml
-      <JavaCallout name='JavaCallout-JWT-Create' enabled='true'>
-        <DisplayName>JavaCallout-JWT-Create</DisplayName>
-        <Properties>
-          <Property name="algorithm">HS256</Property>
-          <!-- the key is likely the client_secret -->
-          <Property name="key">{organization.name}</Property>
-          <!-- claims -->
-          <Property name="subject">{apiproxy.name}</Property>
-          <Property name="issuer">http://dinochiesa.net</Property>
-          <Property name="audience">{desired_jwt_audience}</Property>
-          <Property name="expiresIn">86400</Property> <!-- in seconds -->
-          <!-- used as a component of the names of output variables -->
-          <Property name="stepname">JavaCallout-JWT-Create</Property>
-        </Properties>
+  <JavaCallout name='JavaCallout-JWT-Create' enabled='true'>
+    <DisplayName>JavaCallout-JWT-Create</DisplayName>
+    <Properties>
+      <Property name="algorithm">HS256</Property>
+      <!-- the key is likely the client_secret -->
+      <Property name="key">{organization.name}</Property>
+      <!-- claims -->
+      <Property name="subject">{apiproxy.name}</Property>
+      <Property name="issuer">http://dinochiesa.net</Property>
+      <Property name="audience">{desired_jwt_audience}</Property>
+      <Property name="expiresIn">86400</Property> <!-- in seconds -->
+      <!-- used as a component of the names of output variables -->
+      <Property name="stepname">JavaCallout-JWT-Create</Property>
+    </Properties>
 
-        <ClassName>com.apigee.jwt.JWT_Creator_Callout</ClassName>
-        <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
-      </JavaCallout>
+    <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
+    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+  </JavaCallout>
 ```
 
 This class conjures a JWT with the standard claims: 
@@ -154,43 +154,42 @@ Therefore, in this case, the variable holding the JWT will be:
 Specify the private RSA key inside the policy configuration, like this:
 
 ```xml
-    <JavaCallout name='JavaCallout-JWT-Create-RS256-2' >
-      <DisplayName>JavaCallout-JWT-Create-RS256-2</DisplayName>
-      <Properties>
-        <Property name="algorithm">RS256</Property>
+  <JavaCallout name='JavaCallout-JWT-Create-RS256-2' >
+    <DisplayName>JavaCallout-JWT-Create-RS256-2</DisplayName>
+    <Properties>
+      <Property name="algorithm">RS256</Property>
 
-        <!-- private-key and private-key-password used only for algorithm = RS256 -->
-        <Property name="private-key">
-        -----BEGIN RSA PRIVATE KEY-----
-        Proc-Type: 4,ENCRYPTED
-        DEK-Info: DES-EDE3-CBC,049E6103F40FBE84
+      <!-- private-key and private-key-password used only for algorithm = RS256 -->
+      <Property name="private-key">
+      -----BEGIN RSA PRIVATE KEY-----
+      Proc-Type: 4,ENCRYPTED
+      DEK-Info: DES-EDE3-CBC,049E6103F40FBE84
 
-        EZVWs5v4FoRrFdK+YbpjCmW0KoHUmBAW7XLvS+vK3BdSM2Yx/hPhDO9URCVl9Oar
-        ApEZC1CxzsyRfvKDtiKWfQKdYKLccl8pA4Jj0sCxVgL4MBFDNDDEau4vRfXBv2EF
-        ....
-        7ZOF1UXVaoldDs+izZo5biVF/NNIBtg2FkZd4hh/cFlF1PV+M5+5mA==
-        -----END RSA PRIVATE KEY-----
-        </Property>
-        <Property name="private-key-password">deecee123</Property>
+      EZVWs5v4FoRrFdK+YbpjCmW0KoHUmBAW7XLvS+vK3BdSM2Yx/hPhDO9URCVl9Oar
+      ApEZC1CxzsyRfvKDtiKWfQKdYKLccl8pA4Jj0sCxVgL4MBFDNDDEau4vRfXBv2EF
+      ....
+      7ZOF1UXVaoldDs+izZo5biVF/NNIBtg2FkZd4hh/cFlF1PV+M5+5mA==
+      -----END RSA PRIVATE KEY-----
+      </Property>
+      <Property name="private-key-password">deecee123</Property>
 
-        <!-- standard claims -->
-        <Property name="subject">{apiproxy.name}</Property>
-        <Property name="issuer">http://dinochiesa.net</Property>
-        <Property name="audience">Optional-String-or-URI</Property>
-        <Property name="expiresIn">86400</Property> <!-- in seconds -->
+      <!-- standard claims -->
+      <Property name="subject">{apiproxy.name}</Property>
+      <Property name="issuer">http://dinochiesa.net</Property>
+      <Property name="audience">Optional-String-or-URI</Property>
+      <Property name="expiresIn">86400</Property> <!-- in seconds -->
 
-        <!-- custom claims -->
-        <Property name="claim_primarylanguage">English</Property>
-        <Property name="claim_shoesize">8.5</Property>
+      <!-- custom claims to inject into the JWT -->
+      <Property name="claim_primarylanguage">English</Property>
+      <Property name="claim_shoesize">8.5</Property>
 
-        <!-- used as a component of the names of output variables -->
-        <Property name="stepname">JavaCallout-JWT-Create</Property>
+      <!-- used as a component of the names of output variables -->
 
-      </Properties>
+    </Properties>
 
-      <ClassName>com.apigee.jwt.JWT_Creator_Callout</ClassName>
-      <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
-    </JavaCallout>
+    <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
+    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+  </JavaCallout>
 ```
 
 The private key need not be encrypted. If it is, obviously you need to
@@ -202,29 +201,26 @@ specify the private-key-password. That password can be a variable - specify it i
 You can also specify the PEM as a named file resource that is bundled in the jar itself. To do this, you need to recompile the jar with your desired pemfile contained within it. The class looks for the file in the jarfile under the /resources directory. The configuration looks like this:
 
 ```xml
-    <JavaCallout name='JavaCallout-JWT-Create'>
-      <DisplayName>JavaCallout-JWT-Create</DisplayName>
-      <Properties>
-        <Property name="algorithm">RS256</Property>
+  <JavaCallout name='JavaCallout-JWT-Create'>
+    <DisplayName>JavaCallout-JWT-Create</DisplayName>
+    <Properties>
+      <Property name="algorithm">RS256</Property>
 
-        <!-- pemfile + private-key-password} used only for algorithm = RS256 -->
-        <Property name="pemfile">private.pem</Property>
-        <Property name="private-key-password">{var.that.containst.password.here}</Property>
+      <!-- pemfile + private-key-password} used only for algorithm = RS256 -->
+      <Property name="pemfile">private.pem</Property>
+      <Property name="private-key-password">{var.that.containst.password.here}</Property>
 
-        <!-- claims -->
-        <Property name="subject">{apiproxy.name}</Property>
-        <Property name="issuer">http://dinochiesa.net</Property>
-        <Property name="audience">{context.var.that.contains.audience.name}</Property>
-        <Property name="expiresIn">86400</Property> <!-- in seconds -->
+      <!-- claims to inject into the JWT -->
+      <Property name="subject">{apiproxy.name}</Property>
+      <Property name="issuer">http://dinochiesa.net</Property>
+      <Property name="audience">{context.var.that.contains.audience.name}</Property>
+      <Property name="expiresIn">86400</Property> <!-- in seconds -->
 
-        <!-- used as a component of the names of output variables -->
-        <Property name="stepname">JavaCallout-JWT-Create</Property>
+    </Properties>
 
-      </Properties>
-
-      <ClassName>com.apigee.jwt.JWT_Creator_Callout</ClassName>
-      <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
-    </JavaCallout>
+    <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
+    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+  </JavaCallout>
 ```
 
 The pemfile need not be encrypted. If it is, obviously you need to
@@ -239,33 +235,31 @@ If you wish to embed other claims into the JWT, you can do so by using
 the <Properties> elements, like this: 
 
 ```xml
-    <JavaCallout name='JavaCallout-JWT-Create'>
-      <DisplayName>JavaCallout-JWT-Create</DisplayName>
-      <Properties>
-        <Property name="algorithm">RS256</Property>
+  <JavaCallout name='JavaCallout-JWT-Create'>
+    <DisplayName>JavaCallout-JWT-Create</DisplayName>
+    <Properties>
+      <Property name="algorithm">RS256</Property>
 
-        <!-- pemfile + private-key-password} used only for algorithm = RS256 -->
-        <Property name="pemfile">private.pem</Property>
-        <Property name="private-key-password">deecee123</Property>
+      <!-- pemfile + private-key-password} used only for algorithm = RS256 -->
+      <Property name="pemfile">private.pem</Property>
+      <Property name="private-key-password">deecee123</Property>
 
-        <!-- standard claims to embed -->
-        <Property name="subject">{apiproxy.name}</Property>
-        <Property name="issuer">http://dinochiesa.net</Property>
-        <Property name="audience">Optional-String-or-URI</Property>
-        <Property name="expiresIn">86400</Property> <!-- in seconds -->
+      <!-- standard claims to embed -->
+      <Property name="subject">{apiproxy.name}</Property>
+      <Property name="issuer">http://dinochiesa.net</Property>
+      <Property name="audience">Optional-String-or-URI</Property>
+      <Property name="expiresIn">86400</Property> <!-- in seconds -->
 
-        <!-- custom claims to embed in the JWT -->
-        <Property name="claim_shoesize">9</Property>
-        <Property name="claim_gender">M</Property>
+      <!-- custom claims to embed in the JWT. -->
+      <!-- Property names must begin with claim_ . -->
+      <Property name="claim_shoesize">9</Property>
+      <Property name="claim_gender">M</Property>
 
-        <!-- used as a component of the names of output variables -->
-        <Property name="stepname">JavaCallout-JWT-Create</Property>
+    </Properties>
 
-      </Properties>
-
-      <ClassName>com.apigee.jwt.JWT_Creator_Callout</ClassName>
-      <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
-    </JavaCallout>
+    <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
+    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+  </JavaCallout>
 ```
 
 
@@ -274,24 +268,21 @@ the <Properties> elements, like this:
 For parsing and verifying a JWT, you need to specify a different Java class. Configure it like so for HS256: 
 
 ```xml
-    <JavaCallout name='JavaCallout-JWT-Parse'>
-      <DisplayName>JavaCallout-JWT-Parse</DisplayName>
-      <Properties>
-        <Property name="algorithm">HS256</Property>
+  <JavaCallout name='JavaCallout-JWT-Parse'>
+    <DisplayName>JavaCallout-JWT-Parse</DisplayName>
+    <Properties>
+      <Property name="algorithm">HS256</Property>
 
-        <Property name="jwt">{request.formparam.jwt}</Property>
+      <Property name="jwt">{request.formparam.jwt}</Property>
 
-        <!-- used as a component of the names of output variables -->
-        <Property name="stepname">JavaCallout-JWT-Parse</Property>
+      <!-- name of var that holds the shared key (likely the client_secret) -->
+      <Property name="key">{organization.name}</Property>
 
-        <!-- name of var that holds the shared key (likely the client_secret) -->
-        <Property name="key">{organization.name}</Property>
+    </Properties>
 
-      </Properties>
-
-      <ClassName>com.apigee.jwt.JWT_Parser_Callout</ClassName>
-      <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
-    </JavaCallout>
+    <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
+    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+  </JavaCallout>
 ```
 
 This class accepts a signed JWT in dot-separated format, verifies the
@@ -299,18 +290,18 @@ signature with the specified key, and then parses the resulting claims.
 
 It sets these context variables: 
 
-      jwt_<stepname>_claims - a json-formatted string of all claims
-      jwt_<stepname>_issuer
-      jwt_<stepname>_audience
-      jwt_<stepname>_subject
-      jwt_<stepname>_issueTime
-      jwt_<stepname>_issueTimeFormatted ("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-      jwt_<stepname>_expirationTime
-      jwt_<stepname>_expirationTimeFormatted
-      jwt_<stepname>_secondsRemaining
-      jwt_<stepname>_timeRemainingFormatted   (HH:mm:ss.xxx)
-      jwt_<stepname>_isExpired  (true/false)
-      jwt_<stepname>_isValid  (true/false)
+      jwt_claims - a json-formatted string of all claims
+      jwt_issuer
+      jwt_audience
+      jwt_subject
+      jwt_issueTime
+      jwt_issueTimeFormatted ("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+      jwt_expirationTime
+      jwt_expirationTimeFormatted
+      jwt_secondsRemaining
+      jwt_timeRemainingFormatted   (HH:mm:ss.xxx)
+      jwt_isExpired  (true/false)
+      jwt_isValid  (true/false)
 
 
 The "Formatted" versions of the times are for diagnostic or display
@@ -324,35 +315,34 @@ only if the signature verifies and the times are valid.
 To parse and verify a RS256 JWT, then you need to use a configuration like this:
 
 ```xml
-    <JavaCallout name='JavaCallout-JWT-Parse-RS256-2'>
-      <DisplayName>JavaCallout-JWT-Parse-RS256-2</DisplayName>
-      <Properties>
-        <Property name="algorithm">RS256</Property>
-        <Property name="jwt">{request.formparam.jwt}</Property>
+  <JavaCallout name='JavaCallout-JWT-Parse-RS256-2'>
+    <DisplayName>JavaCallout-JWT-Parse-RS256-2</DisplayName>
+    <Properties>
+      <Property name="algorithm">RS256</Property>
+      <Property name="jwt">{request.formparam.jwt}</Property>
 
-        <!-- public-key used only for algorithm = RS256 -->
-        <Property name="public-key">
-        -----BEGIN PUBLIC KEY-----
-        MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtxlohiBDbI/jejs5WLKe
-        Vpb4SCNM9puY+poGkgMkurPRAUROvjCUYm2g9vXiFQl+ZKfZ2BolfnEYIXXVJjUm
-        zzaX9lBnYK/v9GQz1i2zrxOnSRfhhYEb7F8tvvKWMChK3tArrOXUDdOp2YUZBY2b
-        sl1iBDkc5ul/UgtjhHntA0r2FcUE4kEj2lwU1di9EzJv7sdE/YKPrPtFoNoxmthI
-        OvvEC45QxfNJ6OwpqgSOyKFwE230x8UPKmgGDQmED3PNrio3PlcM0XONDtgBewL0
-        3+OgERo/6JcZbs4CtORrpPxpJd6kvBiDgG07pUxMNKC2EbQGxkXer4bvlyqLiVzt
-        bwIDAQAB
-        -----END PUBLIC KEY-----
-        </Property>
+      <!-- public-key used only for algorithm = RS256 -->
+      <Property name="public-key">
+      -----BEGIN PUBLIC KEY-----
+      MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtxlohiBDbI/jejs5WLKe
+      Vpb4SCNM9puY+poGkgMkurPRAUROvjCUYm2g9vXiFQl+ZKfZ2BolfnEYIXXVJjUm
+      zzaX9lBnYK/v9GQz1i2zrxOnSRfhhYEb7F8tvvKWMChK3tArrOXUDdOp2YUZBY2b
+      sl1iBDkc5ul/UgtjhHntA0r2FcUE4kEj2lwU1di9EzJv7sdE/YKPrPtFoNoxmthI
+      OvvEC45QxfNJ6OwpqgSOyKFwE230x8UPKmgGDQmED3PNrio3PlcM0XONDtgBewL0
+      3+OgERo/6JcZbs4CtORrpPxpJd6kvBiDgG07pUxMNKC2EbQGxkXer4bvlyqLiVzt
+      bwIDAQAB
+      -----END PUBLIC KEY-----
+      </Property>
 
-        <!-- claims to verify -->
-        <Property name="claim_iss">http://dinochiesa.net</Property>
-        <Property name="claim_shoesize">8.5</Property>
+      <!-- claims to verify. Can include custom claims. -->
+      <Property name="claim_iss">http://dinochiesa.net</Property>
+      <Property name="claim_shoesize">8.5</Property>
 
-        <Property name="stepname">JavaCallout-JWT-Parse</Property>
-      </Properties>
+    </Properties>
 
-      <ClassName>com.apigee.jwt.JWT_Parser_Callout</ClassName>
-      <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
-    </JavaCallout>
+    <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
+    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+  </JavaCallout>
 ```
 
 By default, the Parser callout, whether using HS256 or RS256, verifies
@@ -376,32 +366,33 @@ than one audience.
 To verify specific claims in the JWT, use additional properties.
 Do this by specifying Property elements with name attributes that begin with claim_ :
 
-    <JavaCallout name='JavaCallout-JWT-Parse'>
-      <DisplayName>JavaCallout-JWT-Parse</DisplayName>
-      <Properties>
-        <Property name="algorithm">RS256</Property>
+```xml
+  <JavaCallout name='JavaCallout-JWT-Parse'>
+    <DisplayName>JavaCallout-JWT-Parse</DisplayName>
+    <Properties>
+      <Property name="algorithm">RS256</Property>
 
-        <!-- name of var that holds the jwt -->
-        <Property name="jwt">{request.formparam.jwt}</Property>
+      <!-- name of var that holds the jwt -->
+      <Property name="jwt">{request.formparam.jwt}</Property>
 
-        <!-- used as a component of the names of output variables -->
-        <Property name="stepname">JavaCallout-JWT-Parse</Property>
+      <!-- used as a component of the names of output variables -->
+      <Property name="stepname">JavaCallout-JWT-Parse</Property>
 
-        <!-- name of the pemfile. This must be a resource in the JAR! 
-        <Property name="pemfile">rsa-public.pem</Property>
+      <!-- name of the pemfile. This must be a resource in the JAR! 
+      <Property name="pemfile">rsa-public.pem</Property>
 
-        <!-- specific claims to verify, and their required values. -->
-        <Property name="claim_sub">A6EE23332295D597</Property>
-        <Property name="claim_aud">http://example.com/everyone</Property>
-        <Property name="claim_iss">urn://edge.apigee.com/jwt</Property>
-        <Property name="claim_shoesize">9</Property>
+      <!-- specific claims to verify, and their required values. -->
+      <Property name="claim_sub">A6EE23332295D597</Property>
+      <Property name="claim_aud">http://example.com/everyone</Property>
+      <Property name="claim_iss">urn://edge.apigee.com/jwt</Property>
+      <Property name="claim_shoesize">9</Property>
 
-      </Properties>
+    </Properties>
 
-      <ClassName>com.apigee.jwt.JWT_Parser_Callout</ClassName>
-      <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
-    </JavaCallout>
-
+    <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
+    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+  </JavaCallout>
+```
 
 All the context variables described above are also set in this scenario.
 
@@ -423,50 +414,51 @@ Verifying specific claims works whether the algorithm is HS256 or RS256.
 You can also specify the public key as a named file resource in the jar.
 To do this, you need to recompile the jar with your desired pemfile contained within it. The class looks for the file in the jarfile under the /resources directory. The configuration looks like this:
 
-    <JavaCallout name='JavaCallout-JWT-Parse'>
-      <DisplayName>JavaCallout-JWT-Parse</DisplayName>
-      <Properties>
-        <Property name="algorithm">RS256</Property>
+```xml
+  <JavaCallout name='JavaCallout-JWT-Parse'>
+    <DisplayName>JavaCallout-JWT-Parse</DisplayName>
+    <Properties>
+      <Property name="algorithm">RS256</Property>
 
-        <Property name="jwt">{request.formparam.jwt}</Property>
+      <Property name="jwt">{request.formparam.jwt}</Property>
 
-        <!-- used as a component of the names of output variables -->
-        <Property name="stepname">JavaCallout-JWT-Parse</Property>
+      <!-- name of the pemfile. This must be a resource in the JAR. -->
+      <Property name="pemfile">rsa-public.pem</Property>
 
-        <!-- name of the pemfile. This must be a resource in the JAR. -->
-        <Property name="pemfile">rsa-public.pem</Property>
+    </Properties>
 
-      </Properties>
-
-      <ClassName>com.apigee.jwt.JWT_Parser_Callout</ClassName>
-      <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
-    </JavaCallout>
-
+    <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
+    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+  </JavaCallout>
+```
 
 **Parsing and Verifying a JWT - RS256 - certificate**
 
 You can also specify a serialized X509 certificate which contains the public key. 
 
-    <JavaCallout name='JavaCallout-JWT-Parse-RS256-3'>
-      <DisplayName>JavaCallout-JWT-Parse-RS256-3</DisplayName>
-      <Properties>
-        <Property name="algorithm">RS256</Property>
-        <Property name="jwt">{request.formparam.jwt}</Property>
+```xml
+  <JavaCallout name='JavaCallout-JWT-Parse-RS256-3'>
+    <DisplayName>JavaCallout-JWT-Parse-RS256-3</DisplayName>
+    <Properties>
+      <Property name="algorithm">RS256</Property>
+      <Property name="jwt">{request.formparam.jwt}</Property>
 
-        <!-- public-key used only for algorithm = RS256 -->
-        <Property name="certificate">
-        -----BEGIN CERTIFICATE-----
-        MIIC4jCCAcqgAwIBAgIQ.....aKLWSqMhozdhXsIIKvJQ==
-        -----END CERTIFICATE-----
-        </Property>
+      <!-- certificate used only for algorithm = RS256 -->
+      <Property name="certificate">
+      -----BEGIN CERTIFICATE-----
+      MIIC4jCCAcqgAwIBAgIQ.....aKLWSqMhozdhXsIIKvJQ==
+      -----END CERTIFICATE-----
+      </Property>
 
-        <!-- claims to verify -->
-        <Property name="claim_iss">https://sts.windows.net/fa2613dd-1c7b-469b-8f92-88cd26856240/</Property>
-        <Property name="claim_ver">1.0</Property>
+      <!-- claims to verify -->
+      <Property name="claim_iss">https://sts.windows.net/fa2613dd-1c7b-469b-8f92-88cd26856240/</Property>
+      <Property name="claim_ver">1.0</Property>
 
-      </Properties>
+    </Properties>
 
-      <ClassName>com.apigee.jwt.JWT_Parser_Callout</ClassName>
-      <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
-    </JavaCallout>
+    <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
+    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+  </JavaCallout>
+```
 
+If you specify both the public-key and the certificate in the configuration, the public-key will be used and the certificate will be ignored. 
