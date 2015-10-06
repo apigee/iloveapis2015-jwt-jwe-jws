@@ -12,26 +12,20 @@ These instructions describe how to do either.
 
 1. unpack (if you can read this, you've already done that).
 
-2. build the binary
-
-  without maven:  edit ./build.sh and then run it. 
-
-  with maven: 
-    mvn clean package
+2. build the binary  
+  without maven:  edit ./build.sh and then run it.   
+  with maven:     mvn clean package
 
 3. if using the build.sh script, 
    copy out/jwt-edge-callout.jar to your apiproxy/resources/java directory
-   also copy all the lib/*.jar files to the same directory.
-
-   If using maven, 
+   also copy all the lib/*.jar files to the same directory.  
+   If using maven,
    copy target/jwt-edge-callout.jar to your apiproxy/resources/java directory. 
-   Also copy from the target/lib directory, these jars: 
-
+   Also copy from the target/lib directory, these jars:  
      json-smart-1.3.jar
      nimbus-jose-jwt-3.1.2.jar
      guava-18.0.jar
      jcip-annotations-1.0.jar
-
 
 4. be sure to include a Java callout policy in your
    apiproxy/resources/policies directory. It should look like
