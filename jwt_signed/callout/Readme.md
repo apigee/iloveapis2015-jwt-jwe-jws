@@ -451,6 +451,8 @@ You can also specify a serialized X509 certificate which contains the public key
   </JavaCallout>
 ```
 
+This particular example verifies the issuer is a given URL from windows.net.  This is what Azure Active Directory uses when generating JWT. (This URL is unique to the Active Directory instance, so it is not re-usable for your own AAD-generated tokens.) 
+
 If you specify both the public-key and the certificate in the configuration, the public-key will be used and the certificate will be ignored. 
 The serialized version of the certificate can include line-breaks and spaces.
 
