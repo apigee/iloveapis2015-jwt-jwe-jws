@@ -22,6 +22,7 @@ import com.nimbusds.jwt.SignedJWT;
 
 import org.apache.commons.ssl.PKCS8Key;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -89,14 +90,14 @@ public class JwtCreatorCallout implements Execution {
     }
 
 
-    private String getKey(MessageContext msgCtxt) throws Exception {
-        String key = (String) this.properties.get("key");
+    private String getSecretKey(MessageContext msgCtxt) throws Exception {
+        String key = (String) this.properties.get("secret-key");
         if (key == null || key.equals("")) {
-            throw new IllegalStateException("key is not specified or is empty.");
+            throw new IllegalStateException("secret-key is not specified or is empty.");
         }
         key = resolvePropertyValue(key, msgCtxt);
         if (key == null || key.equals("")) {
-            throw new IllegalStateException("key is null or empty.");
+            throw new IllegalStateException("secret-key is null or empty.");
         }
         return key;
     }
@@ -182,13 +183,6 @@ public class JwtCreatorCallout implements Execution {
         return password;
     }
 
-    private String getStepname() throws IllegalStateException {
-        String stepname = (String) this.properties.get("stepname");
-        if (stepname == null || stepname.equals("")) {
-            throw new IllegalStateException("stepname is not specified or is empty.");
-        }
-        return stepname;
-    }
 
     private int getExpiresIn(MessageContext msgCtxt) throws IllegalStateException {
         String expiry = (String) this.properties.get("expiresIn");
@@ -223,7 +217,7 @@ public class JwtCreatorCallout implements Execution {
             public boolean apply(Map.Entry<String, String> entry) {
                 boolean result = entry.getKey().startsWith("claim_");
                 // diagnostics
-                msgCtxt.setVariable("jwt_custom_" + entry.getKey(), entry.getValue());
+                msgCtxt.setVariable("jwt_property_" + entry.getKey(), entry.getValue());
                 return result;
             }
         };
@@ -310,9 +304,8 @@ public class JwtCreatorCallout implements Execution {
                                    ExecutionContext exeCtxt)
     {
         String varName;
-        String stepName = "unknown";
+        String varPrefix = "jwt";
         try {
-            stepName = getStepname();
             JWSAlgorithm jwsAlg;
             String ISSUER = getIssuer(msgCtxt);
             String ALG = getAlgorithm(msgCtxt);
@@ -359,7 +352,7 @@ public class JwtCreatorCallout implements Execution {
                             providedValue = resolvePropertyValue(providedValue, msgCtxt);
                             claims.setCustomClaim(claimName, providedValue);
                         }
-                        varName = "jwt_" + stepName + "_" + key + "_provided";
+                        varName = varPrefix + "_" + key + "_provided";
                         msgCtxt.setVariable(varName, providedValue);
                     }
                 }
@@ -367,16 +360,11 @@ public class JwtCreatorCallout implements Execution {
 
             net.minidev.json.JSONObject json = claims.toJSONObject();
 
-            //System.out.println("JSON-formatted claims: " + json.toString());
-            // String stepName = msgCtxt.getVariable("stepDefinition-name");
-            // msgCtxt.setVariable("jwt_stepname_1", stepName);
-            // stepName = msgCtxt.getFlow().getFlowInfo("stepDefinition-name");
-            // msgCtxt.setVariable("jwt_stepname_2", stepName);
-            varName = "jwt_" + stepName + "_claims";
+            varName = varPrefix + "_claims";
             msgCtxt.setVariable(varName, json.toString());
 
             if (ALG.equals("HS256")) {
-                String SIGNING_KEY = getKey(msgCtxt);
+                String SIGNING_KEY = getSecretKey(msgCtxt);
                 byte[] keyBytes = SIGNING_KEY.getBytes("UTF-8");
                 signer = new MACSigner(keyBytes);
                 jwsAlg = JWSAlgorithm.HS256;
@@ -400,13 +388,15 @@ public class JwtCreatorCallout implements Execution {
             // eyJhbGciOiJIUzI1NiJ9.SGVsbG8sIHdvcmxkIQ.onO9Ihudz3WkiauDO2Uhyuz0Y18UASXlSc1eS0NkWyA
             String jwt = signedJWT.serialize();
 
-            varName = "jwt_" + stepName + "_jwt";
+            varName = varPrefix + "_jwt";
             msgCtxt.setVariable(varName, jwt);
         }
         catch (Exception e) {
             e.printStackTrace();
-            varName = "jwt_" + stepName + "_error";
+            varName = varPrefix + "_error";
             msgCtxt.setVariable(varName, "Exception " + e.toString());
+            varName = varPrefix + "_stacktrace";
+            msgCtxt.setVariable(varName, ExceptionUtils.getStackTrace(e));
             return ExecutionResult.ABORT;
         }
         return ExecutionResult.SUCCESS;
