@@ -101,6 +101,17 @@ these commands:
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>
+
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>**/Icon*</exclude>
+          <exclude>**/readme.txt</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -135,7 +146,7 @@ these commands:
         </executions>
         <configuration />
       </plugin>
-<!--
+
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
@@ -143,8 +154,7 @@ these commands:
             <phase>package</phase>
             <configuration>
               <tasks>
-                < Since the jar file name used is javacallout.jar" >
-                <copy file="${project.build.directory}/${project.artifactId}.jar" todir="../apiproxy/resources/java" />
+                <copy file="${project.build.directory}/${project.artifactId}.jar" todir="../apiproxy/apiproxy/resources/java" />
               </tasks>
             </configuration>
             <goals>
@@ -153,7 +163,7 @@ these commands:
           </execution>
         </executions>
       </plugin>
--->
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
