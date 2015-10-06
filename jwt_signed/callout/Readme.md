@@ -166,6 +166,8 @@ Specify the private RSA key inside the policy configuration, like this:
       7ZOF1UXVaoldDs+izZo5biVF/NNIBtg2FkZd4hh/cFlF1PV+M5+5mA==
       -----END RSA PRIVATE KEY-----
       </Property>
+
+      <!-- this value should not be hardcoded. Put it in the vault! -->
       <Property name="private-key-password">deecee123</Property>
 
       <!-- standard claims -->
@@ -178,8 +180,6 @@ Specify the private RSA key inside the policy configuration, like this:
       <Property name="claim_primarylanguage">English</Property>
       <Property name="claim_shoesize">8.5</Property>
 
-      <!-- used as a component of the names of output variables -->
-
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
@@ -188,7 +188,7 @@ Specify the private RSA key inside the policy configuration, like this:
 ```
 
 The private key need not be encrypted. If it is, obviously you need to
-specify the private-key-password. That password can be a variable - specify it in curly braces in that case. 
+specify the private-key-password. That password can be (should be!) a variable - specify it in curly braces in that case. You should retrieve it from secure storage before invoking this policy. 
 
 
 **Generate a JWT using RS256 - specify PEM file as resource in JAR**
@@ -203,7 +203,7 @@ You can also specify the PEM as a named file resource that is bundled in the jar
 
       <!-- pemfile + private-key-password} used only for algorithm = RS256 -->
       <Property name="pemfile">private.pem</Property>
-      <Property name="private-key-password">{var.that.containst.password.here}</Property>
+      <Property name="private-key-password">{var.that.contains.password.here}</Property>
 
       <!-- claims to inject into the JWT -->
       <Property name="subject">{apiproxy.name}</Property>
@@ -219,9 +219,9 @@ You can also specify the PEM as a named file resource that is bundled in the jar
 ```
 
 The pemfile need not be encrypted. If it is, obviously you need to
-specify the password . Despite the name of the property, the file can
-be in DER format or PEM format. The class looks for the file in the
-jarfile under the /resources directory.
+specify the password .  The file must be in PEM format, not DER
+format. The class looks for the file in the jarfile under the /resources
+directory.
 
 
 **Generating a JWT with custom claims**
@@ -303,7 +303,7 @@ The "Formatted" versions of the times are for diagnostic or display
 purposes. It's easier to understand a time when displayed that way. 
 
 The isValid indicates whether the JWT should be honored - true if and
-only if the signature verifies and the times are valid.
+only if the signature verifies and the times are valid, and all the required claims match.
 
 **Parsing and Verifying a JWT - RS256**
 
@@ -350,10 +350,10 @@ private).
 
 Regarding audience - the spec states that the audience is an array of
 strings. The parser class validates that the audience value you pass
-here is present as one of the elements in that array.  You need not
-specify all audience elements, in order for the verify to work properly.
+here (as a string) is present as one of the elements in that array.
 Currently there is no way to verify that the JWT is directed to more
-than one audience.
+than one audience. To do so, you could invoke the Callout twice, with different
+configurations.
 
 
 **Parse a JWT, and Verify specific claims**
@@ -394,8 +394,7 @@ are valid AND if all of the claims listed as required in the
 configuration are present in the JWT, and their respective values
 are equal to the values provided in the <Property> elements.
 
-To specify required claims, you must use the JSON property
-names. Hence "claim_sub" and "claim_iss", not "claim_subject" and
+To specify required claims, you must use the claim names as used within the JSON-serialized JWT.  Hence "claim_sub" and "claim_iss", not "claim_subject" and
 "claim_issuer".
 
 Verifying specific claims works whether the algorithm is HS256 or RS256.
