@@ -1,8 +1,9 @@
 # jwe callout
 
-This directory contains the Java source code and pom.xml file required to
-compile a Java callout for Apigee Edge that creates and decrypts JWE generation and
-parsing / validation of signed JWT. It uses the Nimbus library for JOSE. 
+This directory contains the Java source code and pom.xml file required
+to compile a Java callout for Apigee Edge that creates and decrypts JWE
+. It uses the Jose4J library for JOSE (JSON Object Signing and
+Encryption) support.
 
 Building:
 --------
