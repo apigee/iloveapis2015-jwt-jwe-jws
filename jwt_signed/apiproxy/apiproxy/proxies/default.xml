@@ -110,11 +110,11 @@
       </Response>
     </Flow>
 
-    <Flow name="parse + validate alg=RS256-3">
+    <Flow name="parse + validate alg=RS256-ms">
       <Condition>(proxy.pathsuffix ~~ "/validate-ms$") and (request.verb = "POST")</Condition>
       <Description>Parse a JWT created by Azure Active Directory</Description>
       <Request>
-        <Step><Name>JavaCallout-JWT-Parse-RS256-3</Name></Step>
+        <Step><Name>JavaCallout-JWT-Parse-RS256-ms</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>

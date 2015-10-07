@@ -1,5 +1,5 @@
-<JavaCallout name='JavaCallout-JWT-Parse-RS256-3'>
-  <DisplayName>JavaCallout-JWT-Parse-RS256-3</DisplayName>
+<JavaCallout name='JavaCallout-JWT-Parse-RS256-ms'>
+  <DisplayName>JavaCallout-JWT-Parse-RS256-ms</DisplayName>
   <Properties>
     <Property name="algorithm">RS256</Property>
     <Property name="jwt">{request.formparam.jwt}</Property>
@@ -14,6 +14,7 @@
     <!-- claims to verify -->
     <Property name="claim_iss">https://sts.windows.net/fa2613dd-1c7b-469b-8f92-88cd26856240/</Property>
     <Property name="claim_ver">1.0</Property>
+    <Property name="claim_idp">live.com</Property>
 
   </Properties>
 
