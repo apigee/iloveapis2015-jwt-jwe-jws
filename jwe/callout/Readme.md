@@ -87,6 +87,18 @@ form of properties on the policy.  Some examples follow.
 </JavaCallout>
 ```
 
+The list of supported encryption algorithms is: 
+-A128CBC-HS256
+-A192CBC-HS384
+-A256CBC-HS512
+-A128GCM
+-A192GCM
+-A256GCM
+
+For information on the meaning of these algorithms, see section 5 of the JWS spec: 
+https://tools.ietf.org/html/rfc7518. 
+
+
 **Decrypting a JWE**
 
 ```xml
@@ -107,6 +119,8 @@ More Notes:
 --------
 
 - This callout does not currently support JWE with RSA encryption
+- This callout always uses PBES2-HS256+A128KW to derive symmetric keys. 
+
 
 
 

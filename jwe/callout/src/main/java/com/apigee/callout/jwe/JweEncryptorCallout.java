@@ -217,24 +217,6 @@ public class JweEncryptorCallout implements Execution {
             // do the encryption
             String compactSerialization = jwe.getCompactSerialization();
             msgCtxt.setVariable(varPrefix + "jwe", compactSerialization);
-
-
-            // // That other party, the receiver, can then use JsonWebEncryption to decrypt the message.
-            // JsonWebEncryption receiverJwe = new JsonWebEncryption();
-            //
-            // // Set the compact serialization on new Json Web Encryption object
-            // receiverJwe.setCompactSerialization(compactSerialization);
-            //
-            // // Symmetric encryption, like we are doing here, requires that both parties have the same key.
-            // // The key will have had to have been securely exchanged out-of-band somehow.
-            // receiverJwe.setKey(jwk.getKey());
-            //
-            // // Get the message that was encrypted in the JWE. This step performs the actual decryption steps.
-            // String plaintext = receiverJwe.getPlaintextString();
-            //
-            // // And do whatever you need to do with the clear text message.
-            // System.out.println("plaintext: " + plaintext);
-
         }
         catch (Exception e) {
             e.printStackTrace();
