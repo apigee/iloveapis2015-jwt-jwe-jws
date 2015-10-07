@@ -28,15 +28,14 @@ These instructions describe how to do either.
    apiproxy/resources/policies directory. It should look like
    this:
     ```xml
-<JavaCallout name='JavaCallout-JWE-Encrypt-A128CBC-HS256' >
-  <Properties>...</Properties>
-
-  <ClassName>com.apigee.callout.jwe.JweEncryptorCallout</ClassName>
-  <ResourceURL>java://jwe-edge-callout.jar</ResourceURL>
-</JavaCallout>
+    <JavaCallout name='JavaCallout-JWE-Encrypt-A128CBC-HS256'>
+      <Properties>...</Properties>
+      <ClassName>com.apigee.callout.jwe.JweEncryptorCallout</ClassName>
+      <ResourceURL>java://jwe-edge-callout.jar</ResourceURL>
+    </JavaCallout>
    ```
 
-5. Deploy your API Proxy, using 
+5. Deploy your API Proxy, using
    pushapi (See https://github.com/carloseberhardt/apiploy)
    or a similar alternative tool.
 
