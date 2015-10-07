@@ -300,8 +300,7 @@ public class JwtCreatorCallout implements Execution {
         return spec;
     }
 
-    public ExecutionResult execute(MessageContext msgCtxt,
-                                   ExecutionContext exeCtxt)
+    public ExecutionResult execute(MessageContext msgCtxt, ExecutionContext exeCtxt)
     {
         String varName;
         String varPrefix = "jwt";
@@ -316,7 +315,7 @@ public class JwtCreatorCallout implements Execution {
             String[] audiences = null;
             Date now = new Date();
 
-            // Prepare JWT with claims set
+            // 1. Prepare JWT with the set of standard claims
             JWTClaimsSet claims = new JWTClaimsSet();
             claims.setIssuer(ISSUER);
             claims.setSubject(SUBJECT);
@@ -328,7 +327,7 @@ public class JwtCreatorCallout implements Execution {
             Date expiry = getExpiryDate(now,msgCtxt);
             if (expiry != null) { claims.setExpirationTime(expiry); }
 
-            // now add all the provided custom claims to the set
+            // 2. add all the provided custom claims to the set
             Map<String,String> customClaims = customClaimsProperties(msgCtxt);
             if (customClaims.size() > 0) {
                 // iterate the map
@@ -358,11 +357,12 @@ public class JwtCreatorCallout implements Execution {
                 }
             }
 
+            // 3. serialize to a string, for diagnostics purposes
             net.minidev.json.JSONObject json = claims.toJSONObject();
-
             varName = varPrefix + "_claims";
             msgCtxt.setVariable(varName, json.toString());
 
+            // 3. vet the algorithm, and set up the signer
             if (ALG.equals("HS256")) {
                 String SIGNING_KEY = getSecretKey(msgCtxt);
                 byte[] keyBytes = SIGNING_KEY.getBytes("UTF-8");
@@ -379,15 +379,13 @@ public class JwtCreatorCallout implements Execution {
                 throw new IllegalStateException("unsupported algorithm: " + ALG);
             }
 
+            // 4. Apply the signature
             SignedJWT signedJWT = new SignedJWT(new JWSHeader(jwsAlg), claims);
-
-            // Apply the signature
             signedJWT.sign(signer);
 
-            // serialize to compact form, produces something like
-            // eyJhbGciOiJIUzI1NiJ9.SGVsbG8sIHdvcmxkIQ.onO9Ihudz3WkiauDO2Uhyuz0Y18UASXlSc1eS0NkWyA
+            // 5. serialize to compact form, produces something like
+            // eyJhbGciOiJIUzI1NiJ9.SGVsbG8sIHdvcmxkIQ.onOUhyuz0Y18UASXlSc1eS0NkWyA
             String jwt = signedJWT.serialize();
-
             varName = varPrefix + "_jwt";
             msgCtxt.setVariable(varName, jwt);
         }

@@ -102,7 +102,7 @@ public class JwtParserCallout implements Execution {
         return jwt.trim();
     }
 
-    private String getAlgorithm(MessageContext msgCtxt) throws Exception {
+    private String getAlgorithm(MessageContext msgCtxt) throws IllegalStateException {
         String algorithm = ((String) this.properties.get("algorithm")).trim();
         if (algorithm == null || algorithm.equals("")) {
             throw new IllegalStateException("algorithm is not specified or is empty.");
@@ -117,7 +117,7 @@ public class JwtParserCallout implements Execution {
         return algorithm;
     }
 
-    private String getSecretKey(MessageContext msgCtxt) throws Exception {
+    private String getSecretKey(MessageContext msgCtxt) throws IllegalStateException {
         String key = (String) this.properties.get("secret-key");
         if (key == null || key.equals("")) {
             throw new IllegalStateException("secret-key is not specified or is empty.");
@@ -283,6 +283,26 @@ public class JwtParserCallout implements Execution {
         return key;
     }
 
+    private JWSVerifier generateVerifier(String alg, MessageContext msgCtxt)
+        throws IllegalStateException,
+               UnsupportedEncodingException,
+               IOException,
+               InvalidKeySpecException,
+               CertificateException,
+               NoSuchAlgorithmException {
+
+        if (alg.equals("HS256")) {
+            String key = getSecretKey(msgCtxt);
+            byte[] keyBytes = key.getBytes("UTF-8");
+            return new MACVerifier(keyBytes);
+        }
+        else if (alg.equals("RS256")) {
+            RSAPublicKey publicKey = (RSAPublicKey) getPublicKey(msgCtxt);
+            return new RSASSAVerifier(publicKey);
+        }
+
+        throw new IllegalStateException("algorithm is unsupported: " + alg);
+    }
 
     // Return all properties that begin with claim_
     // This allows this Verify callout to check each one of those
@@ -300,137 +320,71 @@ public class JwtParserCallout implements Execution {
     }
 
     public ExecutionResult execute (MessageContext msgCtxt,
-                                   ExecutionContext exeCtxt) {
+                                    ExecutionContext exeCtxt) {
         String varName;
         String varPrefix = "jwt";
+        // The validity of the JWT depends on:
+        // - the algorithm. must match what is required.
+        // - the signature. It must verify.
+        // - the times. Must not be expired, also respect "notbefore".
+        // - the enforced claims. They all must match.
         try {
-            String ALG = getAlgorithm(msgCtxt);
-            String jwt = getJwt(msgCtxt); // dot-separated JWT
+            // 1. read the JWT
+            String jwt = getJwt(msgCtxt); // a dot-separated JWT
+            SignedJWT signedJWT = SignedJWT.parse(jwt);
             ReadOnlyJWTClaimsSet claims = null;
-            SignedJWT signedJWT = null;
-            JWSHeader jwsh = null;
-            net.minidev.json.JSONObject json;
-            JWSVerifier verifier;
-            // diagnostic purposes
+
+            // diagnostics: emit the jwt and header
             varName = varPrefix + "_jwt";
             msgCtxt.setVariable(varName, jwt);
+            JWSHeader jwsh = signedJWT.getHeader();
+            net.minidev.json.JSONObject json = jwsh.toJSONObject();
+            varName = varPrefix + "_jwtheader";
+            msgCtxt.setVariable(varName, json.toString());
             msgCtxt.setVariable(varPrefix + "_reason", "");
 
-            if (ALG.equals("HS256")) {
-                String key = getSecretKey(msgCtxt);
-                signedJWT = SignedJWT.parse(jwt);
-                // diagnostics
-                jwsh = signedJWT.getHeader();
-                json = jwsh.toJSONObject();
-                varName = varPrefix + "_jwtheader";
-                msgCtxt.setVariable(varName, json.toString());
-
-                if (!jwsh.getAlgorithm().toString().equals("HS256")) {
-                    varName = varPrefix + "_error";
-                    msgCtxt.setVariable(varName, "Error: JWT algorithm is incorrect");
-                    varName = varPrefix + "_reason";
-                    msgCtxt.setVariable(varName, "JWT algorithm is incorrect");
-                    varName = varPrefix + "_verified";
-                    msgCtxt.setVariable(varName, false+"");
-                    varName = varPrefix + "_isValid";
-                    msgCtxt.setVariable(varName, false+"");
-                    return ExecutionResult.ABORT;
-                }
-                else if (key != null && !key.equals("")) {
-                    // we have a key, we want to verify the JWT
-                    byte[] keyBytes = key.getBytes("UTF-8");
-
-                    verifier = new MACVerifier(keyBytes);
-
-                    // verify - check the hash against the key
-                    if (!signedJWT.verify(verifier)) {
-                        //System.out.println("signature is not valid...");
-                        varName = varPrefix + "_error";
-                        msgCtxt.setVariable(varName, "Error (A): JWT does not decrypt");
-                        varName = varPrefix + "_reason";
-                        msgCtxt.setVariable(varName, "JWT does not decrypt");
-                        return ExecutionResult.ABORT;
-                    }
-
-                    // Retrieve and parse the JWT claims
-                    claims = signedJWT.getJWTClaimsSet();
-                    varName = varPrefix + "_verified";
-                    msgCtxt.setVariable(varName, true+"");
-                    varName = varPrefix + "_isSigned";
-                    msgCtxt.setVariable(varName, true+"");
-                }
-                else {
-                    try {
-                        signedJWT = SignedJWT.parse(jwt);
-                        claims = signedJWT.getJWTClaimsSet();
-                        varName = varPrefix + "_verified";
-                        msgCtxt.setVariable(varName, false+"");
-                        varName = varPrefix + "_isSigned";
-                        msgCtxt.setVariable(varName, true+"");
-                    }
-                    catch (java.text.ParseException pe) {
-                        System.out.println("exception: " + pe.toString());
-                        System.out.println("trying to parse as plain jwt...");
-                        try {
-                            PlainJWT plainJwt = PlainJWT.parse(jwt);
-                            claims = plainJwt.getJWTClaimsSet();
-                            varName = varPrefix + "_verified";
-                            msgCtxt.setVariable(varName, false+"");
-                            varName = varPrefix + "_isSigned";
-                            msgCtxt.setVariable(varName, false+"");
-                        }
-                        catch (Exception exc2) {
-                            varName = varPrefix + "_error";
-                            System.out.println("Exception (B): " + exc2.toString());
-                            msgCtxt.setVariable(varName, "cannot parse that JWT");
-                            return ExecutionResult.ABORT;
-                        }
-                    }
-                }
+            // 2. check that the provided algorithm matches what is required
+            String requiredAlgorithm = getAlgorithm(msgCtxt);
+            String providedAlgorithm = jwsh.getAlgorithm().toString();
+            if (!providedAlgorithm.equals("HS256") && !providedAlgorithm.equals("RS256")) {
+                throw new UnsupportedOperationException("provided Algorithm=" + providedAlgorithm);
             }
-            else if (ALG.equals("RS256")) {
-                signedJWT = SignedJWT.parse(jwt);
-                // diagnostics
-                jwsh = signedJWT.getHeader();
-                json = jwsh.toJSONObject();
-                varName = varPrefix + "_jwtheader";
-                msgCtxt.setVariable(varName, json.toString());
-
-                RSAPublicKey publicKey = (RSAPublicKey) getPublicKey(msgCtxt);
-                verifier = new RSASSAVerifier(publicKey);
-
-                // verify the signature
-                if (!signedJWT.verify(verifier)) {
-                    System.out.println("signature is not valid...");
-                    varName = varPrefix + "_error";
-                    msgCtxt.setVariable(varName, "Error (C): JWT does not decrypt");
-                    return ExecutionResult.ABORT;
-                }
-
-                // Retrieve and parse the JWT claims
-                claims = signedJWT.getJWTClaimsSet();
-                varName = varPrefix + "_verified";
-                msgCtxt.setVariable(varName, true+"");
-                varName = varPrefix + "_isSigned";
-                msgCtxt.setVariable(varName, true+"");
-            }
-            else {
-                throw new UnsupportedOperationException("Algorithm=" + ALG);
+            if (!providedAlgorithm.equals(requiredAlgorithm)){
+                throw new UnsupportedOperationException("Algorithm mismatch. provided= " + providedAlgorithm + ", required=" + requiredAlgorithm);
             }
 
+            // 3. set up the signature verifier according to the required algorithm and its inputs
+            JWSVerifier verifier = generateVerifier(requiredAlgorithm, msgCtxt);
+
+            // 4. actually verify the signature
+            if (!signedJWT.verify(verifier)) {
+                varName = varPrefix + "_error";
+                msgCtxt.setVariable(varName, "Error: JWT signature does not verify");
+                varName = varPrefix + "_reason";
+                msgCtxt.setVariable(varName, "JWT verification failed");
+                return ExecutionResult.ABORT;
+            }
+            varName = varPrefix + "_verified";
+            msgCtxt.setVariable(varName, true+"");
+            varName = varPrefix + "_isSigned";
+            msgCtxt.setVariable(varName, true+"");
+
+            // 5. Retrieve and parse the JWT claims
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
-            // emit all claims, formatted as json, into a variable
+            // diagnostics: emit all claims, formatted as json, into a variable
+            claims = signedJWT.getJWTClaimsSet();
             json = claims.toJSONObject();
             varName = varPrefix + "_claims";
             msgCtxt.setVariable(varName, json.toString());
 
-            // emit some specific claims into their own variables
+            // 6. emit some specific standard claims into their own context variables
+            // 6a. subject
             String subject = claims.getSubject();
             varName = varPrefix +"_subject";
             msgCtxt.setVariable(varName, subject);
 
-            // audience is optional
+            // 6b. audience (optional)
             List<String> auds = claims.getAudience();
             if (auds != null) {
                 String[] audiences = auds.toArray(new String[0]);
@@ -446,6 +400,7 @@ public class JwtParserCallout implements Execution {
                 msgCtxt.setVariable(varName, "-not-set-");
             }
 
+            // 6c. issuer
             String issuer = claims.getIssuer();
             varName = varPrefix + "_issuer";
             msgCtxt.setVariable(varName, issuer);
@@ -453,15 +408,15 @@ public class JwtParserCallout implements Execution {
             Date now = new Date();
             recordTimeVariable(msgCtxt,varPrefix,sdf,now,"now");
 
+            // 6d. issued-at
             Date t1 = claims.getIssueTime();
             recordTimeVariable(msgCtxt,varPrefix,sdf,t1,"issueTime");
 
-            // TODO: verify that the token was not marked as having been
-            // issued in the future. The issueTime must be before "now".
-
+            // 6e. expiration
             Date t2 = claims.getExpirationTime();
             recordTimeVariable(msgCtxt,varPrefix,sdf,t2,"expirationTime");
 
+            // 6f. elaborated values for expiry
             varName = varPrefix + "_secondsRemaining";
             int ms = (int) (t2.getTime() - now.getTime());
             int secsRemaining = ms/1000;
@@ -474,6 +429,7 @@ public class JwtParserCallout implements Execution {
                 msgCtxt.setVariable(varName, DurationFormatUtils.formatDurationHMS(ms));
             }
 
+            // 6g. computed boolean isExpired
             varName = varPrefix + "_isExpired";
             boolean expired = (ms <= 0);
             msgCtxt.setVariable(varName, expired + "");
@@ -481,54 +437,60 @@ public class JwtParserCallout implements Execution {
             // optional nbf (not-Before) (Sec 4.1.5)
             Date t3 = claims.getNotBeforeTime();
 
-            // The validity of the JWT depends on the times,
-            // and the various claims that must be enforced.
+            // 7. validate expiry and not-before-time
             boolean valid = !expired;
-            if (t3 != null && valid) {
+            if (t3 != null) {
                 recordTimeVariable(msgCtxt,varPrefix,sdf,t3,"notBeforeTime");
-
-                ms = (int) (now.getTime() - t3.getTime());
-                //int secsValid = ms/1000;
-                valid = valid && (ms >= 0);
-                if (!valid) {
-                    msgCtxt.setVariable(varPrefix + "_reason", "notBeforeTime");
+                if (valid) {
+                    ms = (int) (now.getTime() - t3.getTime());
+                    valid = valid && (ms >= 0);
+                    if (!valid) {
+                        msgCtxt.setVariable(varPrefix + "_reason", "notBeforeTime");
+                    }
+                }
+                else {
+                    msgCtxt.setVariable(varPrefix + "_reason", "the token is expired");
                 }
             }
 
-            // evaluate all the claims that have been configured as
+            // 8. evaluate all the claims that have been configured as
             // required on this token.
-            Map<String,String> requiredClaims = requiredClaimsProperties();
-            if (requiredClaims.size() > 0 && valid) {
-                // iterate the map
-                for (Map.Entry<String, String> entry : requiredClaims.entrySet()) {
-                    String key = entry.getKey();
-                    String expectedValue = entry.getValue();
-                    expectedValue = resolvePropertyValue(expectedValue, msgCtxt);
-                    varName = varPrefix + "_" + key + "_expected";
-                    msgCtxt.setVariable(varName, expectedValue);
+            if (valid) {
+                Map<String,String> requiredClaims = requiredClaimsProperties();
+                if (requiredClaims.size() > 0) {
+                    // iterate the map
+                    for (Map.Entry<String, String> entry : requiredClaims.entrySet()) {
+                        String key = entry.getKey();
+                        String expectedValue = entry.getValue();
+                        expectedValue = resolvePropertyValue(expectedValue, msgCtxt);
+                        // diagnostics: show the expected value
+                        varName = varPrefix + "_" + key + "_expected";
+                        msgCtxt.setVariable(varName, expectedValue);
 
-                    String[] parts = StringUtils.split(key,"_");
-                    // sanity check - is this a required claim?
-                    if (parts.length == 2 && parts[0].equals("claim")) {
-                        String claimName =  parts[1];
-                        // special case aud, which is an array
-                        if (claimName.equals("aud")) {
-                            valid = valid && (auds.indexOf(expectedValue) != -1);
-                        }
-                        else {
-                            String providedValue = claims.getStringClaim(claimName);
-                            valid = valid && expectedValue.equals(providedValue);
-                            if (!valid) {
-                                msgCtxt.setVariable(varPrefix + "_reason", "claim " + claimName + " != " + expectedValue);
+                        String[] parts = StringUtils.split(key,"_");
+                        // sanity check - is this a required claim?
+                        if (parts.length == 2 && parts[0].equals("claim")) {
+                            String claimName =  parts[1];
+                            // special case aud, which is an array
+                            if (claimName.equals("aud")) {
+                                valid = valid && (auds.indexOf(expectedValue) != -1);
                             }
-                            varName = varPrefix + "_" + key + "_provided";
-                            msgCtxt.setVariable(varName, providedValue);
+                            else {
+                                // string match all other required claims
+                                String providedValue = claims.getStringClaim(claimName);
+                                valid = valid && expectedValue.equals(providedValue);
+                                if (!valid) {
+                                    msgCtxt.setVariable(varPrefix + "_reason", "claim " + claimName + " != " + expectedValue);
+                                }
+                                varName = varPrefix + "_" + key + "_provided";
+                                msgCtxt.setVariable(varName, providedValue);
+                            }
                         }
                     }
                 }
             }
 
-            // finally, set the valid field
+            // 9. finally, set the valid context variable
             varName = varPrefix + "_isValid";
             msgCtxt.setVariable(varName, valid + "");
         }
