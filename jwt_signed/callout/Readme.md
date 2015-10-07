@@ -17,16 +17,13 @@ These instructions describe how to do either.
    mvn clean package
    ```
 
-3. if using the build.sh script, 
-   copy out/jwt-edge-callout.jar to your apiproxy/resources/java directory
-   also copy all the lib/*.jar files to the same directory.  
-   If using maven,
+3. maven will copy all the required jar files to your apiproxy/resources/java directory. 
+   If for some reason your project directory is not set up properly, you can do this manually. 
    copy target/jwt-edge-callout.jar to your apiproxy/resources/java directory. 
    Also copy from the target/lib directory, these jars:  
      json-smart-1.3.jar
      nimbus-jose-jwt-3.1.2.jar
      guava-18.0.jar
-     jcip-annotations-1.0.jar
 
 4. be sure to include a Java callout policy in your
    apiproxy/resources/policies directory. It should look like
