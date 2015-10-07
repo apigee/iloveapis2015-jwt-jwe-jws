@@ -15,7 +15,10 @@ To allow the maven builds to succeed, you need to run the buildsetup.sh script o
 
 Do this like so: 
 
- ```./buildsetup.sh```
+```
+  ./buildsetup.sh
+```
 
+## Building the JARs
 
-
+build the jars with maven in each of the callout source directories. 

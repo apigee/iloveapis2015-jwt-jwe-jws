@@ -12,9 +12,10 @@ These instructions describe how to do either.
 
 1. unpack (if you can read this, you've already done that).
 
-2. build the binary  
-  without maven:  edit ./build.sh and then run it.   
-  with maven:     mvn clean package
+2. build the binary with maven:  
+   ```
+   mvn clean package
+   ```
 
 3. if using the build.sh script, 
    copy out/jwt-edge-callout.jar to your apiproxy/resources/java directory
