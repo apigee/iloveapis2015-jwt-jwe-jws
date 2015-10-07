@@ -144,7 +144,7 @@ generated.
 
 **Generate a JWT using RS256**
 
-Specify the private RSA key inside the policy configuration, like this:
+To generate a key signed with RS256, you can specify the private RSA key inside the policy configuration, like this:
 
 ```xml
   <JavaCallout name='JavaCallout-JWT-Create-RS256-2' >
@@ -227,7 +227,7 @@ directory.
 **Generating a JWT with custom claims**
 
 If you wish to embed other claims into the JWT, you can do so by using
-the <Properties> elements, like this: 
+the Properties elements, like this: 
 
 ```xml
   <JavaCallout name='JavaCallout-JWT-Create'>
@@ -452,7 +452,7 @@ You can also specify a serialized X509 certificate which contains the public key
   </JavaCallout>
 ```
 
-This particular example verifies the issuer is a given URL from windows.net.  This is what Azure Active Directory uses when generating JWT. (This URL is unique to the Active Directory instance, so it is not re-usable for your own AAD-generated tokens.) 
+This particular example verifies the issuer is a given URL from windows.net.  This is what Azure Active Directory uses when generating JWT. (This URL is unique to the Active Directory instance, so it is not re-usable when verifying your own AAD-generated tokens.) 
 
 If you specify both the public-key and the certificate in the configuration, the public-key will be used and the certificate will be ignored. 
 The serialized version of the certificate can include line-breaks and spaces.
