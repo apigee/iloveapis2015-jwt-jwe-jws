@@ -134,11 +134,12 @@ It uses HMAC-SHA256 for signing.
 The values for the properties can be specified as string values, or
 as variables to de-reference, when placed inside curly braces.
 
-It emits the underscore-separated JWT into the variable named
+It emits the dot-separated JWT into the variable named
     jwt_jwt
 
-There is no way to set the "issued at" (iat) time.  The iat time automatically 
-gets the value accurately indicating when the JWT is generated.
+There is no way to explicitly set the "issued at" (iat) time.  The iat
+time automatically gets the value accurately indicating when the JWT is
+generated.
 
 
 **Generate a JWT using RS256**
