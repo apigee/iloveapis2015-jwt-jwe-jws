@@ -4,9 +4,9 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.apigee</groupId>
-  <artifactId>jwt-signed-edge-callout</artifactId>
+  <artifactId>jwe-edge-callout</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>JwtSignedEdgeCallout</name>
+  <name>JweEdgeCallout</name>
   <url>http://maven.apache.org</url>
   <packaging>jar</packaging>
   <properties>
@@ -80,24 +80,12 @@ these commands:
 
 
     <!-- the following jars must be uploaded to Edge along with this Package -->
-    <dependency>
-      <groupId>net.minidev</groupId>
-      <artifactId>json-smart</artifactId>
-      <version>1.3</version>
-    </dependency>
 
-    <dependency>
-      <groupId>com.nimbusds</groupId>
-      <artifactId>nimbus-jose-jwt</artifactId>
-      <version>3.1.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>18.0</version>
-    </dependency>
-
+  <dependency>
+    <groupId>org.bitbucket.b_c</groupId>
+    <artifactId>jose4j</artifactId>
+    <version>0.4.4</version>
+  </dependency>
 
   </dependencies>
   <build>
@@ -159,9 +147,11 @@ these commands:
                   <fileset dir="${project.build.directory}">
                     <include name="${project.artifactId}.jar"/>
                     <!-- the following are the required dependencies -->
-                    <include name="lib/guava-18.0.jar"/>
+                    <include name="lib/jose4j-0.4.4.jar"/>
+                    <!--
                     <include name="lib/json-smart-1.3.jar"/>
                     <include name="lib/nimbus-jose-jwt-3.1.2.jar"/>
+                    -->
                   </fileset>
                   <mapper type="flatten"/>
                 </copy>

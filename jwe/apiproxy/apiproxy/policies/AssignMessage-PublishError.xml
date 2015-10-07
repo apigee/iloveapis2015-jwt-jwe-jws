@@ -1,0 +1,16 @@
+<AssignMessage name='AssignMessage-PublishError'>
+  <DisplayName>AssignMessage-PublishError</DisplayName>
+  <Description></Description>
+  <!-- <AssignTo createNew='false' transport='http' type='request'></AssignTo> -->
+  <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+  <Set>
+    <Payload contentType='application/json'
+             variablePrefix='%' variableSuffix='#'><![CDATA[{
+  "error" : "jwe_error",
+  "message" : "%jwe_reason#"
+}
+]]></Payload>
+    <StatusCode>500</StatusCode>
+    <ReasonPhrase>Server Error</ReasonPhrase>
+  </Set>
+</AssignMessage>

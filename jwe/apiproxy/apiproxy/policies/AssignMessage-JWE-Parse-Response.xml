@@ -1,0 +1,34 @@
+<AssignMessage name='AssignMessage-JWT-Parse-Response'>
+  <DisplayName>AssignMessage JWT Parse Response</DisplayName>
+  <Description>respond with information about the parsed JWT</Description>
+  <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+  <Remove>
+    <Headers>
+      <!-- in this proxy, there is no target, therefore request headers
+           get copied into the response. These make no sense in a
+           response, so let's remove them. -->
+
+      <Header name='Accept'/>
+      <Header name='X-Forwarded-For'/>
+      <Header name='X-Forwarded-Port'/>
+      <Header name='X-Forwarded-Proto'/>
+      <Header name='User-Agent'/>
+    </Headers>
+  </Remove>
+  <Set>
+    <Payload contentType='application/json'
+             variablePrefix='%' variableSuffix='#'><![CDATA[{
+   "jwt" : "%jwt_jwt#",
+   "header" : %jwt_jwtheader#,
+   "claims" : %jwt_claims#,
+   "secondsRemaining" : "%jwt_secondsRemaining#",
+   "timeRemainingFormatted" : "%jwt_timeRemainingFormatted#",
+   "isExpired" : "%jwt_isExpired#",
+   "isValid" : "%jwt_isValid#",
+   "message" : "%jwt_reason#"
+ }
+ ]]></Payload>
+    <StatusCode>200</StatusCode>
+    <ReasonPhrase>OK</ReasonPhrase>
+  </Set>
+</AssignMessage>

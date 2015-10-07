@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<APIProxy revision="9" name="jwe">
+    <ConfigurationVersion minorVersion="0" majorVersion="4"/>
+    <CreatedAt>1408643295583</CreatedAt>
+    <CreatedBy>DChiesa@apigee.com</CreatedBy>
+    <DisplayName>jwe</DisplayName>
+    <LastModifiedAt>1444192447942</LastModifiedAt>
+    <LastModifiedBy>DChiesa@apigee.com</LastModifiedBy>
+    <Policies/>
+    <ProxyEndpoints>
+        <ProxyEndpoint>default</ProxyEndpoint>
+    </ProxyEndpoints>
+    <Resources/>
+    <TargetServers/>
+    <TargetEndpoints/>
+</APIProxy>

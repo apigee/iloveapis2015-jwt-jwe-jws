@@ -1,0 +1,10 @@
+<JavaCallout name='JavaCallout-JWE-Decrypt-A128CBC-HS256' >
+  <Properties>
+    <Property name="algorithm">A128CBC-HS256</Property>
+    <Property name='secret-key'>{request.formparam.key}</Property>
+    <Property name='jwe'>{request.formparam.jwe}</Property>
+  </Properties>
+
+  <ClassName>com.apigee.callout.jwe.JweDecryptorCallout</ClassName>
+  <ResourceURL>java://jwe-edge-callout.jar</ResourceURL>
+</JavaCallout>

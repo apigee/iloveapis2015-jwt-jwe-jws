@@ -1,0 +1,59 @@
+<ProxyEndpoint name="default">
+  <HTTPProxyConnection>
+    <BasePath>/jwe</BasePath>
+    <VirtualHost>default</VirtualHost>
+    <VirtualHost>secure</VirtualHost>
+  </HTTPProxyConnection>
+
+  <FaultRules>
+    <FaultRule name='rule1'>
+      <Condition>jwe_error != null</Condition>
+      <Step>
+        <Name>AssignMessage-PublishError</Name>
+      </Step>
+    </FaultRule>
+  </FaultRules>
+
+  <PreFlow name="PreFlow">
+    <Request>
+    </Request>
+  </PreFlow>
+
+  <PostFlow name="PostFlow"/>
+  <Flows>
+
+    <Flow name="create jwe HS256">
+      <Condition>(proxy.pathsuffix ~~ "/create-(HS|hs)256$") and (request.verb = "POST")</Condition>
+      <Description>Create a JWE with alg=HS256</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWE-Encrypt-A128CBC-HS256</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWE-Encrypt-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="decrypt jwe HS256">
+      <Condition>(proxy.pathsuffix ~~ "/decrypt-(HS|hs)256$") and (request.verb = "POST")</Condition>
+      <Description>Decrypt a JWE with alg=HS256</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWE-Decrypt-A128CBC-HS256</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWE-Decrypt-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name='unknown request'>
+      <Request>
+        <Step><Name>RaiseFault-UnknownRequest</Name></Step>
+      </Request>
+      <Response/>
+    </Flow>
+
+  </Flows>
+
+  <!-- catch all route -->
+  <RouteRule name="no-route"/>
+
+</ProxyEndpoint>
