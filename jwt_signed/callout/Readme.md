@@ -4,7 +4,7 @@ This directory contains the Java source code and Java jars required to
 compile a Java callout for Apigee Edge that does generation and
 parsing / validation of signed JWT. It uses the Nimbus library for JOSE. 
 
-Usage:
+Building:
 --------
 
 You can use the Java callout binary, or you can build the binary yourself. 
@@ -63,11 +63,13 @@ All these jars must be available on the classpath for the compile to
 succeed. The build.sh script should download all of these files for
 you, automatically.
 
-**Manual Download of Depencencies**
+**Manual Download of Depencencies?**
 
-If you want to download them manually: 
+Maven will download all of these dependencies for you. If you wish to download them manually: 
 
-The first 5 jars are available in Apigee Edge. The first two are
+The first 5 jars are available in Apigee Edge. 
+
+The first two are
 produced by Apigee; contact Apigee support to obtain these jars to allow
 the compile, or get them here: 
 https://github.com/apigee/api-platform-samples/tree/master/doc-samples/java-cookbook/lib
@@ -91,7 +93,7 @@ v18.0 of Google Guava
     http://central.maven.org/maven2/com/google/guava/guava/18.0/guava-18.0.jar
 
 
-Notes:
+Configuring the Callout Policy:
 --------
 
 There are two callout classes, one to generate a JWT and one to validate
