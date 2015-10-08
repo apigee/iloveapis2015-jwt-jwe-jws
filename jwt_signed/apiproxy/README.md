@@ -56,7 +56,7 @@ Response:
 ```json
 {
   "jwt" : "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0MzI3NDg1MzYsInN1YiI6ImNvc3Rjby1qd3QtdGVzdDEiLCJpc3MiOiJodHRwOlwvXC9kaW5vY2hpZXNhLm5ldCIsImlhdCI6MTQzMjY2MjEzNn0.SLwvrIdA-kAFvScG1JJGYuOsVU-N-n7NLL9FUOEQDig",
-  "claims" : "{"exp":1432748536,"sub":"costco-jwt-test1","iss":"http:\/\/dinochiesa.net","iat":1432662136}",
+  "claims" : {"exp":1432748536,"sub":"costco-jwt-test1","iss":"http:\/\/dinochiesa.net","iat":1432662136},
   "secondsRemaining" : "84976",
   "timeRemainingFormatted" : "23:36:16.091",
   "isExpired" : "false"
@@ -386,7 +386,7 @@ The response of this example apiproxy is like this:
 ```json
 {
    "jwt" : "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE0MzI5MTMyNTQsInN1YiI6ImphdmEtand0MSIsImF1ZCI6Ik9wdGlvbmFsLVN0cmluZy1vci1VUkkiLCJpc3MiOiJodHRwOlwvXC9kaW5vY2hpZXNhLm5ldCIsImlhdCI6MTQzMjgyNjg1NH0.ZQuiqomtBFY7YcW4sBAgyyLsNlyJIMgbZuP6KbY4BwvaULldrgxQ1eq2ciqJT7sIaEdsCZL-KA3dpj0SDwLV6X0Awxu6wpMIpF2_zZSazUbQSxwVL2-3TEAH_RUxLhR5ghSWFzEi3NcOyhvYxOMUv2FM8zD6PAhFFzKlkw3EsEhHIGoNUS2s_pgqMzfmQhG-vugCB2AN5lLXAFCLZTrP_pfNxIsuP3r2J7NR__CAFZx9HOrl9gGkmHYfTpD-P6XPN7AhOvFzTQKuMnzIsRrhZ2PwiIPakpoWL8hbgyN1gour1J0ZVFNLsL3g58xLbFdKYOtPqOY8ga18Ic9zAbhZTQ",
-   "claims" : "{"exp":1432913254,"sub":"java-jwt1","aud":"Optional-String-or-URI","iss":"http:\/\/dinochiesa.net","iat":1432826854}",
+   "claims" : {"exp":1432913254,"sub":"java-jwt1","aud":"Optional-String-or-URI","iss":"http:\/\/dinochiesa.net","iat":1432826854},
    "secondsRemaining" : "80855",
    "timeRemainingFormatted" : "22:27:35.831",
    "isExpired" : "false"
