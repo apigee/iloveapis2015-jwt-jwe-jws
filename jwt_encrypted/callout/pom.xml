@@ -1,0 +1,182 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.apigee</groupId>
+  <artifactId>jwt-encrypted-edge-callout</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <name>JwtSignedEdgeCallout</name>
+  <url>http://maven.apache.org</url>
+  <packaging>jar</packaging>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <java.version>1.7</java.version>
+    <apiproxy.java.rsrc.dir>../apiproxy/resources/java</apiproxy.java.rsrc.dir>
+  </properties>
+
+  <dependencies>
+
+    <!-- the following are included in Apigee Edge -->
+    <dependency>
+        <groupId>commons-lang</groupId>
+        <artifactId>commons-lang</artifactId>
+        <version>2.6</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.7</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>ca.juliusdavies</groupId>
+      <artifactId>not-yet-commons-ssl</artifactId>
+      <version>0.3.9</version>
+      <scope>compile</scope>
+    </dependency>
+
+<!--
+
+The following 2 jar dependencies from Apigee are not avaiable in any
+public repo.
+
+You can install them in your machine-local repo (The .m2 cache) via
+these commands:
+
+ mvn install:install-file \
+  -Dfile=/Path/To/expressions-1.0.0.jar \
+  -DgroupId=com.apigee.edge \
+  -DartifactId=expressions \
+  -Dversion=1.0.0 \
+  -Dpackaging=jar \
+  -DgeneratePom=true
+
+ mvn install:install-file \
+  -Dfile=/Path/To/message-flow-1.0.0.jar \
+  -DgroupId=com.apigee.edge \
+  -DartifactId=message-flow \
+  -Dversion=1.0.0 \
+  -Dpackaging=jar \
+  -DgeneratePom=true
+-->
+
+    <dependency>
+      <groupId>com.apigee.edge</groupId>
+      <artifactId>message-flow</artifactId>
+      <version>1.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.apigee.edge</groupId>
+      <artifactId>expressions</artifactId>
+      <version>1.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+
+
+    <!-- the following jars must be uploaded to Edge along with this Package -->
+
+  <dependency>
+    <groupId>org.bitbucket.b_c</groupId>
+    <artifactId>jose4j</artifactId>
+    <version>0.4.4</version>
+  </dependency>
+
+  </dependencies>
+  <build>
+    <finalName>${project.artifactId}</finalName>
+
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>**/Icon*</exclude>
+          <exclude>**/readme.txt</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-dependencies</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <overWriteReleases>false</overWriteReleases>
+              <overWriteSnapshots>false</overWriteSnapshots>
+              <overWriteIfNewer>true</overWriteIfNewer>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration />
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+                <copy todir="${apiproxy.java.rsrc.dir}">
+                  <fileset dir="${project.build.directory}">
+                    <include name="${project.artifactId}.jar"/>
+                    <!-- the following are the required dependencies -->
+                    <include name="lib/jose4j-0.4.4.jar"/>
+                    <!--
+                    <include name="lib/json-smart-1.3.jar"/>
+                    <include name="lib/nimbus-jose-jwt-3.1.2.jar"/>
+                    -->
+                  </fileset>
+                  <mapper type="flatten"/>
+                </copy>
+                <!--
+                <copy file="${project.build.directory}/lib/nimbus-jose-jwt-3.1.2.jar"
+                      todir="${apiproxy.java.rsrc.dir}" />
+                -->
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<JavaCallout async="false" continueOnError="false" enabled="true" name="JWT_Encrypted_Validator_Callout">
+    <DisplayName>JWT_Encrypted_Validator_Callout</DisplayName>
+    <Properties>
+        <Property name="stepname">JavaCallout-JWE-Validate</Property>
+        <Property name="jwt">{request.formparam.jwt}</Property>
+        <!-- private-key and private-key-password used only for algorithm = RS256 -->
+        <Property name="private-key-password">deecee123</Property>
+    </Properties>
+    <ClassName>com.apigee.callout.jwt_encrypted.JWT_Encrypted_Validator_Callout</ClassName>
+    <ResourceURL>java://jwt-encrypted-edge-callout.jar</ResourceURL>
+</JavaCallout>

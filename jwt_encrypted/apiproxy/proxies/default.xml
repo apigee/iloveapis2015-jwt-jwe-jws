@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ProxyEndpoint name="default">
+    <Description/>
+    <FaultRules/>
+    <PreFlow name="PreFlow">
+        <Request>
+            <Step>
+                <Name>Verify-API-Key-1</Name>
+            </Step>
+        </Request>
+        <Response/>
+    </PreFlow>
+    <Flows>
+        <Flow name="validate">
+            <Description/>
+            <Request/>
+            <Response>
+                <Step>
+                    <Name>JWT_Encrypted_Validator_Callout</Name>
+                </Step>
+                <Step>
+                    <Name>JS_Extract_Claims</Name>
+                </Step>
+                <Step>
+                    <Name>raiseJavaCalloutError</Name>
+                    <Condition>javaCalloutError != null</Condition>
+                </Step>
+                <Step>
+                    <Name>raiseTokenError</Name>
+                    <!-- We can check and mandate our custom claims and raise error if missing or not as expected -->
+                    <!-- <Condition>(issuer != client_id) or (dealerId = null) or (jti = null) or (active != true)</Condition> -->
+
+                    <!-- Validate if the apikey of the request matches with that of the JWT -->
+                    <Condition>(issuer != client_id)</Condition>
+                </Step>
+                <Step>
+                    <Name>Assign-JWT-Encrypted-Validate-Response</Name>
+                </Step>
+            </Response>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/validate&quot;) and (request.verb = &quot;POST&quot;)</Condition>
+        </Flow>
+        <Flow name="create">
+            <Description/>
+            <Request/>
+            <Response>
+                <Step>
+                    <Name>JWT_Encrypted_Creator_Callout</Name>
+                </Step>
+                <Step>
+                    <Name>Assign-JWT-Encrypted-Create-Response</Name>
+                </Step>
+            </Response>
+            <Condition>(proxy.pathsuffix MatchesPath &quot;/create&quot;) and (request.verb = &quot;POST&quot;)</Condition>
+        </Flow>
+    </Flows>
+    <PostFlow name="PostFlow">
+        <Request/>
+        <Response/>
+    </PostFlow>
+    <HTTPProxyConnection>
+        <BasePath>/jwt_encrypted</BasePath>
+        <Properties/>
+        <VirtualHost>default</VirtualHost>
+    </HTTPProxyConnection>
+    <RouteRule name="nodeJsTarget">
+        <TargetEndpoint>default</TargetEndpoint>
+        <Condition>(proxy.pathsuffix MatchesPath &quot;/validate&quot;) and (request.verb = &quot;POST&quot;)</Condition>
+    </RouteRule>
+    <RouteRule name="noTarget">
+    </RouteRule>
+</ProxyEndpoint>

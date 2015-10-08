@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<TargetEndpoint name="nodeTarget">
+    <Description></Description>
+    <FaultRules/>
+    <Flows/>
+    <ScriptTarget>
+        <Arguments/>
+        <EnvironmentVariables/>
+        <ResourceURL>node://apigeeVaultOperations.js</ResourceURL>
+        <Properties/>
+    </ScriptTarget>
+</TargetEndpoint>

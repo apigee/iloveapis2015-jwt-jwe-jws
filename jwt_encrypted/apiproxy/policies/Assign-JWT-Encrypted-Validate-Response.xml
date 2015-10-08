@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AssignMessage async="false" continueOnError="false" enabled="true" name="Assign-JWT-Encrypted-Validate-Response">
+    <DisplayName>Assign-JWT-Encrypted-Validate-Response</DisplayName>
+    <FaultRules/>
+    <Set>
+    	<Payload contentType="application/json" variablePrefix="%" variableSuffix="#">{"jwt":"%request.formparam.jwt#","claims":%jwt_JavaCallout-JWE-Validate_receivedClaimsJSON#,"isExpired" : "false"}</Payload>
+    </Set>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+    <AssignTo createNew="false" transport="http" type="request"/>
+</AssignMessage>
