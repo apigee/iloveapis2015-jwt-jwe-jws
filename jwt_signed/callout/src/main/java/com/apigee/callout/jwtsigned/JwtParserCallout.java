@@ -188,18 +188,18 @@ public class JwtParserCallout implements Execution {
             // This is an X509 cert;
             // Strip the prefix and suffix.
             s = s.substring(27, s.length() - 25);
-
-            s = s.replaceAll("[\\r|\\n| ]","");
-            // base64-decode it, and  produce a public key from the result
-            byte[] certBytes = Base64.decodeBase64(s);
-            ByteArrayInputStream is = new ByteArrayInputStream(certBytes);
-            CertificateFactory fact = CertificateFactory.getInstance("X.509");
-            X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
-            PublicKey key = cer.getPublicKey();
-            return key;
         }
+        // else, assume it is a bare base-64 encoded string
 
-        return null;
+        s = s.replaceAll("[\\r|\\n| ]","");
+        // base64-decode it, and  produce a public key from the result
+        byte[] certBytes = Base64.decodeBase64(s);
+        ByteArrayInputStream is = new ByteArrayInputStream(certBytes);
+        CertificateFactory fact = CertificateFactory.getInstance("X.509");
+        X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
+        PublicKey key = cer.getPublicKey();
+        return key;
+
     }
 
 
@@ -333,6 +333,8 @@ public class JwtParserCallout implements Execution {
             String jwt = getJwt(msgCtxt); // a dot-separated JWT
             SignedJWT signedJWT = SignedJWT.parse(jwt);
             ReadOnlyJWTClaimsSet claims = null;
+            varName = varPrefix + "_isSigned";
+            msgCtxt.setVariable(varName, true+"");
 
             // diagnostics: emit the jwt and header
             varName = varPrefix + "_jwt";
@@ -365,8 +367,6 @@ public class JwtParserCallout implements Execution {
                 return ExecutionResult.ABORT;
             }
             varName = varPrefix + "_verified";
-            msgCtxt.setVariable(varName, true+"");
-            varName = varPrefix + "_isSigned";
             msgCtxt.setVariable(varName, true+"");
 
             // 5. Retrieve and parse the JWT claims
