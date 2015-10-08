@@ -23,6 +23,8 @@
    "claims" : %jwt_claims#,
    "secondsRemaining" : "%jwt_secondsRemaining#",
    "timeRemainingFormatted" : "%jwt_timeRemainingFormatted#",
+   "signed" : "%jwt_isSigned#",
+   "verified" : "%jwt_verified#",
    "isExpired" : "%jwt_isExpired#",
    "isValid" : "%jwt_isValid#",
    "message" : "%jwt_reason#"

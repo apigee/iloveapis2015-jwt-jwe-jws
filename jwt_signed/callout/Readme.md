@@ -19,7 +19,7 @@ These instructions describe how to do either.
 
 3. maven will copy all the required jar files to your apiproxy/resources/java directory. 
    If for some reason your project directory is not set up properly, you can do this manually. 
-   copy target/jwt-edge-callout.jar to your apiproxy/resources/java directory. 
+   copy target/jwt-signed-edge-callout.jar to your apiproxy/resources/java directory. 
    Also copy from the target/lib directory, these jars:  
      json-smart-1.3.jar
      nimbus-jose-jwt-3.1.2.jar
@@ -34,7 +34,7 @@ These instructions describe how to do either.
       <DisplayName>Java JWT Creator</DisplayName>
       <Properties>...</Properties>
       <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-      <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+      <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
     </JavaCallout>
    ```
 
@@ -117,7 +117,7 @@ form of properties on the policy.  Some examples follow.
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -181,7 +181,7 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -214,7 +214,7 @@ You can also specify the PEM as a named file resource that is bundled in the jar
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -253,7 +253,7 @@ the Properties elements, like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -276,7 +276,7 @@ For parsing and verifying a JWT, you need to specify a different Java class. Con
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -336,7 +336,7 @@ To parse and verify a RS256 JWT, then you need to use a configuration like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -382,7 +382,7 @@ Do this by specifying Property elements with name attributes that begin with cla
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -419,7 +419,7 @@ To do this, you need to recompile the jar with your desired pemfile contained wi
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -448,7 +448,7 @@ You can also specify a serialized X509 certificate which contains the public key
     </Properties>
 
     <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
 ```
 
