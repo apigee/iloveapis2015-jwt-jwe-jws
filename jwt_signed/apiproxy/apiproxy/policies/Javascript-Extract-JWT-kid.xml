@@ -1,6 +1,0 @@
-<Javascript name='Javascript-Extract-JWT-kid' timeLimit='200' >
-  <Properties>
-    <Property name='jwtvar'>request.formparam.jwt</Property>
-  </Properties>
-  <ResourceURL>jsc://extractJwtKid.js</ResourceURL>
-</Javascript>

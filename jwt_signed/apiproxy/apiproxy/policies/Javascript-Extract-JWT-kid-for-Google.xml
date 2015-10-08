@@ -1,0 +1,7 @@
+<Javascript name='Javascript-Extract-JWT-kid-for-Google' timeLimit='200' >
+  <Properties>
+    <Property name='jwtvar'>request.formparam.jwt</Property>
+  </Properties>
+  <IncludeURL>jsc://jwtDecode.js</IncludeURL>
+  <ResourceURL>jsc://extractJwtKidForGoogle.js</ResourceURL>
+</Javascript>

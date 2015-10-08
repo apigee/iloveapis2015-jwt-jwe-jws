@@ -1,0 +1,15 @@
+<JavaCallout name='JavaCallout-JWT-Parse-HS256-paypal'>
+  <Properties>
+    <Property name="algorithm">HS256</Property>
+    <Property name="jwt">{request.formparam.jwt}</Property>
+    <Property name='secret-key'>unknown</Property>
+
+    <!-- verify these claims -->
+    <Property name="claim_aud">ARf8hWuCnCFlKoJeL4R-tg66akK8aPwCtLio_1Opp9ee6teivQRhW9XMr6hWomxQ9rEY6uBDjMb_yFFm</Property>
+    <Property name="claim_iss">https://www.paypal.com</Property>
+
+  </Properties>
+
+  <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
+  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+</JavaCallout>

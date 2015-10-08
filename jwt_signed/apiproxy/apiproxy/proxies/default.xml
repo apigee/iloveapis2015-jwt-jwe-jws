@@ -135,11 +135,35 @@
         <Step><Name>Javascript-ExtractGoogleCerts</Name></Step>
 
         <!-- this step determines which cert to use during the verification -->
-        <Step><Name>Javascript-Extract-JWT-kid</Name></Step>
+        <Step><Name>Javascript-Extract-JWT-kid-for-Google</Name></Step>
 
-        <Step><Name>JavaCallout-JWT-Parse-and-Verify-RS256-goog</Name></Step>
+        <Step><Name>JavaCallout-JWT-Parse-Verify-RS256-goog</Name></Step>
       </Request>
       <Response>
+        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="parse + validate alg=HS256-paypal">
+      <Condition>(proxy.pathsuffix ~~ "/validate-paypal") and (request.verb = "POST")</Condition>
+      <Description>Parse / Verify a JWT created by Paypal</Description>
+      <Request>
+        <Step><Name>JavaCallout-JWT-Parse-HS256-paypal</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="parse + validate alg=RS256-salesforce">
+      <Condition>(proxy.pathsuffix ~~ "/validate-sf$") and (request.verb = "POST")</Condition>
+      <Description>Parse / Verify a JWT created by Salesforce</Description>
+      <Request>
+        <!-- TODO: retrieve SF keys, convert to PEM and apply to verification. -->
+        <!-- TODO: and cache them, too. -->
+      </Request>
+      <Response>
+        <Step><Name>JavaCallout-JWT-Parse-Verify-RS256-salesforce</Name></Step>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
