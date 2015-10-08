@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<JavaCallout async="false" continueOnError="false" enabled="true" name="JWT_Encrypted_Creator_Callout">
+    <DisplayName>JWT_Encrypted_Creator_Callout</DisplayName>
+    <Properties>
+  <Property name="stepname">JavaCallout-JWE-Create</Property>
+  <Property name="expirationInMinutes">60</Property>
+  <Property name="issuer">{client_id}</Property>
+
+      <!-- public-key used only for algorithm = RS256 -->
+    <Property name="public-key">
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtxlohiBDbI/jejs5WLKe
+    Vpb4SCNM9puY+poGkgMkurPRAUROvjCUYm2g9vXiFQl+ZKfZ2BolfnEYIXXVJjUm
+    zzaX9lBnYK/v9GQz1i2zrxOnSRfhhYEb7F8tvvKWMChK3tArrOXUDdOp2YUZBY2b
+    sl1iBDkc5ul/UgtjhHntA0r2FcUE4kEj2lwU1di9EzJv7sdE/YKPrPtFoNoxmthI
+    OvvEC45QxfNJ6OwpqgSOyKFwE230x8UPKmgGDQmED3PNrio3PlcM0XONDtgBewL0
+    3+OgERo/6JcZbs4CtORrpPxpJd6kvBiDgG07pUxMNKC2EbQGxkXer4bvlyqLiVzt
+    bwIDAQAB
+    -----END PUBLIC KEY-----
+    </Property>
+  </Properties>
+    <ClassName>com.apigee.callout.jwt_encrypted.JWT_Encrypted_Creator_Callout</ClassName>
+    <ResourceURL>java://jwt-encrypted-edge-callout.jar</ResourceURL>
+</JavaCallout>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<RaiseFault async="false" continueOnError="false" enabled="true" name="raiseTokenError">
+    <DisplayName>raiseTokenError</DisplayName>
+    <FaultRules/>
+    <Properties/>
+    <FaultResponse>
+        <Set>
+            <StatusCode>400</StatusCode>
+            <ReasonPhrase>Application Error</ReasonPhrase>
+            <!-- <Payload contentType='application/json' variablePrefix='%' variableSuffix='#'>{"error" : "%javaCalloutError#"}</Payload> -->
+            <Payload contentType='application/json' variablePrefix='%' variableSuffix='#'>{"APPLICATION ERROR" : "The token does not meet the required criteria"}</Payload>
+        </Set>
+    </FaultResponse>
+    <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
+</RaiseFault>
