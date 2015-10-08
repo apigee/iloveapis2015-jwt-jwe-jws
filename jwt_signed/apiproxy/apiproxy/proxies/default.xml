@@ -112,9 +112,32 @@
 
     <Flow name="parse + validate alg=RS256-ms">
       <Condition>(proxy.pathsuffix ~~ "/validate-ms$") and (request.verb = "POST")</Condition>
-      <Description>Parse a JWT created by Azure Active Directory</Description>
+      <Description>Parse / Verify a JWT created by Azure Active Directory</Description>
       <Request>
+        <!-- TODO: cache the cert retrieved from login.microsoftonline.com -->
+        <Step><Name>ServiceCallout-MicrosoftCert</Name></Step>
+        <Step><Name>Javascript-RemoveXmlDeclaration</Name></Step>
+        <Step><Name>Extract-MsCert</Name></Step>
+
         <Step><Name>JavaCallout-JWT-Parse-RS256-ms</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+      </Response>
+    </Flow>
+
+    <Flow name="parse + validate alg=RS256-goog">
+      <Condition>(proxy.pathsuffix ~~ "/validate-goog$") and (request.verb = "POST")</Condition>
+      <Description>Parse / Verify a JWT created by Google</Description>
+      <Request>
+        <!-- TODO: cache these certs! -->
+        <Step><Name>ServiceCallout-GoogleCerts</Name></Step>
+        <Step><Name>Javascript-ExtractGoogleCerts</Name></Step>
+
+        <!-- this step determines which cert to use during the verification -->
+        <Step><Name>Javascript-Extract-JWT-kid</Name></Step>
+
+        <Step><Name>JavaCallout-JWT-Parse-and-Verify-RS256-goog</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>

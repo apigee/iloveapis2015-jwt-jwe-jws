@@ -1,0 +1,14 @@
+<ServiceCallout name='ServiceCallout-GoogleCerts'>
+  <Request>
+    <Set>
+      <Verb>GET</Verb>
+    </Set>
+  </Request>
+  <Response>googCerts</Response>
+  <HTTPTargetConnection>
+    <Properties>
+      <Property name='success.codes'>2xx</Property>
+    </Properties>
+    <URL>https://www.googleapis.com/oauth2/v1/certs</URL>
+  </HTTPTargetConnection>
+</ServiceCallout>

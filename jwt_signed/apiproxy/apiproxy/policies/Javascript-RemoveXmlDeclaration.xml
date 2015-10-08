@@ -1,0 +1,6 @@
+<Javascript name='Javascript-RemoveXmlDeclaration' timeLimit='200' >
+  <Properties>
+    <Property name='xmldoc'>msCert.content</Property>
+  </Properties>
+  <ResourceURL>jsc://removeXmlDeclaration.js</ResourceURL>
+</Javascript>

@@ -1,0 +1,3 @@
+<Javascript name='Javascript-ExtractGoogleCerts' timeLimit='200' >
+  <ResourceURL>jsc://extractGoogleCerts.js</ResourceURL>
+</Javascript>

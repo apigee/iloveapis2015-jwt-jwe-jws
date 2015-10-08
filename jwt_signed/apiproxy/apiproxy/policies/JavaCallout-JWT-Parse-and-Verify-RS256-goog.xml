@@ -1,0 +1,15 @@
+<JavaCallout name='JavaCallout-JWT-Parse-and-Verify-RS256-goog'>
+  <DisplayName>JavaCallout-JWT-Parse-and-Verify-RS256-goog</DisplayName>
+  <Properties>
+    <Property name="algorithm">RS256</Property>
+    <Property name="jwt">{request.formparam.jwt}</Property>
+    <Property name="certificate">{jwt_certificate}</Property>
+
+    <!-- claims to verify -->
+    <Property name="claim_iss">accounts.google.com</Property>
+
+  </Properties>
+
+  <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
+  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+</JavaCallout>
