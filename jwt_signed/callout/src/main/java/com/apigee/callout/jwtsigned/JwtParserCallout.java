@@ -166,9 +166,7 @@ public class JwtParserCallout implements Execution {
             // figure PKCS#8
             s = s.substring(26, s.length() - 24);
         }
-        else {
-            return null;
-        }
+        // else, try parsing it as a "bare" base64 encoded PEM string
 
         s = s.replaceAll("[\\r|\\n| ]","");
         byte[] keyBytes = Base64.decodeBase64(s);
@@ -360,14 +358,19 @@ public class JwtParserCallout implements Execution {
 
             // 4. actually verify the signature
             if (!signedJWT.verify(verifier)) {
-                varName = varPrefix + "_error";
-                msgCtxt.setVariable(varName, "Error: JWT signature does not verify");
-                varName = varPrefix + "_reason";
-                msgCtxt.setVariable(varName, "JWT verification failed");
-                return ExecutionResult.ABORT;
+                varName = varPrefix + "_verified";
+                msgCtxt.setVariable(varName, false+"");
+
+                // varName = varPrefix + "_error";
+                // msgCtxt.setVariable(varName, "Error: JWT signature does not verify");
+                // varName = varPrefix + "_reason";
+                // msgCtxt.setVariable(varName, "JWT verification failed");
+                // return ExecutionResult.ABORT;
             }
-            varName = varPrefix + "_verified";
-            msgCtxt.setVariable(varName, true+"");
+            else {
+                varName = varPrefix + "_verified";
+                msgCtxt.setVariable(varName, true+"");
+            }
 
             // 5. Retrieve and parse the JWT claims
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
