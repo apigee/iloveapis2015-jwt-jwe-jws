@@ -29,22 +29,20 @@ import com.nimbusds.jwt.ReadOnlyJWTClaimsSet;
 
 import java.io.InputStream;
 import java.io.IOException;
-import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.PublicKey;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.security.interfaces.RSAPublicKey;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.security.cert.CertificateException;
 
 // Google's Guava collections tools
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import com.google.common.base.Predicate;
+
+import com.apigee.callout.jwtsigned.KeyUtils;
 
 
 @IOIntensive
@@ -130,10 +128,11 @@ public class JwtParserCallout implements Execution {
     }
 
     // If the value of a property value begins and ends with curlies,
-    // eg, {apiproxy.name}, then "resolve" the value by de-referencing
-    // the context variable whose name appears between the curlies.
+    // and has no intervening spaces, eg, {apiproxy.name}, then
+    // "resolve" the value by de-referencing the context variable whose
+    // name appears between the curlies.
     private String resolvePropertyValue(String spec, MessageContext msgCtxt) {
-        if (spec.startsWith("{") && spec.endsWith("}")) {
+        if (spec.startsWith("{") && spec.endsWith("}") && (spec.indexOf(" ") == -1)) {
             String varname = spec.substring(1,spec.length() - 1);
             String value = msgCtxt.getVariable(varname);
             return value;
@@ -151,70 +150,6 @@ public class JwtParserCallout implements Execution {
     }
 
 
-    private static PublicKey publicKeyStringToPublicKey(String s)
-        throws InvalidKeySpecException, NoSuchAlgorithmException {
-        s = s.trim();
-        if (s.startsWith("-----BEGIN RSA PUBLIC KEY-----") &&
-            s.endsWith("-----END RSA PUBLIC KEY-----")) {
-            // figure PKCS#1
-            s = s.substring(30, s.length() - 28);
-            // add the boilerplate to convert to pkcs#8
-            s = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A" + s;
-        }
-        else if (s.startsWith("-----BEGIN PUBLIC KEY-----") &&
-                 s.endsWith("-----END PUBLIC KEY-----")) {
-            // figure PKCS#8
-            s = s.substring(26, s.length() - 24);
-        }
-        // else, try parsing it as a "bare" base64 encoded PEM string
-
-        s = s.replaceAll("[\\r|\\n| ]","");
-        byte[] keyBytes = Base64.decodeBase64(s);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        PublicKey key = keyFactory.generatePublic(spec);
-        return key;
-    }
-
-
-    private static PublicKey certStringToPublicKey(String s)
-        throws InvalidKeySpecException, CertificateException, UnsupportedEncodingException {
-        s = s.trim();
-
-        if (s.startsWith("-----BEGIN CERTIFICATE-----") &&
-            s.endsWith("-----END CERTIFICATE-----")) {
-            // This is an X509 cert;
-            // Strip the prefix and suffix.
-            s = s.substring(27, s.length() - 25);
-        }
-        // else, assume it is a bare base-64 encoded string
-
-        s = s.replaceAll("[\\r|\\n| ]","");
-        // base64-decode it, and  produce a public key from the result
-        byte[] certBytes = Base64.decodeBase64(s);
-        ByteArrayInputStream is = new ByteArrayInputStream(certBytes);
-        CertificateFactory fact = CertificateFactory.getInstance("X.509");
-        X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
-        PublicKey key = cer.getPublicKey();
-        return key;
-
-    }
-
-
-    private PublicKey pemFileStringToPublicKey(String s)
-        throws InvalidKeySpecException,
-               CertificateException,
-               UnsupportedEncodingException,
-               NoSuchAlgorithmException {
-
-        PublicKey key = publicKeyStringToPublicKey(s);
-        if (key==null) {
-            key = certStringToPublicKey(s);
-        }
-        return key; // maybe null
-    }
-
-
     private PublicKey getPublicKey(MessageContext msgCtxt)
         throws IOException,
                NoSuchAlgorithmException,
@@ -223,22 +158,43 @@ public class JwtParserCallout implements Execution {
     {
         String publicKeyString = (String) this.properties.get("public-key");
 
+        // There are various ways to specify the public key.
+
+        // Try "public-key"
         if (publicKeyString !=null) {
             if (publicKeyString.equals("")) {
                 throw new IllegalStateException("public-key must be non-empty");
             }
             publicKeyString = resolvePropertyValue(publicKeyString, msgCtxt);
-            //msgCtxt.setVariable("jwt_publickey", publicKeyString);
+
             if (publicKeyString==null || publicKeyString.equals("")) {
                 throw new IllegalStateException("public-key variable resolves to empty; invalid when algorithm is RS*");
             }
-            PublicKey key = publicKeyStringToPublicKey(publicKeyString);
+            PublicKey key = KeyUtils.publicKeyStringToPublicKey(publicKeyString);
             if (key==null) {
                 throw new InvalidKeySpecException("must be PKCS#1 or PKCS#8");
             }
             return key;
         }
 
+        // Try "modulus" + "exponent"
+        String modulus = (String) this.properties.get("modulus");
+        String exponent = (String) this.properties.get("exponent");
+
+        if ((modulus != null) && (exponent != null)) {
+            modulus = resolvePropertyValue(modulus, msgCtxt);
+            exponent = resolvePropertyValue(exponent, msgCtxt);
+
+            if (modulus==null || modulus.equals("") ||
+                exponent==null || exponent.equals("")) {
+                throw new IllegalStateException("modulus or exponent resolves to empty; invalid when algorithm is RS*");
+            }
+
+            PublicKey key = KeyUtils.pubKeyFromModulusAndExponent(modulus, exponent);
+            return key;
+        }
+
+        // Try certificate
         String certString = (String) this.properties.get("certificate");
         if (certString !=null) {
             if (certString.equals("")) {
@@ -249,7 +205,7 @@ public class JwtParserCallout implements Execution {
             if (certString==null || certString.equals("")) {
                 throw new IllegalStateException("certificate variable resolves to empty; invalid when algorithm is RS*");
             }
-            PublicKey key = certStringToPublicKey(certString);
+            PublicKey key = KeyUtils.certStringToPublicKey(certString);
             if (key==null) {
                 throw new InvalidKeySpecException("invalid certificate format");
             }
@@ -274,12 +230,13 @@ public class JwtParserCallout implements Execution {
         publicKeyString = new String(keyBytes, "UTF-8");
 
         // allow pemfile resolution as Certificate or Public Key
-        PublicKey key = pemFileStringToPublicKey(publicKeyString);
+        PublicKey key = KeyUtils.pemFileStringToPublicKey(publicKeyString);
         if (key==null) {
             throw new InvalidKeySpecException("invalid pemfile format");
         }
         return key;
     }
+
 
     private JWSVerifier generateVerifier(String alg, MessageContext msgCtxt)
         throws IllegalStateException,

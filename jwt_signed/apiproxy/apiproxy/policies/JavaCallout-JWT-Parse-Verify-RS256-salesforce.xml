@@ -9,87 +9,39 @@
     <Property name="public-key">{sf_publickey}</Property>
 -->
 
+    <Property name="modulus">{sf_key_modulus}</Property>
+    <Property name="exponent">{sf_key_exponent}</Property>
 
     <!--
          I did not have success converting the salesforce modulus and
          exponent into a PEM-encoded publickey or cert which could be
-         loaded by the Java callout.
+         loaded by the Java callout, at runtime.
 
-         The cert specified here does not belong to
-         Salesforce.com. Therefore the verification step for
-         salesforce-issued JWT will always fail.
--->
+         This is a static version of the public key .
+    -->
 
 <!--
-    valid MS cert:
-
-    MIIC4jCCAcqgAwIBAgIQQNXrmzhLN4VGlUXDYCRT3zANBgkqhkiG9w0BAQsFADAt
-    MSswKQYDVQQDEyJhY2NvdW50cy5hY2Nlc3Njb250cm9sLndpbmRvd3MubmV0MB4X
-    DTE0MTAyODAwMDAwMFoXDTE2MTAyNzAwMDAwMFowLTErMCkGA1UEAxMiYWNjb3Vu
-    dHMuYWNjZXNzY29udHJvbC53aW5kb3dzLm5ldDCCASIwDQYJKoZIhvcNAQEBBQAD
-    ggEPADCCAQoCggEBALyKs/uPhEf7zVizjfcr/ISGFe9+yUOqwpel38zgutvLHmFD
-    39E2hpPdQhcXn4c4dt1fU5KvkbcDdVbP8+e4TvNpJMy/nEB2V92zCQ/hhBjilwhF
-    1ETe1TMmVjALs0KFvbxW9ZN3EdUVvxFvz/gvG29nQhl4QWKj3x8opr89lmq14Z7T
-    0mzOV8kub+cgsOU/1bsKqrIqN1fMKKFhjKaetctdjYTfGzVQ0AJAzzbtg0/Q1wdY
-    NAnhSDafygEv6kNiquk0r0RyasUUevEXs2LY3vSgKsKseI8ZZlQEMtE9/k/iAG7J
-    NcEbVg53YTurNTrPnXJOU88mf3TToX14HpYsS1ECAwEAATANBgkqhkiG9w0BAQsF
-    AAOCAQEAfolx45w0i8CdAUjjeAaYdhG9+NDHxop0UvNOqlGqYJexqPLuvX8iyUaY
-    xNGzZxFgGI3GpKfmQP2JQWQ1E5JtY/n8iNLOKRMwqkuxSCKJxZJq4Sl/m/Yv7TS1
-    P5LNgAj8QLCypxsWrTAmq2HSpkeSk4JBtsYxX6uhbGM/K1sEktKybVTHu22/7TmR
-    qWTmOUy9wQvMjJb2IXdMGLG3hVntN/WWcs5w8vbt1i8Kk6o19W2MjZ95JaECKjBD
-    YRlhG1KmSBtrsKsCBQoBzwH/rXfksTO9JoUYLXiW0IppB7DhNH4PJ5hZI91R8rR0
-    H3/bKkLSuDaKLWSqMhozdhXsIIKvJQ==
--->
-<!--
-    not working SF cert:
-
-    MIICCgKCAgEA5SGw1jcqyFYEZaf39RoxAhlq+hfRSOsneVtsT2k09yEQhwB2myvf
-    3ckVAwFyBF6y0Hr1psvu1FlPzKQ9YfcQkfge4e7eeQ7uaez9mMQ8RpyAFZprq1iF
-    Cix4XQw+jKW47LAevr9w1ttZY932gFrGJ4gkf/uqutUny82vupVUETpQ6HDmIL95
-    8SxYb/+d436zi5LMlHnTxcR5TWIQGGxip+CrD7vOA3hrssYLhNGQdwVYtwI768Ev
-    wE8h4VJDgIrovoHPH1ofDQk8+oG20eEmZeWugI1K3z33fZJS+E/2p/OiDVr0EmgF
-    MTvPTnQ75h/9vyF1qhzikJpN9P8KcEm8oGu7KJGIn8ggUY0ftqKG2KcWTaKiirFF
-    YQ981PhLHryH18eOIxMpoh9pRXf2y7DfNTyid99ig0GUH+lzAlbKY0EV2sIuvEsI
-    oo6G8YT2uI72xzl7sCcp41FS7oFwbUyHp/uHGiTZgN7g+18nm2TFmQ/wGB1xCwJM
-    FzjIXq1PwEjmg3W5NBuMLSbG+aDwjeNrcD/4vfB6yg548GztQO2MpV/BuxtrZDJQ
-    m+xhJXdm4FfrJzWdwX/JN9qfsP0YU1/mxtSU/m6EKgmwFdE3Yh1WM0+kRRSk3gmN
-    vXpiKeVduzm8I5/Jl7kwLgBw24QUVaLZn8jC2xWRk/jcBNFFLQgOf9UCAwEAAQ==
--->
-<!--
-
-    <Property name="certificate">
-    - - - - - BEGIN CERTIFICATE - - - - -
-    MIIC4jCCAcqgAwIBAgIQQNXrmzhLN4VGlUXDYCRT3zANBgkqhkiG9w0BAQsFADAt
-    MSswKQYDVQQDEyJhY2NvdW50cy5hY2Nlc3Njb250cm9sLndpbmRvd3MubmV0MB4X
-    DTE0MTAyODAwMDAwMFoXDTE2MTAyNzAwMDAwMFowLTErMCkGA1UEAxMiYWNjb3Vu
-    dHMuYWNjZXNzY29udHJvbC53aW5kb3dzLm5ldDCCASIwDQYJKoZIhvcNAQEBBQAD
-    ggEPADCCAQoCggEBALyKs/uPhEf7zVizjfcr/ISGFe9+yUOqwpel38zgutvLHmFD
-    39E2hpPdQhcXn4c4dt1fU5KvkbcDdVbP8+e4TvNpJMy/nEB2V92zCQ/hhBjilwhF
-    1ETe1TMmVjALs0KFvbxW9ZN3EdUVvxFvz/gvG29nQhl4QWKj3x8opr89lmq14Z7T
-    0mzOV8kub+cgsOU/1bsKqrIqN1fMKKFhjKaetctdjYTfGzVQ0AJAzzbtg0/Q1wdY
-    NAnhSDafygEv6kNiquk0r0RyasUUevEXs2LY3vSgKsKseI8ZZlQEMtE9/k/iAG7J
-    NcEbVg53YTurNTrPnXJOU88mf3TToX14HpYsS1ECAwEAATANBgkqhkiG9w0BAQsF
-    AAOCAQEAfolx45w0i8CdAUjjeAaYdhG9+NDHxop0UvNOqlGqYJexqPLuvX8iyUaY
-    xNGzZxFgGI3GpKfmQP2JQWQ1E5JtY/n8iNLOKRMwqkuxSCKJxZJq4Sl/m/Yv7TS1
-    P5LNgAj8QLCypxsWrTAmq2HSpkeSk4JBtsYxX6uhbGM/K1sEktKybVTHu22/7TmR
-    qWTmOUy9wQvMjJb2IXdMGLG3hVntN/WWcs5w8vbt1i8Kk6o19W2MjZ95JaECKjBD
-    YRlhG1KmSBtrsKsCBQoBzwH/rXfksTO9JoUYLXiW0IppB7DhNH4PJ5hZI91R8rR0
-    H3/bKkLSuDaKLWSqMhozdhXsIIKvJQ==
-    - - - - - END CERTIFICATE - - - - -
-    </Property>
--->
-
+      computed from the modulus and exponent of kid 196
 
     <Property name="public-key">
-    -----BEGIN RSA PUBLIC KEY-----
-    MIIBCgKCAQEA+xGZ/wcz9ugFpP07Nspo6U17l0YhFiFpxxU4pTk3Lifz9R3zsIsu
-    ERwta7+fWIfxOo208ett/jhskiVodSEt3QBGh4XBipyWopKwZ93HHaDVZAALi/2A
-    +xTBtWdEo7XGUujKDvC2/aZKukfjpOiUI8AhLAfjmlcD/UZ1QPh0mHsglRNCmpCw
-    mwSXA9VNmhz+PiB+Dml4WWnKW/VHo2ujTXxq7+efMU4H2fny3Se3KYOsFPFGZ1TN
-    QSYlFuShWrHPtiLmUdPoP6CV2mML1tk+l7DIIqXrQhLUKDACeM5roMx0kLhUWB8P
-    +0uj1CNlNN4JRZlC7xFfqiMbFRU9Z4N6YwIDAQAB
-    -----END RSA PUBLIC KEY-----
+
+      - - - - - BEGIN PUBLIC KEY - - - - -
+
+      MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA5SGw1jcqyFYEZaf39Rox
+      Ahlq+hfRSOsneVtsT2k09yEQhwB2myvf3ckVAwFyBF6y0Hr1psvu1FlPzKQ9YfcQ
+      kfge4e7eeQ7uaez9mMQ8RpyAFZprq1iFCix4XQw+jKW47LAevr9w1ttZY932gFrG
+      J4gkf/uqutUny82vupVUETpQ6HDmIL958SxYb/+d436zi5LMlHnTxcR5TWIQGGxi
+      p+CrD7vOA3hrssYLhNGQdwVYtwI768EvwE8h4VJDgIrovoHPH1ofDQk8+oG20eEm
+      ZeWugI1K3z33fZJS+E/2p/OiDVr0EmgFMTvPTnQ75h/9vyF1qhzikJpN9P8KcEm8
+      oGu7KJGIn8ggUY0ftqKG2KcWTaKiirFFYQ981PhLHryH18eOIxMpoh9pRXf2y7Df
+      NTyid99ig0GUH+lzAlbKY0EV2sIuvEsIoo6G8YT2uI72xzl7sCcp41FS7oFwbUyH
+      p/uHGiTZgN7g+18nm2TFmQ/wGB1xCwJMFzjIXq1PwEjmg3W5NBuMLSbG+aDwjeNr
+      cD/4vfB6yg548GztQO2MpV/BuxtrZDJQm+xhJXdm4FfrJzWdwX/JN9qfsP0YU1/m
+      xtSU/m6EKgmwFdE3Yh1WM0+kRRSk3gmNvXpiKeVduzm8I5/Jl7kwLgBw24QUVaLZ
+      n8jC2xWRk/jcBNFFLQgOf9UCAwEAAQ==
+      - - - - - END PUBLIC KEY - - - - -
     </Property>
+-->
 
     <!-- claims to verify -->
     <Property name="claim_iss">https://deecee-apigee-dev-ed.my.salesforce.com</Property>

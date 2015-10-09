@@ -1,0 +1,3 @@
+<Javascript name='Javascript-ExtractSalesforceKeys' timeLimit='200' >
+  <ResourceURL>jsc://extractSalesforceKeys.js</ResourceURL>
+</Javascript>

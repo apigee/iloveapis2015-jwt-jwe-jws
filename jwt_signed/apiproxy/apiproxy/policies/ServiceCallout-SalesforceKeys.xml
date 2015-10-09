@@ -1,0 +1,14 @@
+<ServiceCallout name='ServiceCallout-SalesforceKeys'>
+  <Request>
+    <Set>
+      <Verb>GET</Verb>
+    </Set>
+  </Request>
+  <Response>sfKeys</Response>
+  <HTTPTargetConnection>
+    <Properties>
+      <Property name='success.codes'>2xx</Property>
+    </Properties>
+    <URL>https://login.salesforce.com/id/keys</URL>
+  </HTTPTargetConnection>
+</ServiceCallout>

@@ -454,8 +454,58 @@ You can also specify a serialized X509 certificate which contains the public key
 
 This particular example verifies the issuer is a given URL from windows.net.  This is what Azure Active Directory uses when generating JWT. (This URL is unique to the Active Directory instance, so it is not re-usable when verifying your own AAD-generated tokens.) 
 
-If you specify both the public-key and the certificate in the configuration, the public-key will be used and the certificate will be ignored. 
-The serialized version of the certificate can include line-breaks and spaces.
+
+
+**Parsing and Verifying a JWT - RS256 - using modulus + exponent**
+
+Suppose you have not the PEM-representation of the public key, and not a
+certificate, but the modulus and public exponent of the RSA key, in
+base64 encoded format. In this case you can specify the public key with
+those values, using the modulus and exponent properties:
+
+
+```xml
+<JavaCallout name='JavaCallout-JWT-Parse-xxx'>
+  <Properties>
+    <Property name="algorithm">RS256</Property>
+    <Property name="jwt">{request.formparam.jwt}</Property>
+
+    <!-- these properties are used only for algorithm = RS256 -->
+    <Property name="modulus">{context.var.containing.modulus}</Property>
+    <Property name="exponent">{context.var.containing.public.exponent}</Property>
+
+    <!-- claims to verify -->
+    <Property name="claim_iss">http://server.example.com</Property>
+    <Property name="claim_aud">s6BhdRkqt3</Property>
+
+  </Properties>
+
+  <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
+  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+</JavaCallout>
+```
+
+This is useful when, for example, verifying keys that have been issued
+by Salesforce.com, which publishes its keys in JWK form, with modulus
+and exponent.  The modulus and exponent should be in base64 format.
+The policy will eliminate any whitespace in these strings. They can be
+URL-safe base64 or non-URL-safe base64. 
+
+You can also specify these values statically in the configuration file. 
+
+The order of precedence the callout uses for determining the public key is this: 
+
+A- public-key 
+B- modulus and exponent 
+C- certificate 
+D- pemfile 
+
+If you specify more than one of {A,B,C,D} the callout will use the first
+one it finds.  It's not the order in which the properties appear in the
+file; it's the order described here. 
+
+
+
 
 
 More Notes:

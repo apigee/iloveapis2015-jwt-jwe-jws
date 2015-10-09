@@ -159,8 +159,13 @@
       <Condition>(proxy.pathsuffix ~~ "/validate-sf$") and (request.verb = "POST")</Condition>
       <Description>Parse / Verify a JWT created by Salesforce</Description>
       <Request>
-        <!-- TODO: retrieve SF keys, convert to PEM and apply to verification. -->
-        <!-- TODO: and cache them, too. -->
+        <!-- retrieve SF keys. -->
+        <Step><Name>ServiceCallout-SalesforceKeys</Name></Step>
+        <Step><Name>Javascript-ExtractSalesforceKeys</Name></Step>
+
+        <!-- this step determines which key to use during the verification -->
+        <Step><Name>Javascript-Extract-JWT-kid-for-Salesforce</Name></Step>
+        <!-- TODO: cache the keys. -->
       </Request>
       <Response>
         <Step><Name>JavaCallout-JWT-Parse-Verify-RS256-salesforce</Name></Step>
