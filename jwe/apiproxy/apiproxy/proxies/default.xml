@@ -26,7 +26,7 @@
       <Condition>(proxy.pathsuffix ~~ "/create-(HS|hs)256$") and (request.verb = "POST")</Condition>
       <Description>Create a JWE with alg=HS256</Description>
       <Request>
-        <Step><Name>JavaCallout-JWE-Encrypt-A128CBC-HS256</Name></Step>
+        <Step><Name>JWE-Encrypt-A128CBC-HS256</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWE-Encrypt-Response</Name></Step>
@@ -37,7 +37,7 @@
       <Condition>(proxy.pathsuffix ~~ "/decrypt-(HS|hs)256$") and (request.verb = "POST")</Condition>
       <Description>Decrypt a JWE with alg=HS256</Description>
       <Request>
-        <Step><Name>JavaCallout-JWE-Decrypt-A128CBC-HS256</Name></Step>
+        <Step><Name>JWE-Decrypt-A128CBC-HS256</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWE-Decrypt-Response</Name></Step>

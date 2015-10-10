@@ -1,4 +1,5 @@
-<JavaCallout name='JavaCallout-JWE-Decrypt-A128CBC-HS256' >
+
+<JavaCallout name='JWE-Decrypt-A128CBC-HS256' >
   <Properties>
     <Property name="algorithm">A128CBC-HS256</Property>
     <Property name='secret-key'>{request.formparam.key}</Property>
