@@ -1,5 +1,5 @@
-<JavaCallout name='JavaCallout-JWT-Create-RS256' >
-  <DisplayName>JavaCallout-JWT-Create-RS256</DisplayName>
+<JavaCallout name='JWT-Create-RS256' >
+  <DisplayName>JWT-Create-RS256</DisplayName>
   <Properties>
     <Property name="algorithm">RS256</Property>
 

@@ -68,7 +68,6 @@ public final class KeyUtils {
         X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
         PublicKey key = cer.getPublicKey();
         return key;
-
     }
 
     public static PublicKey pemFileStringToPublicKey(String s)

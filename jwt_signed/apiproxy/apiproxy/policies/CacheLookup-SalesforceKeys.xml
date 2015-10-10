@@ -1,0 +1,9 @@
+<LookupCache name='CacheLookup-SalesforceKeys'>
+  <CacheResource>cache1</CacheResource>
+  <AssignTo>cached.salesforce.keys</AssignTo>
+  <Scope>Application</Scope>
+  <CacheKey>
+    <Prefix>sfkeys</Prefix>
+    <KeyFragment>1</KeyFragment>
+  </CacheKey>
+</LookupCache>

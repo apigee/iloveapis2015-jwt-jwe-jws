@@ -1,5 +1,5 @@
-<JavaCallout name='JavaCallout-JWT-Parse-Verify-RS256-salesforce'>
-  <DisplayName>JavaCallout-JWT-Parse-Verify-RS256-salesforce</DisplayName>
+<JavaCallout name='JWT-Parse-Verify-RS256-salesforce'>
+  <DisplayName>JWT-Parse-Verify-RS256-salesforce</DisplayName>
   <Properties>
     <Property name="algorithm">RS256</Property>
     <Property name="jwt">{request.formparam.jwt}</Property>

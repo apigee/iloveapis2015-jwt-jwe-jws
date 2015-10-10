@@ -1,0 +1,7 @@
+<AssignMessage name='AssignVariable-MsCert'>
+  <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+  <AssignVariable>
+    <Name>ms.certificate</Name>
+    <Ref>cached.ms.cert</Ref>
+  </AssignVariable>
+</AssignMessage>

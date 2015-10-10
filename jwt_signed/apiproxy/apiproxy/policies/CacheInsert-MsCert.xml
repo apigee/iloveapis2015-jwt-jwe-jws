@@ -1,0 +1,12 @@
+<PopulateCache name='CacheInsert-MsCert'>
+  <CacheResource>cache1</CacheResource>
+  <Source>ms.certificate</Source>
+  <Scope>Application</Scope>
+  <CacheKey>
+    <Prefix>mscert</Prefix>
+    <KeyFragment>1</KeyFragment>
+  </CacheKey>
+  <ExpirySettings>
+    <TimeoutInSec>7200</TimeoutInSec>
+  </ExpirySettings>
+</PopulateCache>

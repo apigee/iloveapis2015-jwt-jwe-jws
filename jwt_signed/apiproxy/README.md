@@ -23,6 +23,13 @@ verify JWT.  This proxy shows how to use a Java callout to do those
 things.
 
 
+Deploying
+========
+
+Before you deploy the proxy you need to create a cache on the 
+environment. The cache should be named 'cache1'.  
+
+
 Invoking
 ========
 

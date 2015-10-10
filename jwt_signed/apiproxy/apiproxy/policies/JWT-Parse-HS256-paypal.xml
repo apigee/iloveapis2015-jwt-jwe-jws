@@ -1,4 +1,4 @@
-<JavaCallout name='JavaCallout-JWT-Parse-HS256-paypal'>
+<JavaCallout name='JWT-Parse-HS256-paypal'>
   <Properties>
     <Property name="algorithm">HS256</Property>
     <Property name="jwt">{request.formparam.jwt}</Property>

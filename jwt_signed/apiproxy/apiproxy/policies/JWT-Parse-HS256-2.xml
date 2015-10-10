@@ -1,5 +1,5 @@
 
-<JavaCallout name='JavaCallout-JWT-Parse-HS256-2'>
+<JavaCallout name='JWT-Parse-HS256-2'>
   <Properties>
     <Property name="algorithm">HS256</Property>
     <Property name="jwt">{request.formparam.jwt}</Property>

@@ -1,0 +1,9 @@
+<LookupCache name='CacheLookup-GoogleCerts'>
+  <CacheResource>cache1</CacheResource>
+  <AssignTo>cached.google.certs</AssignTo>
+  <Scope>Application</Scope>
+  <CacheKey>
+    <Prefix>googcert</Prefix>
+    <KeyFragment>1</KeyFragment>
+  </CacheKey>
+</LookupCache>

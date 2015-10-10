@@ -1,0 +1,7 @@
+<AssignMessage name='AssignVariable-SalesforceKeys'>
+  <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
+  <AssignVariable>
+    <Name>sfKeys.content</Name>
+    <Ref>cached.salesforce.keys</Ref>
+  </AssignVariable>
+</AssignMessage>

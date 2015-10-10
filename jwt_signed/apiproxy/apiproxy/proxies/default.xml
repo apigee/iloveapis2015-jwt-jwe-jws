@@ -26,7 +26,7 @@
       <Condition>(proxy.pathsuffix ~~ "/create-(HS|hs)256$") and (request.verb = "POST")</Condition>
       <Description>Create a JWT with alg=HS256</Description>
       <Request>
-        <Step><Name>JavaCallout-JWT-Create-HS256</Name></Step>
+        <Step><Name>JWT-Create-HS256</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Create-Response</Name></Step>
@@ -37,7 +37,7 @@
       <Condition>(proxy.pathsuffix ~~ "/create-(RS|rs)256$") and (request.verb = "POST")</Condition>
       <Description>Create a JWT with alg=RS256</Description>
       <Request>
-        <Step><Name>JavaCallout-JWT-Create-RS256</Name></Step>
+        <Step><Name>JWT-Create-RS256</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Create-Response</Name></Step>
@@ -48,7 +48,7 @@
       <Condition>(proxy.pathsuffix ~~ "/create-(RS|rs)256-2$") and (request.verb = "POST")</Condition>
       <Description>Create a JWT with alg=RS256</Description>
       <Request>
-        <Step><Name>JavaCallout-JWT-Create-RS256-2</Name></Step>
+        <Step><Name>JWT-Create-RS256-2</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Create-Response</Name></Step>
@@ -59,7 +59,7 @@
       <Condition>(proxy.pathsuffix ~~ "/validate-(RS|rs)256$") and (request.verb = "POST")</Condition>
       <Description>Parse a JWT with alg=RS256</Description>
       <Request>
-        <Step><Name>JavaCallout-JWT-Parse-RS256</Name></Step>
+        <Step><Name>JWT-Parse-RS256</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
@@ -70,7 +70,7 @@
       <Condition>(proxy.pathsuffix ~~ "/validate-(RS|rs)256-2$") and (request.verb = "POST")</Condition>
       <Description>Parse a JWT with alg=RS256 (Flavor 2)</Description>
       <Request>
-        <Step><Name>JavaCallout-JWT-Parse-RS256-2</Name></Step>
+        <Step><Name>JWT-Parse-RS256-2</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
@@ -82,7 +82,7 @@
       <Condition>(proxy.pathsuffix ~~ "/validate-(HS|hs)256$") and (request.verb = "POST")</Condition>
       <Description>Parse a JWT with alg=HS256</Description>
       <Request>
-        <Step><Name>JavaCallout-JWT-Parse-HS256</Name></Step>
+        <Step><Name>JWT-Parse-HS256</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
@@ -93,7 +93,7 @@
       <Condition>(proxy.pathsuffix ~~ "/validate-(HS|hs)256-2$") and (request.verb = "POST")</Condition>
       <Description>Parse a JWT with alg=HS256 (2)</Description>
       <Request>
-        <Step><Name>JavaCallout-JWT-Parse-HS256-2</Name></Step>
+        <Step><Name>JWT-Parse-HS256-2</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
@@ -103,7 +103,7 @@
     <Flow name="parse the JWT from the OpenID Connect spec">
       <Condition>(proxy.pathsuffix ~~ "/validate-openid$") and (request.verb = "POST")</Condition>
       <Request>
-        <Step><Name>JavaCallout-JWT-Parse-OpenIDConnect</Name></Step>
+        <Step><Name>JWT-Parse-OpenIDConnect</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
@@ -114,12 +114,30 @@
       <Condition>(proxy.pathsuffix ~~ "/validate-ms$") and (request.verb = "POST")</Condition>
       <Description>Parse / Verify a JWT created by Azure Active Directory</Description>
       <Request>
-        <!-- TODO: cache the cert retrieved from login.microsoftonline.com -->
-        <Step><Name>ServiceCallout-MicrosoftCert</Name></Step>
-        <Step><Name>Javascript-RemoveXmlDeclaration</Name></Step>
-        <Step><Name>Extract-MsCert</Name></Step>
+        <!-- check the cache for the cert retrieved from login.microsoftonline.com -->
+        <Step><Name>CacheLookup-MsCert</Name></Step>
+        <Step>
+          <Name>ServiceCallout-MicrosoftCert</Name>
+          <Condition>cached.ms.cert = null</Condition>
+        </Step>
+        <Step>
+          <Name>Javascript-RemoveXmlDeclaration</Name>
+          <Condition>cached.ms.cert = null</Condition>
+        </Step>
+        <Step>
+          <Name>Extract-MsCert</Name>
+          <Condition>cached.ms.cert = null</Condition>
+        </Step>
+        <Step>
+          <Name>CacheInsert-MsCert</Name>
+          <Condition>cached.ms.cert = null</Condition>
+        </Step>
+        <Step>
+          <Name>AssignVariable-MsCert</Name>
+          <Condition>cached.ms.cert != null</Condition>
+        </Step>
 
-        <Step><Name>JavaCallout-JWT-Parse-RS256-ms</Name></Step>
+        <Step><Name>JWT-Parse-Verify-RS256-ms</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
@@ -130,14 +148,29 @@
       <Condition>(proxy.pathsuffix ~~ "/validate-goog$") and (request.verb = "POST")</Condition>
       <Description>Parse / Verify a JWT created by Google</Description>
       <Request>
-        <!-- TODO: cache these certs! -->
-        <Step><Name>ServiceCallout-GoogleCerts</Name></Step>
+        <!-- check cache for the google certs -->
+        <Step><Name>CacheLookup-GoogleCerts</Name></Step>
+
+        <Step>
+          <Name>ServiceCallout-GoogleCerts</Name>
+          <Condition>cached.google.certs = null</Condition>
+        </Step>
+        <Step>
+          <Name>CacheInsert-GoogleCerts</Name>
+          <Condition>cached.google.certs = null</Condition>
+        </Step>
+
+        <Step>
+          <Name>AssignVariable-GoogleCerts</Name>
+          <Condition>cached.google.certs != null</Condition>
+        </Step>
+
         <Step><Name>Javascript-ExtractGoogleCerts</Name></Step>
 
         <!-- this step determines which cert to use during the verification -->
         <Step><Name>Javascript-Extract-JWT-kid-for-Google</Name></Step>
 
-        <Step><Name>JavaCallout-JWT-Parse-Verify-RS256-goog</Name></Step>
+        <Step><Name>JWT-Parse-Verify-RS256-goog</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
@@ -148,7 +181,7 @@
       <Condition>(proxy.pathsuffix ~~ "/validate-paypal") and (request.verb = "POST")</Condition>
       <Description>Parse / Verify a JWT created by Paypal</Description>
       <Request>
-        <Step><Name>JavaCallout-JWT-Parse-HS256-paypal</Name></Step>
+        <Step><Name>JWT-Parse-HS256-paypal</Name></Step>
       </Request>
       <Response>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
@@ -159,16 +192,32 @@
       <Condition>(proxy.pathsuffix ~~ "/validate-sf$") and (request.verb = "POST")</Condition>
       <Description>Parse / Verify a JWT created by Salesforce</Description>
       <Request>
+        <!-- check cache for the sf keys -->
+        <Step><Name>CacheLookup-SalesforceKeys</Name></Step>
+
         <!-- retrieve SF keys. -->
-        <Step><Name>ServiceCallout-SalesforceKeys</Name></Step>
+        <Step>
+          <Name>ServiceCallout-SalesforceKeys</Name>
+          <Condition>cached.salesforce.keys = null</Condition>
+        </Step>
+        <Step>
+          <Name>CacheInsert-SalesforceKeys</Name>
+          <Condition>cached.salesforce.keys = null</Condition>
+        </Step>
+
+        <Step>
+          <Name>AssignVariable-SalesforceKeys</Name>
+          <Condition>cached.salesforce.keys != null</Condition>
+        </Step>
+
         <Step><Name>Javascript-ExtractSalesforceKeys</Name></Step>
 
         <!-- this step determines which key to use during the verification -->
         <Step><Name>Javascript-Extract-JWT-kid-for-Salesforce</Name></Step>
-        <!-- TODO: cache the keys. -->
+
       </Request>
       <Response>
-        <Step><Name>JavaCallout-JWT-Parse-Verify-RS256-salesforce</Name></Step>
+        <Step><Name>JWT-Parse-Verify-RS256-salesforce</Name></Step>
         <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>

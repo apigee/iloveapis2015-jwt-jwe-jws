@@ -1,0 +1,9 @@
+<LookupCache name='CacheLookup-MsCert'>
+  <CacheResource>cache1</CacheResource>
+  <AssignTo>cached.ms.cert</AssignTo> <!-- name of flow variable -->
+  <Scope>Application</Scope>
+  <CacheKey>
+    <Prefix>mscert</Prefix>
+    <KeyFragment>1</KeyFragment>
+  </CacheKey>
+</LookupCache>

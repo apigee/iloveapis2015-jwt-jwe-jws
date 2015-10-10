@@ -1,4 +1,4 @@
-<JavaCallout name='JavaCallout-JWT-Parse-OpenIDConnect'>
+<JavaCallout name='JWT-Parse-OpenIDConnect'>
   <Properties>
     <Property name="algorithm">RS256</Property>
     <Property name="jwt">{request.formparam.jwt}</Property>

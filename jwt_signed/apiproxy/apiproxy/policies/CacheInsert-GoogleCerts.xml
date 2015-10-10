@@ -1,0 +1,12 @@
+<PopulateCache name='CacheInsert-GoogleCerts'>
+  <CacheResource>cache1</CacheResource>
+  <Source>googCerts.content</Source>
+  <Scope>Application</Scope>
+  <CacheKey>
+    <Prefix>googcert</Prefix>
+    <KeyFragment>1</KeyFragment>
+  </CacheKey>
+  <ExpirySettings>
+    <TimeoutInSec>7200</TimeoutInSec>
+  </ExpirySettings>
+</PopulateCache>

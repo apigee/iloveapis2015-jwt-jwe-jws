@@ -1,6 +1,6 @@
 
-<JavaCallout name='JavaCallout-JWT-Create-HS256' >
-  <DisplayName>JavaCallout-JWT-Create-HS256</DisplayName>
+<JavaCallout name='JWT-Create-HS256' >
+  <DisplayName>JWT-Create-HS256</DisplayName>
   <Properties>
     <Property name="algorithm">HS256</Property>
     <Property name='secret-key'>{request.formparam.key}</Property>
