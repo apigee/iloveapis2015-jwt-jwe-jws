@@ -4,8 +4,13 @@ This directory contains the Java source code and Java jars required to
 compile a Java callout for Apigee Edge that does generation and
 parsing / validation of signed JWT. It uses the Nimbus library for JOSE. 
 
-Building:
---------
+The API Proxy subdirectory, which is a sibling to this one, includes the pre-built JAR file. Therefore you do not need to build this Java code in order to use the JWT verifier. 
+
+However, you may wish to modify this code for your own purposes. In that case, you will modify the Java code, re-build, then copy that JAR into the appropriate apiproxy/resources/java directory for the API Proxy.  
+
+
+Building the Jar:
+----------------
 
 You can use the Java callout binary, or you can build the binary yourself. 
 These instructions describe how to do either. 
@@ -503,7 +508,6 @@ D- pemfile
 If you specify more than one of {A,B,C,D} the callout will use the first
 one it finds.  It's not the order in which the properties appear in the
 file; it's the order described here. 
-
 
 
 
