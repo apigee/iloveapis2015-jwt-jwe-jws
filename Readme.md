@@ -18,7 +18,7 @@ Each directory includes the Java source code for a callout, as well as an exampl
 
 ## Pre-build step
 
-It is not necessary to build the Java source code contained in the subdirectories here, in order to use the HMAC or HttpSignature policies in Apigee Edge.  But, If you do wish to build, to allow the maven builds to succeed, you need to first run the buildsetup.sh script on your workstation. This adds the Apigee-required jars into the local maven repository (your local cache). 
+It is not necessary to build the Java source code contained in the subdirectories here, in order to use the JWT or JWE policies in Apigee Edge.  But, if you do wish to build, to allow the maven builds to succeed, you need to first run the buildsetup.sh script on your workstation. This adds the Apigee-required jars into the local maven repository (your local cache). 
 
 Do this like so: 
 
