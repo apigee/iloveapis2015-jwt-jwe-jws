@@ -5,7 +5,9 @@ This is the top-level project containing source code, documentation, and tools f
 
 You will find subdirectories here, containing independent projects:
 
-- [JWT (signed)](jwt_signed)
-- [JWT (encrypted)](jwt_encrypted)
-- [JWE](jwe)
+- [JWT (signed)](jwt_signed) - verifying Signed JWT in Edge
+- [JWT (encrypted)](jwt_encrypted) - verifying Encrypted JWT in Edge
+- [JWE](jwe) - producing and decrypting JWE in Edge
 
+
+Each directory includes the Java source code for a callout, as well as an example API proxy, which shows how to use the callout. 
