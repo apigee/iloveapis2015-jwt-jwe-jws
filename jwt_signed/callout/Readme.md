@@ -500,10 +500,10 @@ You can also specify these values statically in the configuration file.
 
 The order of precedence the callout uses for determining the public key is this: 
 
-A- public-key 
-B- modulus and exponent 
-C- certificate 
-D- pemfile 
+A. public-key  
+B. modulus and exponent   
+C. certificate  
+D. pemfile  
 
 If you specify more than one of {A,B,C,D} the callout will use the first
 one it finds.  It's not the order in which the properties appear in the
