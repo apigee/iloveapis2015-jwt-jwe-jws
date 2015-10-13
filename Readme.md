@@ -31,3 +31,7 @@ You must have maven installed in order for the above step to succeed.
 After the buildsetup, to build the jars with maven, follow the usual
 steps.  This is described in greater detail in the callout source
 directory for each sudirectory here.
+
+# Sample Request calls for all the use cases
+If you have postman you can download the collection form this link - https://www.getpostman.com/collections/24101901a9797c0921a4
+Otherwise for each use cases the sample requests have been well documented.
