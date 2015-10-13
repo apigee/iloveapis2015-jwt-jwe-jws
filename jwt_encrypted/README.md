@@ -6,7 +6,6 @@ JWE is an IETF standard.
 https://tools.ietf.org/html/rfc7516
 
 
-
 Apigee Edge doesn't currently contain "native" capability to create or
 verify an encrypted JWT.  This proxy shows how to use a Java callout to do those
 things.
@@ -27,25 +26,37 @@ The API Proxy subdirectory here includes the pre-built JAR file. Therefore you d
 
 1) Create an encrypted JWT 
 
-REQUEST - 
-curl -X POST  
-'http://iloveapis2015-test.apigee.net/jwt_encrypted/create?apikey={apiKey}'
+This is a sample request: 
 
-RESPONSE - 
+```
+curl -X POST \
+  'http://iloveapis2015-test.apigee.net/jwt_encrypted/create?apikey={apiKey}'
+```
+
+A sample response:
+ 
+```
 {
-  "jwt": "eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.RaFg8gIz4TdDM9IzJAWIGmOg8Pg-V194e_qei7CNgmIZ9xZlKY_txkmBbcG3oz9o-UhZGr4FZT6r6IUfTjkQCMROXf2hESLP8yF-kULRneIADtkw29s2i17iyBuG0cxEYHsQnJ2Y_aTL7MiZRDTYGEKQk4Uulz1WAuZ5yrSDJufcjZZpaBYqFUSWb5vSxtPLRsPk13IF5Xb48dtlaV1ruZAYZJubgiEzVQPEKXaL5e-SY_5wEHefLmPOHxvJT04UZlUnwp9C5sItjaZhN3gI6yiEQdqmdDv2_FOIKK8DTustT0rbAz4D_tAcy_p7709sTmdoCHMLePWBXcwh9TDnnQ.1J7vaomXiXYukQjmlQZ5PA.SlkSFKPGXBNTSmYm9QByRB31U1CVaWAQmqzSoNGBYuj5h7zNtpBnFrm3VstzdybVqJRLi4OzNWFIHusR3wmeFpcnEE9cJkFpWprbn0cskG7vVNfaKNMNKmTipfxUh83yXleuKVukJpAdP2WhYqxqMDYqz3Z1qQCODA1FALSMgL-O3heAxi4KJdbeLvU02iQ0fdM5pphdtF6pgCnDPyK0U_hEAPge8akLU_ELGxJPNkr8jiuJQ9gK5qhJVAb1riwVSxvte15mnSDfynI51MVAKQgMRJtUl61j93tIPawIM5g.YQUW54he59ty3AAmfG5VKQ"
+  "jwt": "eyJhbGciOiJSU0EtT0FFUC.....y3AAmfG5VKQ"
 }
+```
 
 2) Verify (decrypt and verify) an encrypted JWT
 
-REQUEST -
+This is a sample request: 
 
-curl -X POST -H "Content-Type: application/x-www-form-urlencoded" -d 'jwt=eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.RaFg8gIz4TdDM9IzJAWIGmOg8Pg-V194e_qei7CNgmIZ9xZlKY_txkmBbcG3oz9o-UhZGr4FZT6r6IUfTjkQCMROXf2hESLP8yF-kULRneIADtkw29s2i17iyBuG0cxEYHsQnJ2Y_aTL7MiZRDTYGEKQk4Uulz1WAuZ5yrSDJufcjZZpaBYqFUSWb5vSxtPLRsPk13IF5Xb48dtlaV1ruZAYZJubgiEzVQPEKXaL5e-SY_5wEHefLmPOHxvJT04UZlUnwp9C5sItjaZhN3gI6yiEQdqmdDv2_FOIKK8DTustT0rbAz4D_tAcy_p7709sTmdoCHMLePWBXcwh9TDnnQ.1J7vaomXiXYukQjmlQZ5PA.SlkSFKPGXBNTSmYm9QByRB31U1CVaWAQmqzSoNGBYuj5h7zNtpBnFrm3VstzdybVqJRLi4OzNWFIHusR3wmeFpcnEE9cJkFpWprbn0cskG7vVNfaKNMNKmTipfxUh83yXleuKVukJpAdP2WhYqxqMDYqz3Z1qQCODA1FALSMgL-O3heAxi4KJdbeLvU02iQ0fdM5pphdtF6pgCnDPyK0U_hEAPge8akLU_ELGxJPNkr8jiuJQ9gK5qhJVAb1riwVSxvte15mnSDfynI51MVAKQgMRJtUl61j93tIPawIM5g.YQUW54he59ty3AAmfG5VKQ' 'http://iloveapis2015-test.apigee.net/jwt_encrypted/validate?apikey=Xmzm0xlH27YerSdWzk78Gf3QHaP1WyQd'
+```
+curl -X POST -H "Content-Type: application/x-www-form-urlencoded" \
+   'http://iloveapis2015-test.apigee.net/jwt_encrypted/validate?apikey=Xmzm0xlH27YerSdWzk78Gf3QHaP1WyQd' \
+  -d 'jwt=eyJhbGciOiJSU0EtT0FFUC0y.....AAmfG5VKQ' 
+```
 
-RESPONSE
 
+A sample response:
+
+```
 {
-  "jwt": "eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0.RaFg8gIz4TdDM9IzJAWIGmOg8Pg-V194e_qei7CNgmIZ9xZlKY_txkmBbcG3oz9o-UhZGr4FZT6r6IUfTjkQCMROXf2hESLP8yF-kULRneIADtkw29s2i17iyBuG0cxEYHsQnJ2Y_aTL7MiZRDTYGEKQk4Uulz1WAuZ5yrSDJufcjZZpaBYqFUSWb5vSxtPLRsPk13IF5Xb48dtlaV1ruZAYZJubgiEzVQPEKXaL5e-SY_5wEHefLmPOHxvJT04UZlUnwp9C5sItjaZhN3gI6yiEQdqmdDv2_FOIKK8DTustT0rbAz4D_tAcy_p7709sTmdoCHMLePWBXcwh9TDnnQ.1J7vaomXiXYukQjmlQZ5PA.SlkSFKPGXBNTSmYm9QByRB31U1CVaWAQmqzSoNGBYuj5h7zNtpBnFrm3VstzdybVqJRLi4OzNWFIHusR3wmeFpcnEE9cJkFpWprbn0cskG7vVNfaKNMNKmTipfxUh83yXleuKVukJpAdP2WhYqxqMDYqz3Z1qQCODA1FALSMgL-O3heAxi4KJdbeLvU02iQ0fdM5pphdtF6pgCnDPyK0U_hEAPge8akLU_ELGxJPNkr8jiuJQ9gK5qhJVAb1riwVSxvte15mnSDfynI51MVAKQgMRJtUl61j93tIPawIM5g.YQUW54he59ty3AAmfG5VKQ",
+  "jwt": "eyJhbGci............ty3AAmfG5VKQ",
   "claims": {
     "iss": "Xmzm0xlH27YerSdWzk78Gf3QHaP1WyQd",
     "exp": 1444717120,
@@ -59,6 +70,8 @@ RESPONSE
   },
   "isExpired": "false"
 }
+```
+
 
 # Private Keys and Public Keys
 
@@ -84,7 +97,13 @@ Since this is a node.js project you will either need apigeetool or maven to depl
 This project is already set up with maven (parent and project pom.xml's).
 All you need to do is to run the following maven command from the same folder that contains the pom.xml ie.. /jwt_encrypted/apiproxy.
 
-mvn install -P {apigee_environment} -Dusername={YOUR_EDGE_USER_NAME} -Dpassword={YOUR_EDGE_PASSWORD} -Dorg={} -DskipTests=true -Dapigee.options=validate,update
+```
+mvn install -P {apigee_environment} \
+  -Dusername={YOUR_EDGE_USER_NAME} \
+  -Dpassword={YOUR_EDGE_PASSWORD} \
+  -Dorg={} -DskipTests=true \
+  -Dapigee.options=validate,update
+```
 
 
 
