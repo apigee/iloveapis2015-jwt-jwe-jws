@@ -23,7 +23,7 @@ as well as an example API proxy, which shows how to use the callout.
 
 The API Proxy subdirectory here includes the pre-built JAR file. Therefore you do not need to build the Java code in order to use this JWT verifier. However, you may wish to modify this code for your own purposes. In that case, you will modify the Java code, re-build, then copy that JAR into the appropriate apiproxy/resources/java directory for the API Proxy.
 
-JWT Encrypted sample API calls -
+# JWT Encrypted sample API calls -
 
 1) Create an encrypted JWT 
 
@@ -60,13 +60,13 @@ RESPONSE
   "isExpired": "false"
 }
 
-Private Keys and Public Keys
+# Private Keys and Public Keys
 
 1) The JWT is created by JWE standards using the public key to encrypt. 
 2) Similarly at the time of verification the JWT is decrypted using the private key.
 3) For this particular implementation it is assumed that that we will maintain the public key - private key pair per application(by API Key).
 
-Pre config step (mandatory) - 
+# Pre config step (mandatory) - 
 
 Creating and managing Private Keys in Apigee Vault
 
@@ -78,7 +78,7 @@ The Apigee Vault API’s and documentation can be found here - http://apigee.com
 
 In the runtime API call for verify encrypted JWT, we have a node.js target which grabs the private key by apikey form the vault.
 
-Build and Deploy - 
+# Build and Deploy - 
 
 Since this is a node.js project you will either need apigeetool or maven to deploy this proxy.
 This project is already set up with maven (parent and project pom.xml's).
