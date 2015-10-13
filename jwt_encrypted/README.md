@@ -1,4 +1,4 @@
-JWT- Encryped
+JWT- Encrypted
 =============
 
 This api proxy creates and validates encrypted JWT, aka JSON Web Tokens.
