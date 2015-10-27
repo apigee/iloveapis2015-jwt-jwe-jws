@@ -378,8 +378,8 @@ public class JwtParserCallout implements Execution {
 
             // 6f. elaborated values for expiry
             varName = varPrefix + "_secondsRemaining";
-            int ms = (int) (t2.getTime() - now.getTime());
-            int secsRemaining = ms/1000;
+            long ms = t2.getTime() - now.getTime();
+            long secsRemaining = ms/1000;
             msgCtxt.setVariable(varName, secsRemaining + "");
             varName = varPrefix + "_timeRemainingFormatted";
             if (ms<0) {
@@ -402,7 +402,7 @@ public class JwtParserCallout implements Execution {
             if (t3 != null) {
                 recordTimeVariable(msgCtxt,varPrefix,sdf,t3,"notBeforeTime");
                 if (valid) {
-                    ms = (int) (now.getTime() - t3.getTime());
+                    ms = now.getTime() - t3.getTime();
                     valid = valid && (ms >= 0);
                     if (!valid) {
                         msgCtxt.setVariable(varPrefix + "_reason", "notBeforeTime");
