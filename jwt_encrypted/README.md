@@ -101,15 +101,15 @@ A sample response:
 ```
 
 
-xxx
+# Build and Deploy 
 
-# Pre config step (mandatory) - 
+The provision.sh script mentioned earlier deploys this proxy. 
 
-# Build and Deploy - 
+You can also use apigeetool or maven to deploy this proxy.
 
-Since this is a node.js project you will either need apigeetool or maven to deploy this proxy.
 This project is already set up with maven (parent and project pom.xml's).
-All you need to do is to run the following maven command from the same folder that contains the pom.xml ie.. /jwt_encrypted/apiproxy.
+
+All you need to do is to run the following maven command from the same folder that contains the toplevel pom.xml 
 
 ```
 mvn install -P {apigee_environment} \
