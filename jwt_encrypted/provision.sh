@@ -1,23 +1,37 @@
 #!/bin/bash
 # -*- mode:shell-script; coding:utf-8; -*-
 #
-# Provision a vault and insert a private key into the vault. 
+# Provisioning helper script for the jwt_encrypted API. 
+
+# This script does these things: undeploys older versions of the API
+# Proxy, removes old developer accounts, apps, and products.  Then,
+# deploys a new version of the proxy, creates a product for that proxy,
+# creates a developer, and a developer app with authorization on the
+# product. It also inserts the public key as a custom attribute onto the
+# developer app.  Finally, it creates or verifies that a vault exists,
+# and finally inserts a private key and a password into the vault.
+#
+# The result is that the jwt_encrypted API is callable with a regular
+# curl command.
 # 
 # 
 # Created: <Thu Nov  5 13:30:29 2015>
-# Last Updated: <2015-November-09 23:46:29>
+# Last Updated: <2015-November-10 10:40:43>
 #
 
-vaultname=privateKeysByApp
-defaultprivkeyfile=keys/key1-private-encrypted.pem
-defaultpubkeyfile=keys/key1-public.pem
-defaultmgmtserver="https://api.enterprise.apigee.com"
 apiname=jwt_encrypted
-mgmtserver=""
-env=""
-credentials=""
+vaultname=privateKeysByApp
 privkeypasswd=""
 privkeyfile=""
+pubkeyfile=""
+defaultpubkeyfile=keys/key1-public.pem
+defaultprivkeyfile=keys/key1-private-encrypted.pem
+defaultmgmtserver="https://api.enterprise.apigee.com"
+mgmtserver=""
+org=""
+env=""
+credentials=""
+
 vaultexists=0
 quotalimit=1000
 resetonly=0
@@ -28,7 +42,8 @@ verbosity=2
 function usage() {
   local CMD=`basename $0`
   echo "$CMD: "
-  echo "  Provisions vault entries for the jwt_encrypted API Proxy. "
+  echo "  Provisions an API Proxy, an API product, a developer, and a developer app, as"
+  echo "  well as vault entries for the jwt_encrypted API Proxy. "
   echo "  Uses the curl utility."
   echo "usage: "
   echo "  $CMD [options] "
@@ -120,7 +135,7 @@ function clear_env_state() {
   MYCURL -X GET ${mgmtserver}/v1/o/${org}/developers
   if [ ${CURL_RC} -ne 200 ]; then
     echo 
-    echo "Cannot retrieve developers from that org..."
+    echo "Cannot retrieve developers from that organization..."
     exit 1
   fi
   devarray=(`cat ${CURL_OUT} | grep "\[" | sed -E 's/[]",[]//g'`)
@@ -225,19 +240,12 @@ function get_privatekey() {
     exit 1
   fi
 
-  #base64 encode the private key
-  #privateKey="$(cat privatekey.txt | base64)"
-  #privateKey=$(<"$privkeyfile")
-
-  #privateKey=`sed -e 's/\x0A/|/g' $privkeyfile`
+  # replace newlines with pipe characters before
+  # inserting the private key into the vault. 
+  #
+  # This will need to be reversed at runtime when the key is retrieved. 
   privateKey=`sed -e 'H;1h;$!d;x;y/\n/|/' $privkeyfile`
 
-  #privateKey=`echo $privateKey | sed -e 's/\n/|/g'`
-  #privateKey=`echo $privateKey | tr -d '\n'`
-  #privateKey=`echo $privateKey | tr -d '\r'`
-
-  #privateKey=`echo $privateKey | tr '\r\n' ' '`
-  #privateKey=$( base64  )
   echo "private key:"
   echo $privateKey
   if [ -z "$privateKey" ]; then
@@ -267,6 +275,11 @@ function get_publickey() {
     echo
     exit 1
   fi
+
+  # replace newlines with pipe characters before
+  # inserting the public key into the custom attribute.
+  #
+  # This will need to be reversed at runtime when the key is retrieved. 
   publicKey=`sed -e 'H;1h;$!d;x;y/\n/|/' $pubkeyfile`
   echo "public key:"
   echo $publicKey
@@ -650,11 +663,6 @@ if [ "X$env" = "X" ]; then
   choose_env
 fi
 
-# echo
-# if [ "X$apiKey" = "X" ]; then
-#   read -p "apiKey for the app for which we need to create the encrypted JWT: " apiKey
-#   echo
-# fi
 
 ## reset everything related to this api
 clear_env_state
@@ -676,8 +684,7 @@ if [ $resetonly -eq 0 ] ; then
   if [ ${CURL_RC} -eq 500 ]; then
     echo the vault does not exist
     echo create the vault
-    MYCURL -X POST \
-      -H content-type:application/json \
+    MYCURL -X POST -H content-type:application/json \
       $mgmtserver/v1/o/$org/e/$env/vaults \
       -d '{ "name": "'$vaultname'" }'
     if [ ${CURL_RC} -ne 200 ]; then
@@ -687,9 +694,9 @@ if [ $resetonly -eq 0 ] ; then
       exit
     fi
   elif [ ${CURL_RC} -eq 404 ]; then
-   echo "Something went wrong"
-   echo
-   exit 1
+    echo "Something went wrong"
+    echo
+    exit 1
   else
     echo the vault exists
     vaultexists=1
