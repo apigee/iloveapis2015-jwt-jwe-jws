@@ -1,9 +1,8 @@
-JWT- Encrypted
-=============
+# JWT- Encrypted
 
 This api proxy creates and validates encrypted JWT, aka JSON Web Tokens.
-JWE is an IETF standard.
-https://tools.ietf.org/html/rfc7516
+JWT is an IETF standard.
+https://tools.ietf.org/html/rfc7519
 
 
 Apigee Edge doesn't currently contain "native" capability to create or
@@ -12,26 +11,55 @@ things.
 
 ....
 
-# JWT (encrypted) API Proxy
+## JWT (encrypted) API Proxy
 
 This directory contains Java source code for a callout which verifies and creates an encrypted JWT,
 as well as an example API proxy, which shows how to use the callout.
 
 
-- [Java source](callout) - Java code, as well as instructions for how to build the Java code.
+- [Java source](callout) - Java code, as well as a pom.xml file that allows you to build the Java code with maven.
 
-The API Proxy subdirectory here includes the pre-built JAR file. Therefore you do not need to build the Java code in order to use this JWT verifier. However, you may wish to modify this code for your own purposes. In that case, you will modify the Java code, re-build, then copy that JAR into the appropriate apiproxy/resources/java directory for the API Proxy.
+- [API Proxy](apiproxy) - The apiproxy subdirectory here includes the API proxy configuration, which demonstrates the Java callout. Therefore you do not need to build the Java code in order to use this JWT verifier example. However, you will want to modify this code for your own purposes. After modifying the code, re-build, then copy that JAR into the appropriate apiproxy/resources/java directory for the API Proxy.  You can do the building and copying with the maven pom.xml file. 
 
-# JWT Encrypted sample API calls -
+
+## The use of Private and Public Keys
+
+1) The JWT is created by JWE standards using the public key to encrypt. 
+
+2) Conversely, at the time of verification the JWT is decrypted using the private key.
+
+3) For this particular implementation it is assumed that that we will maintain the public key - private key pair per application (by API Key).
+
+
+## Setup of the example
+
+The example API proxy, during verification, retrieves a private key and the password for the private key from the Apigee vault. This is done via the node.js target, which uses the apigee-access module. Therefore, in order to run the example, you must place those required values into the vault. Also, you need to create an API Product, a developer, and a developer app; and the developer app must have a custom attribute that contains the public key. 
+
+This repo contains a provisioning script to assist. Run it like this: 
+
+```
+./provision.sh -o ORGNAME -e ENVNAME -n -f keys/key1-private-encrypted.pem -p secret123 -b keys/key1-public.pem -b keys/key1-public.pem  
+```
+
+The Apigee Vault documentation can be found here - http://apigee.com/docs/api-reference/api/vaults
+
+
+## Switching to a different Private / Public key pair
+
+You can, of course, modify the example to use a different key pair. In that case you need to modify the JWT_Encrypted_Creator_Callout.xml policy to specify the public key you will use.  Also use the provision.sh script to specify the encrypted private key file (pem encoded). 
+
+
+## Example API calls 
 
 1) Create an encrypted JWT 
 
 This is a sample request: 
 
 ```
-curl -X POST \
-  'http://iloveapis2015-test.apigee.net/jwt_encrypted/create?apikey={apiKey}'
+curl -i -X POST -d '' \
+  'http://iloveapis2015-test.apigee.net/jwt_encrypted/create?apikey=API_KEY_HERE'
 ```
+
 
 A sample response:
  
@@ -47,7 +75,7 @@ This is a sample request:
 
 ```
 curl -X POST -H "Content-Type: application/x-www-form-urlencoded" \
-   'http://iloveapis2015-test.apigee.net/jwt_encrypted/validate?apikey=Xmzm0xlH27YerSdWzk78Gf3QHaP1WyQd' \
+   'http://iloveapis2015-test.apigee.net/jwt_encrypted/validate?apikey=API_KEY_HERE' \
   -d 'jwt=eyJhbGciOiJSU0EtT0FFUC0y.....AAmfG5VKQ' 
 ```
 
@@ -73,23 +101,9 @@ A sample response:
 ```
 
 
-# Private Keys and Public Keys
-
-1) The JWT is created by JWE standards using the public key to encrypt. 
-2) Similarly at the time of verification the JWT is decrypted using the private key.
-3) For this particular implementation it is assumed that that we will maintain the public key - private key pair per application(by API Key).
+xxx
 
 # Pre config step (mandatory) - 
-
-Creating and managing Private Keys in Apigee Vault
-
-Apigee Vault – A vault needs to be created per environment with the name “privateKeysByApp”. 
-
-Further a Vault entry needs to be added to the above vault with name = client_id (apikey) and value = private key (base64 encoded).
-
-The Apigee Vault API’s and documentation can be found here - http://apigee.com/docs/api-reference/api/vaults
-
-In the runtime API call for verify encrypted JWT, we have a node.js target which grabs the private key by apikey form the vault.
 
 # Build and Deploy - 
 

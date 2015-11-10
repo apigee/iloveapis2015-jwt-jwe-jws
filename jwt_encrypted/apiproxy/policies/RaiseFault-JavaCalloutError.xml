@@ -1,8 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<RaiseFault async="false" continueOnError="false" enabled="true" name="raiseJavaCalloutError">
-    <DisplayName>raiseJavaCalloutError</DisplayName>
-    <FaultRules/>
-    <Properties/>
+<RaiseFault name="RaiseFault-JavaCalloutError">
     <FaultResponse>
         <Set>
             <StatusCode>500</StatusCode>

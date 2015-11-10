@@ -1,8 +1,11 @@
 <AssignMessage name="Assign-JWT-Encrypted-Create-Response">
-  <DisplayName>Assign-JWT-Encrypted-Create-Response</DisplayName>
   <Description>respond with JWT</Description>
   <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
-  <Set><Payload contentType='application/json' variablePrefix='%' variableSuffix='#'>{"jwt" : "%jwt_JavaCallout-JWE-Create_encryptedJwt#"}</Payload>
+  <Set>
+    <Payload contentType='application/json' variablePrefix='%'
+                variableSuffix='#'>{
+  "jwt" : "%jwt_encryptedJwt#"
+}</Payload>
     <StatusCode>200</StatusCode>
     <ReasonPhrase>OK</ReasonPhrase>
   </Set>
