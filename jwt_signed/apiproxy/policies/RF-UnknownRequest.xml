@@ -10,11 +10,18 @@
     "code" : 404.01,
     "message" : "that request was unknown; try one of the following. See the readme for details.",
     "suggestions" : [
-     "POST /java-jwt1/create-rs256",
-       "POST /java-jwt1/create-hs256",
-       "POST /java-jwt1/validate-rs256",
-       "POST /java-jwt1/validate-hs256",
-       "POST /java-jwt1/validate-ms"
+      "POST %proxy.basepath#/create-rs256",
+      "POST %proxy.basepath#/create-rs256-2",
+      "POST %proxy.basepath#/create-hs256",
+      "POST %proxy.basepath#/validate-rs256",
+      "POST %proxy.basepath#/validate-rs256-2",
+      "POST %proxy.basepath#/validate-hs256",
+      "POST %proxy.basepath#/validate-hs256-2",
+      "POST %proxy.basepath#/validate-openid",
+      "POST %proxy.basepath#/validate-ms",
+      "POST %proxy.basepath#/validate-goog",
+      "POST %proxy.basepath#/validate-sf",
+      "POST %proxy.basepath#/validate-paypal"
     ]
   }
 }
