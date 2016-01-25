@@ -1,4 +1,4 @@
-<AssignMessage name='AssignVariable-GoogleCerts'>
+<AssignMessage name='AV-GoogleCerts'>
   <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
   <AssignVariable>
     <Name>googCerts.content</Name>

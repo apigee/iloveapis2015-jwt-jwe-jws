@@ -1,7 +1,7 @@
 <ProxyEndpoint name="default">
   <HTTPProxyConnection>
     <BasePath>/jwt_signed</BasePath>
-    <VirtualHost>default</VirtualHost>
+    <!-- <VirtualHost>default</VirtualHost> -->
     <VirtualHost>secure</VirtualHost>
   </HTTPProxyConnection>
 
@@ -9,7 +9,7 @@
     <FaultRule name='rule1'>
       <Condition>jwt_error != null</Condition>
       <Step>
-        <Name>AssignMessage-PublishError</Name>
+        <Name>AM-PublishError</Name>
       </Step>
     </FaultRule>
   </FaultRules>
@@ -29,7 +29,7 @@
         <Step><Name>JWT-Create-HS256</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Create-Response</Name></Step>
+        <Step><Name>AM-JWT-Create-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -40,7 +40,7 @@
         <Step><Name>JWT-Create-RS256</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Create-Response</Name></Step>
+        <Step><Name>AM-JWT-Create-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -51,7 +51,7 @@
         <Step><Name>JWT-Create-RS256-2</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Create-Response</Name></Step>
+        <Step><Name>AM-JWT-Create-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -62,7 +62,7 @@
         <Step><Name>JWT-Parse-RS256</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+        <Step><Name>AM-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -73,7 +73,7 @@
         <Step><Name>JWT-Parse-RS256-2</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+        <Step><Name>AM-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -85,7 +85,7 @@
         <Step><Name>JWT-Parse-HS256</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+        <Step><Name>AM-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -96,7 +96,7 @@
         <Step><Name>JWT-Parse-HS256-2</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+        <Step><Name>AM-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -106,7 +106,7 @@
         <Step><Name>JWT-Parse-OpenIDConnect</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+        <Step><Name>AM-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -117,11 +117,11 @@
         <!-- check the cache for the cert retrieved from login.microsoftonline.com -->
         <Step><Name>CacheLookup-MsCert</Name></Step>
         <Step>
-          <Name>ServiceCallout-MicrosoftCert</Name>
+          <Name>SC-RetrieveMicrosoftCert</Name>
           <Condition>cached.ms.cert = null</Condition>
         </Step>
         <Step>
-          <Name>Javascript-RemoveXmlDeclaration</Name>
+          <Name>JS-RemoveXmlDeclaration</Name>
           <Condition>cached.ms.cert = null</Condition>
         </Step>
         <Step>
@@ -133,14 +133,14 @@
           <Condition>cached.ms.cert = null</Condition>
         </Step>
         <Step>
-          <Name>AssignVariable-MsCert</Name>
+          <Name>AV-MsCert</Name>
           <Condition>cached.ms.cert != null</Condition>
         </Step>
 
         <Step><Name>JWT-Parse-Verify-RS256-ms</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+        <Step><Name>AM-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -152,7 +152,7 @@
         <Step><Name>CacheLookup-GoogleCerts</Name></Step>
 
         <Step>
-          <Name>ServiceCallout-GoogleCerts</Name>
+          <Name>SC-RetrieveGoogleCerts</Name>
           <Condition>cached.google.certs = null</Condition>
         </Step>
         <Step>
@@ -161,19 +161,19 @@
         </Step>
 
         <Step>
-          <Name>AssignVariable-GoogleCerts</Name>
+          <Name>AV-GoogleCerts</Name>
           <Condition>cached.google.certs != null</Condition>
         </Step>
 
-        <Step><Name>Javascript-ExtractGoogleCerts</Name></Step>
+        <Step><Name>JS-ExtractGoogleCerts</Name></Step>
 
         <!-- this step determines which cert to use during the verification -->
-        <Step><Name>Javascript-Extract-JWT-kid-for-Google</Name></Step>
+        <Step><Name>JS-Extract-JWT-kid-for-Google</Name></Step>
 
         <Step><Name>JWT-Parse-Verify-RS256-goog</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+        <Step><Name>AM-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -184,7 +184,7 @@
         <Step><Name>JWT-Parse-HS256-paypal</Name></Step>
       </Request>
       <Response>
-        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+        <Step><Name>AM-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
 
@@ -197,7 +197,7 @@
 
         <!-- retrieve SF keys. -->
         <Step>
-          <Name>ServiceCallout-SalesforceKeys</Name>
+          <Name>SC-RetrieveSalesforceKeys</Name>
           <Condition>cached.salesforce.keys = null</Condition>
         </Step>
         <Step>
@@ -206,25 +206,24 @@
         </Step>
 
         <Step>
-          <Name>AssignVariable-SalesforceKeys</Name>
+          <Name>AV-SalesforceKeys</Name>
           <Condition>cached.salesforce.keys != null</Condition>
         </Step>
 
-        <Step><Name>Javascript-ExtractSalesforceKeys</Name></Step>
+        <Step><Name>JS-ExtractSalesforceKeys</Name></Step>
 
         <!-- this step determines which key to use during the verification -->
-        <Step><Name>Javascript-Extract-JWT-kid-for-Salesforce</Name></Step>
-
+        <Step><Name>JS-Extract-JWT-kid-for-Salesforce</Name></Step>
       </Request>
       <Response>
         <Step><Name>JWT-Parse-Verify-RS256-salesforce</Name></Step>
-        <Step><Name>AssignMessage-JWT-Parse-Response</Name></Step>
+        <Step><Name>AM-JWT-Parse-Response</Name></Step>
       </Response>
     </Flow>
 
     <Flow name='unknown request'>
       <Request>
-        <Step><Name>RaiseFault-UnknownRequest</Name></Step>
+        <Step><Name>RF-UnknownRequest</Name></Step>
       </Request>
       <Response/>
     </Flow>

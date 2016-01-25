@@ -1,7 +1,7 @@
-<AssignMessage name='AssignVariable-MsCert'>
+<AssignMessage name='AV-SalesforceKeys'>
   <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>
   <AssignVariable>
-    <Name>ms.certificate</Name>
-    <Ref>cached.ms.cert</Ref>
+    <Name>sfKeys.content</Name>
+    <Ref>cached.salesforce.keys</Ref>
   </AssignVariable>
 </AssignMessage>

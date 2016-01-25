@@ -16,7 +16,7 @@
 # 
 # 
 # Created: <Thu Nov  5 13:30:29 2015>
-# Last Updated: <2015-November-10 10:40:43>
+# Last Updated: <2016-January-21 15:24:13>
 #
 
 apiname=jwt_encrypted
@@ -547,8 +547,9 @@ payload+=$'" ],\n'
 payload+=$'    "callbackUrl" : "thisisnotused://www.apigee.com",\n'
 payload+=$'    "name" : "'
 payload+="${appname}"
-payload+=$'",\n'
-payload+=$'    "keyExpiresIn" : "100000000"\n'
+payload+=$'"\n'
+#payload+=$'",\n'
+#payload+=$'    "keyExpiresIn" : "100000000"\n'
 payload+=$'}' 
 
 #  pubkey=${pubkey// /\\ }

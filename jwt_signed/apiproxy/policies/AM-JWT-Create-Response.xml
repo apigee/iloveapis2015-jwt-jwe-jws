@@ -1,4 +1,4 @@
-<AssignMessage name='AssignMessage-JWT-Create-Response'>
+<AssignMessage name='AM-JWT-Create-Response'>
   <DisplayName>AssignMessage JWT Create Response</DisplayName>
   <Description>respond with JWT</Description>
   <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>

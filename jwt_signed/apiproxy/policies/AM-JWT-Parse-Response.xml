@@ -1,4 +1,4 @@
-<AssignMessage name='AssignMessage-JWT-Parse-Response'>
+<AssignMessage name='AM-JWT-Parse-Response'>
   <DisplayName>AssignMessage JWT Parse Response</DisplayName>
   <Description>respond with information about the parsed JWT</Description>
   <IgnoreUnresolvedVariables>false</IgnoreUnresolvedVariables>

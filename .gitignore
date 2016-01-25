@@ -5,6 +5,7 @@
 Icon
 
 **/target/
+**/node_modules/
 **/*.jar
 **/*.class
 

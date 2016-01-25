@@ -1,14 +1,14 @@
-<ServiceCallout name='ServiceCallout-SalesforceKeys'>
+<ServiceCallout name='SC-RetrieveMicrosoftCert'>
   <Request>
     <Set>
       <Verb>GET</Verb>
     </Set>
   </Request>
-  <Response>sfKeys</Response>
+  <Response>msCert</Response>
   <HTTPTargetConnection>
     <Properties>
       <Property name='success.codes'>2xx</Property>
     </Properties>
-    <URL>https://login.salesforce.com/id/keys</URL>
+    <URL>https://login.microsoftonline.com/fa2613dd-1c7b-469b-8f92-88cd26856240/federationmetadata/2007-06/federationmetadata.xml</URL>
   </HTTPTargetConnection>
 </ServiceCallout>

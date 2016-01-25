@@ -1,4 +1,4 @@
-<Javascript name='Javascript-Extract-JWT-kid-for-Google' timeLimit='200' >
+<Javascript name='JS-Extract-JWT-kid-for-Google' timeLimit='200' >
   <Properties>
     <Property name='jwtvar'>request.formparam.jwt</Property>
   </Properties>

@@ -1,20 +1,22 @@
-<RaiseFault name='RaiseFault-UnknownRequest'>
-  <DisplayName>RaiseFault-UnknownRequest</DisplayName>
+<RaiseFault name='RF-UnknownRequest'>
+  <DisplayName>RF-UnknownRequest</DisplayName>
   <Description>Unknown Request</Description>
   <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
   <FaultResponse>
     <Set>
       <Payload contentType='application/json'
                variablePrefix='%' variableSuffix='#'><![CDATA[{
-  "error" : "that request was unknown",
-  "message" : "try one of the following. See the readme for details.",
-  "suggestions" : [
+  "error" : {
+    "code" : 404.01,
+    "message" : "that request was unknown; try one of the following. See the readme for details.",
+    "suggestions" : [
      "POST /java-jwt1/create-rs256",
-     "POST /java-jwt1/create-hs256",
-     "POST /java-jwt1/validate-rs256",
-     "POST /java-jwt1/validate-hs256",
-     "POST /java-jwt1/validate-ms"
-  ]
+       "POST /java-jwt1/create-hs256",
+       "POST /java-jwt1/validate-rs256",
+       "POST /java-jwt1/validate-hs256",
+       "POST /java-jwt1/validate-ms"
+    ]
+  }
 }
 ]]></Payload>
       <StatusCode>404</StatusCode>

@@ -114,6 +114,7 @@ these commands:
     </resources>
 
     <plugins>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
@@ -133,6 +134,7 @@ these commands:
           </execution>
         </executions>
       </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -145,7 +147,14 @@ these commands:
             </goals>
           </execution>
         </executions>
-        <configuration />
+
+        <configuration>
+          <archive>
+            <!-- do not include the pom.xml file in the generated jar -->
+            <addMavenDescriptor>false</addMavenDescriptor>
+          </archive>
+        </configuration>
+
       </plugin>
 
       <plugin>

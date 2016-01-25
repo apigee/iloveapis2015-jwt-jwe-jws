@@ -1,14 +1,14 @@
-<ServiceCallout name='ServiceCallout-GoogleCerts'>
+<ServiceCallout name='SC-RetrieveSalesforceKeys'>
   <Request>
     <Set>
       <Verb>GET</Verb>
     </Set>
   </Request>
-  <Response>googCerts</Response>
+  <Response>sfKeys</Response>
   <HTTPTargetConnection>
     <Properties>
       <Property name='success.codes'>2xx</Property>
     </Properties>
-    <URL>https://www.googleapis.com/oauth2/v1/certs</URL>
+    <URL>https://login.salesforce.com/id/keys</URL>
   </HTTPTargetConnection>
 </ServiceCallout>

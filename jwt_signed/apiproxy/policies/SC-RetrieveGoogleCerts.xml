@@ -1,14 +1,14 @@
-<ServiceCallout name='ServiceCallout-MicrosoftCert'>
+<ServiceCallout name='SC-RetrieveGoogleCerts'>
   <Request>
     <Set>
       <Verb>GET</Verb>
     </Set>
   </Request>
-  <Response>msCert</Response>
+  <Response>googCerts</Response>
   <HTTPTargetConnection>
     <Properties>
       <Property name='success.codes'>2xx</Property>
     </Properties>
-    <URL>https://login.microsoftonline.com/fa2613dd-1c7b-469b-8f92-88cd26856240/federationmetadata/2007-06/federationmetadata.xml</URL>
+    <URL>https://www.googleapis.com/oauth2/v1/certs</URL>
   </HTTPTargetConnection>
 </ServiceCallout>

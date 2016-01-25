@@ -133,7 +133,12 @@ these commands:
             </goals>
           </execution>
         </executions>
-        <configuration />
+        <configuration>
+          <archive>
+            <!-- do not include the pom.xml file in the generated jar -->
+            <addMavenDescriptor>false</addMavenDescriptor>
+          </archive>
+        </configuration>
       </plugin>
 
       <plugin>
