@@ -279,6 +279,7 @@ public class JwtParserCallout implements Execution {
         String varName;
         String varPrefix = "jwt";
         // The validity of the JWT depends on:
+        // - the structure. it must be valid.
         // - the algorithm. must match what is required.
         // - the signature. It must verify.
         // - the times. Must not be expired, also respect "notbefore".
@@ -286,7 +287,15 @@ public class JwtParserCallout implements Execution {
         try {
             // 1. read the JWT
             String jwt = getJwt(msgCtxt); // a dot-separated JWT
-            SignedJWT signedJWT = SignedJWT.parse(jwt);
+            SignedJWT signedJWT = null;
+            try {
+                signedJWT = SignedJWT.parse(jwt);
+            }
+            catch ( java.text.ParseException pe1) {
+                varName = varPrefix + "_clienterror";
+                msgCtxt.setVariable(varName, "failed to parse that JWT. Is it well-formed?");
+                return ExecutionResult.SUCCESS;
+            }
             ReadOnlyJWTClaimsSet claims = null;
             varName = varPrefix + "_isSigned";
             msgCtxt.setVariable(varName, true+"");
@@ -457,10 +466,10 @@ public class JwtParserCallout implements Execution {
         catch (Exception e) {
             e.printStackTrace();
             varName = varPrefix + "_error";
-            msgCtxt.setVariable(varName, "Exception (A): " + e.toString());
-            System.out.println("exception: " + e.toString());
+            msgCtxt.setVariable(varName, e.toString());
+            //System.out.println("exception: " + e.toString());
             varName = varPrefix + "_stacktrace";
-            msgCtxt.setVariable(varName, "Stack (A): " + ExceptionUtils.getStackTrace(e));
+            msgCtxt.setVariable(varName, ExceptionUtils.getStackTrace(e));
             return ExecutionResult.ABORT;
         }
         return ExecutionResult.SUCCESS;

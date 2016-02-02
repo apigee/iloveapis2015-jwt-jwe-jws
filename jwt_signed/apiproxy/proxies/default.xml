@@ -138,6 +138,11 @@
         </Step>
 
         <Step><Name>JWT-Parse-Verify-RS256-ms</Name></Step>
+        <Step>
+          <Name>RF-BadJwt</Name>
+          <Condition>jwt_clienterror != null</Condition>
+        </Step>
+
       </Request>
       <Response>
         <Step><Name>AM-JWT-Parse-Response</Name></Step>
@@ -169,6 +174,10 @@
 
         <!-- this step determines which cert to use during the verification -->
         <Step><Name>JS-Extract-JWT-kid-for-Google</Name></Step>
+        <Step>
+          <Name>RF-BadJwt</Name>
+          <Condition>goog_certificate = null</Condition>
+        </Step>
 
         <Step><Name>JWT-Parse-Verify-RS256-goog</Name></Step>
       </Request>
