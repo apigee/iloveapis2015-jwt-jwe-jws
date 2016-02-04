@@ -284,6 +284,8 @@ public class JwtParserCallout implements Execution {
         // - the signature. It must verify.
         // - the times. Must not be expired, also respect "notbefore".
         // - the enforced claims. They all must match.
+        String wantDebug = this.properties.get("debug");
+        boolean debug = (wantDebug != null) && Boolean.parseBoolean(wantDebug);
         try {
             // 1. read the JWT
             String jwt = getJwt(msgCtxt); // a dot-separated JWT
@@ -316,7 +318,7 @@ public class JwtParserCallout implements Execution {
                 throw new UnsupportedOperationException("provided Algorithm=" + providedAlgorithm);
             }
             if (!providedAlgorithm.equals(requiredAlgorithm)){
-                throw new UnsupportedOperationException("Algorithm mismatch. provided= " + providedAlgorithm + ", required=" + requiredAlgorithm);
+                throw new UnsupportedOperationException("Algorithm mismatch. provided=" + providedAlgorithm + ", required=" + requiredAlgorithm);
             }
 
             // 3. set up the signature verifier according to the required algorithm and its inputs
@@ -377,37 +379,53 @@ public class JwtParserCallout implements Execution {
             Date now = new Date();
             recordTimeVariable(msgCtxt,varPrefix,sdf,now,"now");
 
+            boolean valid = true;
+
             // 6d. issued-at
+            long ms, secsRemaining;
             Date t1 = claims.getIssueTime();
-            recordTimeVariable(msgCtxt,varPrefix,sdf,t1,"issueTime");
+            if (t1 != null) {
+                recordTimeVariable(msgCtxt,varPrefix,sdf,t1,"issueTime");
+                ms = now.getTime() - t1.getTime();
+                valid = (ms >= 0);
+            }
 
             // 6e. expiration
             Date t2 = claims.getExpirationTime();
-            recordTimeVariable(msgCtxt,varPrefix,sdf,t2,"expirationTime");
+            if (t2 != null) {
+                recordTimeVariable(msgCtxt,varPrefix,sdf,t2,"expirationTime");
 
-            // 6f. elaborated values for expiry
-            varName = varPrefix + "_secondsRemaining";
-            long ms = t2.getTime() - now.getTime();
-            long secsRemaining = ms/1000;
-            msgCtxt.setVariable(varName, secsRemaining + "");
-            varName = varPrefix + "_timeRemainingFormatted";
-            if (ms<0) {
-                msgCtxt.setVariable(varName, "-" + DurationFormatUtils.formatDurationHMS(0-ms));
+                // 6f. elaborated values for expiry
+                varName = varPrefix + "_secondsRemaining";
+                ms = t2.getTime() - now.getTime();
+                secsRemaining = ms/1000;
+                msgCtxt.setVariable(varName, secsRemaining + "");
+                varName = varPrefix + "_timeRemainingFormatted";
+                if (ms<0) {
+                    msgCtxt.setVariable(varName, "-" + DurationFormatUtils.formatDurationHMS(0-ms));
+                }
+                else {
+                    msgCtxt.setVariable(varName, DurationFormatUtils.formatDurationHMS(ms));
+                }
+
+                // 6g. computed boolean isExpired
+                varName = varPrefix + "_isExpired";
+                boolean expired = (ms <= 0);
+                msgCtxt.setVariable(varName, expired + "");
+                if (expired) {
+                    valid = false;
+                    msgCtxt.setVariable(varPrefix + "_reason", "the token is expired");
+                }
             }
             else {
-                msgCtxt.setVariable(varName, DurationFormatUtils.formatDurationHMS(ms));
+                varName = varPrefix + "_isExpired";
+                msgCtxt.setVariable(varName, "false");
             }
-
-            // 6g. computed boolean isExpired
-            varName = varPrefix + "_isExpired";
-            boolean expired = (ms <= 0);
-            msgCtxt.setVariable(varName, expired + "");
 
             // optional nbf (not-Before) (Sec 4.1.5)
             Date t3 = claims.getNotBeforeTime();
 
             // 7. validate expiry and not-before-time
-            boolean valid = !expired;
             if (t3 != null) {
                 recordTimeVariable(msgCtxt,varPrefix,sdf,t3,"notBeforeTime");
                 if (valid) {
@@ -447,9 +465,12 @@ public class JwtParserCallout implements Execution {
                             else {
                                 // string match all other required claims
                                 String providedValue = claims.getStringClaim(claimName);
-                                valid = valid && expectedValue.equals(providedValue);
-                                if (!valid) {
-                                    msgCtxt.setVariable(varPrefix + "_reason", "claim " + claimName + " != " + expectedValue);
+                                boolean match = expectedValue.equals(providedValue);
+                                if (!match) {
+                                    msgCtxt.setVariable(varPrefix + "_reason",
+                                                        String.format("mismatch in claim %s, expected:%s provided:%s",
+                                                                      claimName, expectedValue, providedValue));
+                                    valid = false;
                                 }
                                 varName = varPrefix + "_" + key + "_provided";
                                 msgCtxt.setVariable(varName, providedValue);
@@ -464,9 +485,20 @@ public class JwtParserCallout implements Execution {
             msgCtxt.setVariable(varName, valid + "");
         }
         catch (Exception e) {
-            e.printStackTrace();
+            if (debug) {
+                e.printStackTrace();
+            }
             varName = varPrefix + "_error";
-            msgCtxt.setVariable(varName, e.toString());
+            String error = e.toString();
+            msgCtxt.setVariable(varName, error);
+            int ch = error.indexOf(':');
+            if (ch >= 0) {
+                msgCtxt.setVariable(varPrefix + "_reason", error.substring(ch+2));
+            }
+            else {
+                msgCtxt.setVariable(varPrefix + "_reason", error);
+            }
+
             //System.out.println("exception: " + e.toString());
             varName = varPrefix + "_stacktrace";
             msgCtxt.setVariable(varName, ExceptionUtils.getStackTrace(e));
