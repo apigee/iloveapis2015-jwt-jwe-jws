@@ -1,7 +1,7 @@
 # iloveapis2015-jwt-jwe-jws
 
 This is the top-level project containing source code, documentation, and tools for the Devevloper Forum session entitied "ADVANCED SECURITY EXTENSIONS IN APIGEE EDGE: JWT, JWE, JWS"
- at the 2015 I-love-APIs conference in San Jose, California, from 12-14 October.
+ at the 2015 I-love-APIs conference in San Jose, California, from 2015 October 12-14.  We also repeated this content in a recorded webcast on 2016 February 4. 
 
 
 ## What's going on here?
@@ -9,7 +9,7 @@ This is the top-level project containing source code, documentation, and tools f
 You will find subdirectories here, containing independent projects:
 
 - [JWT (signed)](jwt_signed) - verifying Signed JWT in Edge
-- [JWT (encrypted)](jwt_encrypted) - verifying Encrypted JWT in Edge
+- [JWT (encrypted)](jwt_encrypted) - verifying Signed+Encrypted JWT in Edge
 - [JWE](jwe) - producing and decrypting JWE in Edge
 
 
