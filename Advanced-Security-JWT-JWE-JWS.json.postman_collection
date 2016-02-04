@@ -1,0 +1,355 @@
+{
+	"id": "c6630223-9935-84f8-f97f-ea59d80fb681",
+	"name": "Advanced-Security-JWT-JWE-JWS",
+	"description": "",
+	"order": [],
+	"folders": [
+		{
+			"id": "dd75c8c6-2601-e5a5-ca2d-b7b1da112bd7",
+			"name": "JWE",
+			"description": "",
+			"order": [
+				"e4d5588e-b72a-cba0-c51f-dc89fd7d3662",
+				"9c9b0a3d-50e7-aa7c-9125-c1ffbd80f991"
+			],
+			"owner": "2578"
+		},
+		{
+			"id": "01f776ff-df53-6866-c612-ad42f4dabe1f",
+			"name": "JWT_Encrypted",
+			"description": "",
+			"order": [
+				"3c3a20cb-e9cb-ec44-fa53-2dd7efa4c919",
+				"fcfcbb14-4b5f-f5e0-f565-216f20cc200d"
+			],
+			"owner": "2578"
+		},
+		{
+			"id": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd",
+			"name": "JWT_Signed",
+			"description": "",
+			"order": [
+				"1090bf4e-f4e0-7278-f6e9-e805e80fa442",
+				"bbd58738-8353-5f46-e9d0-54cd32649983",
+				"0c1a54c4-e52c-69d5-adc4-c28ca192996f",
+				"e982d75d-b4fd-5923-a807-6cba67bcfbe8",
+				"a3d4c677-7566-6c6d-6859-12e098f5ee12",
+				"4cdf8803-4fa2-176b-ab19-c466ee18d458",
+				"9425fe80-7e2b-e0de-2d4c-908066ad427b"
+			],
+			"owner": "2578"
+		}
+	],
+	"timestamp": 1444441511317,
+	"owner": "2578",
+	"public": false,
+	"hasRequests": true,
+	"requests": [
+		{
+			"id": "0c1a54c4-e52c-69d5-adc4-c28ca192996f",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_signed/create-rs256",
+			"pathVariables": {},
+			"preRequestScript": "var prScript",
+			"method": "POST",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"data": [],
+			"dataMode": "urlencoded",
+			"name": "JWT_Signed_Create-rs256",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1444444367035,
+			"version": 2,
+			"responses": [],
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
+		},
+		{
+			"id": "1090bf4e-f4e0-7278-f6e9-e805e80fa442",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_signed/create-hs256",
+			"pathVariables": {},
+			"preRequestScript": "var prScript",
+			"method": "POST",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"data": [
+				{
+					"key": "key",
+					"value": "secret",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"name": "JWT_Signed_Create-hs256",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1444444098412,
+			"version": 2,
+			"responses": [],
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
+		},
+		{
+			"id": "3c3a20cb-e9cb-ec44-fa53-2dd7efa4c919",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_encrypted/create?apikey={{apikey}}",
+			"preRequestScript": "var prScript",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [],
+			"dataMode": "urlencoded",
+			"version": 2,
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1444442136435,
+			"name": "JWT_Encrypted CREATE",
+			"description": "",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"responses": [],
+			"folder": "01f776ff-df53-6866-c612-ad42f4dabe1f"
+		},
+		{
+			"id": "4cdf8803-4fa2-176b-ab19-c466ee18d458",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_signed/validate-ms",
+			"preRequestScript": "var prScript",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "jwt",
+					"value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik1uQ19WWmNBVGZNNXBPWWlKSE1iYTlnb0VLWSIsImtpZCI6Ik1uQ19WWmNBVGZNNXBPWWlKSE1iYTlnb0VLWSJ9.eyJhdWQiOiI2M2I0YzljMS05YTYyLTQ0OTctYjJmZS05YWY3MTMwNWEyMzciLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9mYTI2MTNkZC0xYzdiLTQ2OWItOGY5Mi04OGNkMjY4NTYyNDAvIiwiaWF0IjoxNDU0NjI1NDk1LCJuYmYiOjE0NTQ2MjU0OTUsImV4cCI6MTQ1NDYyOTM5NSwiYW1yIjpbInB3ZCJdLCJlbWFpbCI6ImRwY2hpZXNhQGhvdG1haWwuY29tIiwiZmFtaWx5X25hbWUiOiJjaGllc2EiLCJnaXZlbl9uYW1lIjoiZGlubyIsImlkcCI6ImxpdmUuY29tIiwibmFtZSI6ImRpbm8gY2hpZXNhIiwibm9uY2UiOiIxMjM0NTYiLCJvaWQiOiJmOTZmMTRjOS03OTEwLTRjYzctYjNiNi0zNWJlNjFjMzY4ZjIiLCJzdWIiOiJYQU9fcUpzcm53empkNDF5Y3AzOHlKLTY0UlVNTjF4b2R5Q0J5ZUd2SUJJIiwidGlkIjoiZmEyNjEzZGQtMWM3Yi00NjliLThmOTItODhjZDI2ODU2MjQwIiwidW5pcXVlX25hbWUiOiJsaXZlLmNvbSNkcGNoaWVzYUBob3RtYWlsLmNvbSIsInZlciI6IjEuMCJ9.a_1qfZ1bJyzEP2PcziqFzOW23xeX6Bn8MisXhahgYJMqjqLfYprNtoDYln6UYs2WcQXCZBUC5JzTFazRXdIgLt51f0U84kd9rPnYWlQrebgf3lq7G4imFOazQiQyi7um_4Q-lJv9mhubu4vBTZgD13bvjATWEwUu9HZFHLHJ196xZOfxmfU_aj_ARrVv2TI-uanLHjEUCHANAIT-ZHG8jnr-rdCDP8DzuPvV7eVAQYhKmdcqJtp3Y2FE0hIq1pcsZoHjTS45wtG0QYBCrVkCUngHcimtNN6v8RMuCofr6q--wOmp4BHyl2dg9bnImT5n5kcd21h8WRR4Ub8ULdxfgg",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"version": 2,
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1454625894093,
+			"name": "JWT_Signed-Validate-azure",
+			"description": "",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"responses": []
+		},
+		{
+			"id": "9425fe80-7e2b-e0de-2d4c-908066ad427b",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_signed/validate-goog",
+			"preRequestScript": "var prScript",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "jwt",
+					"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjdmM2VhY2FjMzY5ODQ2MzRhNWVhZGZhMzQzMDhjN2YyNDczYzhhOWYifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhdWQiOiI5NjEzNDkzMzkwMy12M20xNm1nM3FlcjRhNGV0a2cwdDd2dWlqMWJqM25hOC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsInN1YiI6IjEwMTg2NjU1MDk2OTQ2MzUyNzA4MyIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhenAiOiI5NjEzNDkzMzkwMy12M20xNm1nM3FlcjRhNGV0a2cwdDd2dWlqMWJqM25hOC5hcHBzLmdvb2dsZXVzZXJjb250ZW50LmNvbSIsIm5vbmNlIjoiYWJjMSIsImVtYWlsIjoiZHBjaGllc2FAaG90bWFpbC5jb20iLCJpYXQiOjE0NTQ2MjU5OTgsImV4cCI6MTQ1NDYyOTU5OCwibmFtZSI6IkRpbm8gQ2hpZXNhIiwicGljdHVyZSI6Imh0dHBzOi8vbGg1Lmdvb2dsZXVzZXJjb250ZW50LmNvbS8tZUwxd2R3SHBhTlkvQUFBQUFBQUFBQUkvQUFBQUFBQUFBY1EvWWo5WmhQZThWZEEvczk2LWMvcGhvdG8uanBnIiwiZ2l2ZW5fbmFtZSI6IkRpbm8iLCJmYW1pbHlfbmFtZSI6IkNoaWVzYSIsImxvY2FsZSI6ImVuIn0.V92CkGnSARSoV5_TE3J50ga-6HuPacWWyKVgnmdzCLAqvnxwLCIwrNQ4jz8dhbwhUF4tWKBvcNoSlRYd-sO4G0zJlvkAooPUqwvk7g8diC64tHIO8D2bNcDZINa2kJS2qvq1q2Rl11H0otpngBsvYWWGIUUfXhqmd-a7D4xpUwR-HQiDERBrFwlOGQmNz6ODH33QNEKU8_fH2F89jknvcaITNw1wgM5IZWArr9jF2Q2MTRH9yrPLDdeCoRtEQ7uJkdMPLgG7jiQkb8mlCKA4pjhXd_NYhPZWt22kCed-5A9Fdv2MSZjD_co_2qxEpA5VNgTWyoOEzhUC0bi3xeBiIA",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"version": 2,
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1454626013171,
+			"name": "JWT_Signed-Validate-google",
+			"description": "",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"responses": []
+		},
+		{
+			"id": "9c9b0a3d-50e7-aa7c-9125-c1ffbd80f991",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwe/decrypt-hs256",
+			"pathVariables": {},
+			"preRequestScript": "var prScript",
+			"method": "POST",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"data": [
+				{
+					"key": "key",
+					"value": "secret",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "jwe",
+					"value": "eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiUEJFUzItSFMyNTYrQTEyOEtXIiwicDJjIjo4MTkyLCJwMnMiOiJoZF9yaWhzZnc5emF6U3M3In0.J9BxBJkgLFC27bxEbTe7Klvb4WCwJA7l8R42--KgcFt3UGIs09_yNA.UWXt7jSK-HUIv_kcjQou4g.ILJQff1WVM-2zqHA3ngR1Db8zTgISH7jIKFrMI--yeo.o1unTQz1Yfb482e-xcRdug",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"name": "JWE Decrypt",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1444443742888,
+			"version": 2,
+			"responses": [],
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"folder": "dd75c8c6-2601-e5a5-ca2d-b7b1da112bd7"
+		},
+		{
+			"id": "a3d4c677-7566-6c6d-6859-12e098f5ee12",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_signed/validate-openid",
+			"pathVariables": {},
+			"preRequestScript": "var prScript",
+			"method": "POST",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"data": [
+				{
+					"key": "jwt",
+					"value": "eyJhbGciOiJSUzI1NiIsImtpZCI6IjFlOWdkazcifQ.ewogImlzcyI6ICJodHRwOi8vc2VydmVyLmV4YW1wbGUuY29tIiwKICJzdWIiOiAiMjQ4Mjg5NzYxMDAxIiwKICJhdWQiOiAiczZCaGRSa3F0MyIsCiAibm9uY2UiOiAibi0wUzZfV3pBMk1qIiwKICJleHAiOiAxMzExMjgxOTcwLAogImlhdCI6IDEzMTEyODA5NzAKfQ.ggW8hZ1EuVLuxNuuIJKX_V8a_OMXzR0EHR9R6jgdqrOOF4daGU96Sr_P6qJp6IcmD3HP99Obi1PRs-cwh3LO-p146waJ8IhehcwL7F09JdijmBqkvPeB2T9CJNqeGpe-gccMg4vfKjkM8FcGvnzZUN4_KSP0aAp1tOJ1zZwgjxqGByKHiOtX7TpdQyHE5lcMiKPXfEIQILVq0pc_E2DzL7emopWoaoZTF_m0_N0YzFC6g6EJbOEoRoSK5hoDalrcvRYLSrQAZZKflyuVCyixEoV9GfNQC3_osjzw2PAithfubEEBLuVVk4XUVrWOLrLl0nx7RkKU8NXNHq-rvKMzqg",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"name": "JWT_Signed-Validate-openid",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1444444708929,
+			"version": 2,
+			"responses": [],
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
+		},
+		{
+			"id": "bbd58738-8353-5f46-e9d0-54cd32649983",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_signed/validate-hs256",
+			"pathVariables": {},
+			"preRequestScript": "var prScript",
+			"method": "POST",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"data": [
+				{
+					"key": "key",
+					"value": "secret",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "jwt",
+					"value": "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0NDQ1MzA1NDQsInN1YiI6Imp3dF9zaWduZWQiLCJhdWQiOiJPcHRpb25hbC1TdHJpbmctb3ItVVJJIiwiaXNzIjoiaHR0cDpcL1wvZGlub2NoaWVzYS5uZXQiLCJtb3R0byI6Iklsb3ZlYXBpcyIsInNob2VzaXplIjoiOSIsImlhdCI6MTQ0NDQ0NDE0NH0.f5nAgpTC8zFdGpETU2jJ4GAfdS_VApGpKO5JgHxCYbA",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"name": "JWT_Signed-Validate-hs256",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1444444258689,
+			"version": 2,
+			"responses": [],
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
+		},
+		{
+			"id": "e4d5588e-b72a-cba0-c51f-dc89fd7d3662",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwe/create-hs256",
+			"pathVariables": {},
+			"preRequestScript": "var prScript",
+			"method": "POST",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"data": [
+				{
+					"key": "key",
+					"value": "secret",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "plaintext",
+					"value": "The quick brown fox....",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"name": "JWE- CREATE",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1444443308295,
+			"version": 2,
+			"responses": [],
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"folder": "dd75c8c6-2601-e5a5-ca2d-b7b1da112bd7"
+		},
+		{
+			"id": "e982d75d-b4fd-5923-a807-6cba67bcfbe8",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_signed/validate-rs256",
+			"pathVariables": {},
+			"preRequestScript": "var prScript",
+			"method": "POST",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"data": [
+				{
+					"key": "jwt",
+					"value": "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE0NDQ1MzA3NzMsInN1YiI6Imp3dF9zaWduZWQiLCJhdWQiOiJPcHRpb25hbC1TdHJpbmctb3ItVVJJIiwiaXNzIjoiaHR0cDpcL1wvZGlub2NoaWVzYS5uZXQiLCJwcmltYXJ5bGFuZ3VhZ2UiOiJFbmdsaXNoIiwibW90dG8iOiJJbG92ZWFwaXMiLCJzaG9lc2l6ZSI6IjguNSIsImlhdCI6MTQ0NDQ0NDM3M30.soVpunGnuX77CHs_UEA-grG_Igpkyl_GvCCSGarAOix-OMG2iesWT2azVKFr6QWc9hHisRcFv5VWYacOovn3yxrZANbYIPMC6mbjivRaaPP9gv5Bzpy3gHOJM1txzkk30oerKBBXI5y12PaIdqncJ46KtaZjSQag2WqDYHVzc1hi6yVkF8ZqEyMMzEpM_gdh816fkIJfqNhoCD1IchyLJQApb9Tb41efqZEe5fj2I9FaOvPhyvjW5pI-Ap3LBeBU7HIk9qi_C2xk-uLf5p1pTqpt5mBWNSAeyrndlQPymPCYMcjIffAW1fGyCkauQA9Dm3yT9v4Qebcn1P6YTg0l1A",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"name": "JWT_Signed-Validate-rs256",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1444444425622,
+			"version": 2,
+			"responses": [],
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
+		},
+		{
+			"id": "fcfcbb14-4b5f-f5e0-f565-216f20cc200d",
+			"headers": "",
+			"url": "http://iloveapis2015-test.apigee.net/jwt_encrypted/validate?apikey=Xmzm0xlH27YerSdWzk78Gf3QHaP1WyQd",
+			"preRequestScript": "var prScript",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "jwt",
+					"value": "{{jwt_encrypted}}",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"version": 2,
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1444442113481,
+			"name": "JWT_Encrypted VALIDATE",
+			"description": "",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"responses": [],
+			"folder": "01f776ff-df53-6866-c612-ad42f4dabe1f"
+		}
+	]
+}

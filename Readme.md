@@ -15,10 +15,14 @@ You will find subdirectories here, containing independent projects:
 
 Each directory includes the Java source code for a callout, as well as an example API proxy, which shows how to use the callout. 
 
+## About Building
+
+It is not necessary to build the Java source code contained in the subdirectories here, in order to use the JWT or JWE policies in Apigee Edge.  
+
 
 ## Pre-build step
 
-It is not necessary to build the Java source code contained in the subdirectories here, in order to use the JWT or JWE policies in Apigee Edge.  But, if you do wish to build, to allow the maven builds to succeed, you need to first run the buildsetup.sh script on your workstation. This adds the Apigee-required jars into the local maven repository (your local cache). 
+If you do wish to build the callouts from Java source, you need [Apache maven](https://maven.apache.org/).  To allow the maven builds to succeed, you need to first run the buildsetup.sh script on your workstation. This adds the Apigee-required jars into the local maven repository (your local cache). 
 
 Do this like so: 
 
@@ -26,12 +30,14 @@ Do this like so:
   ./buildsetup.sh
 ```
 
-You must have maven installed in order for the above step to succeed.
+You must have previously installed maven in order for the above step to succeed.
 
 After the buildsetup, to build the jars with maven, follow the usual
-steps.  This is described in greater detail in the callout source
+steps.  This is described in greater detail in the Readme's in the callout source
 directory for each sudirectory here.
 
-# Sample Request calls for all the use cases
-If you have postman you can download the collection form this link - https://www.getpostman.com/collections/24101901a9797c0921a4
-Otherwise for each use cases the sample requests have been well documented.
+
+# Sample Request calls 
+
+If you have the [Postman tool](https://www.getpostman.com/) you can use [the collection](Advanced-Security-JWT-JWE-JWS.json.postman_collection) included in this repo. 
+Otherwise for each use case, the sample requests have been well documented in the Readme's.
