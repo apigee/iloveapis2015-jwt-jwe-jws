@@ -72,8 +72,9 @@ public class TestJwtParseEdgeCallout {
     static {
         Map<String, String> m = new HashMap<String,String>();
         m.put("ms1", "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik1uQ19WWmNBVGZNNXBPWWlKSE1iYTlnb0VLWSIsImtpZCI6Ik1uQ19WWmNBVGZNNXBPWWlKSE1iYTlnb0VLWSJ9.eyJhdWQiOiI2M2I0YzljMS05YTYyLTQ0OTctYjJmZS05YWY3MTMwNWEyMzciLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9mYTI2MTNkZC0xYzdiLTQ2OWItOGY5Mi04OGNkMjY4NTYyNDAvIiwiaWF0IjoxNDUyNjYxNTM2LCJuYmYiOjE0NTI2NjE1MzYsImV4cCI6MTQ1MjY2NTQzNiwiYW1yIjpbInB3ZCJdLCJlbWFpbCI6ImRwY2hpZXNhQGhvdG1haWwuY29tIiwiZmFtaWx5X25hbWUiOiJjaGllc2EiLCJnaXZlbl9uYW1lIjoiZGlubyIsImlkcCI6ImxpdmUuY29tIiwibmFtZSI6ImRpbm8gY2hpZXNhIiwibm9uY2UiOiJhYmNkZSIsIm9pZCI6ImY5NmYxNGM5LTc5MTAtNGNjNy1iM2I2LTM1YmU2MWMzNjhmMiIsInB3ZF9leHAiOiIwIiwicHdkX3VybCI6Imh0dHBzOi8vcG9ydGFsLm1pY3Jvc29mdG9ubGluZS5jb20vQ2hhbmdlUGFzc3dvcmQuYXNweCIsInN1YiI6IlhBT19xSnNybnd6amQ0MXljcDM4eUotNjRSVU1OMXhvZHlDQnllR3ZJQkkiLCJ0aWQiOiJmYTI2MTNkZC0xYzdiLTQ2OWItOGY5Mi04OGNkMjY4NTYyNDAiLCJ1bmlxdWVfbmFtZSI6ImxpdmUuY29tI2RwY2hpZXNhQGhvdG1haWwuY29tIiwidmVyIjoiMS4wIn0.cAWs-P-e-QbIK4FCFoPQUKBJL88Nw7wbPKuG443WpD76b-E4SQ8fAG5-GjLO7TTgmvvR4mWCrrSJ-MCvTcGtf3J5UIagvbUCfj1rTSPikLaGz96DL66WLVRPeSlegeHdAJOyqj6yCOzQSScdFfJu5I7t3joGUI4t1rCtvdCaT1fwqsZQ0GNDkle2lVSqMFyfMuiT1cGx4kTnzH-pDZ9hRePLOjNY9tKJaisk5J54Qlqz0Tgqzcvq3OD7MKN1IwHmZP8acGCiFdbISXaYEh-cLxjd19hIUX6lQPA7UzilHaJo3H1RVzpuhjWHF5VLB42ng5XUZXmFvjjDxa2GUkWeyw");
-        m.put("sample1", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ");
-        m.put("sample2", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxN0M0QjEwNS00MDhFLTRGNUMtQTBCMS1FOTUxODYwODU1OUYiLCJnaXZlbl9uYW1lIjoiRGlubyIsImZhbWlseV9uYW1lIjoiQ2hpZXNhIiwiaXNzIjoidXJuOjBCOTA5MjAzLTQyREItNDdENy1CNzAyLUVFOTIwNTY0MEFDOCIsInNob2VzaXplIjoiOSJ9.P5ZM3rAO9NNuf06zYZ2bcA19gZHfpku-K5QxoUcuQA0");
+        m.put("sample1", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqZDJAZXhtYXBsZS5jb20iLCJhZG1pbiI6dHJ1ZX0.DJZX3Nsuj7SN0B0XYgzKt5wWqkBlEefnCd_MRVxEmTA");
+        m.put("sample2", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxN0M0QjEwNS00MDhFLTRGNUMtQTBCMS1FOTUxODYwODU1OUYiLCJnaXZlbl9uYW1lIjoiRGlubyIsImZhbWlseV9uYW1lIjoiQ2hpZXNhIiwiaXNzIjoidXJuOjBCOTA5MjAzLTQyREItNDdENy1CNzAyLUVFOTIwNTY0MEFDOCIsInNob2VzaXplIjoiOSJ9.mrsvlFYJ2oMfHAVE-v8dOspKbusOkt4BfwhwJh11JCo");
+        m.put("unsigned1", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMzNywidXNlcm5hbWUiOiJqb2huLmRvZSJ9");
         jwtMap = java.util.Collections.unmodifiableMap(m);
 
         m = new HashMap<String,String>();
@@ -103,7 +104,7 @@ public class TestJwtParseEdgeCallout {
 
     @Test()
     public void test1_BadJwt() {
-        String expectedError = "failed to parse that JWT. Is it well-formed?";
+        String expectedReason = "the JWT did not parse.";
         Map properties = new HashMap();
         properties.put("jwt", "The quick brown fox...");
 
@@ -111,12 +112,13 @@ public class TestJwtParseEdgeCallout {
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
         // retrieve output
-        String error = msgCtxt.getVariable("jwt_clienterror");
+        String isValid = msgCtxt.getVariable("jwt_isValid");
         String reason = msgCtxt.getVariable("jwt_reason");
 
         // check result and output
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(error, expectedError);
+        Assert.assertEquals(isValid, "false");
+        Assert.assertEquals(reason, expectedReason);
         //Assert.assertNotNull(error);
     }
 
@@ -131,13 +133,12 @@ public class TestJwtParseEdgeCallout {
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
         // retrieve output
-        String error = msgCtxt.getVariable("jwt_clienterror");
+        String isValid = msgCtxt.getVariable("jwt_isValid");
         String reason = msgCtxt.getVariable("jwt_reason");
 
         // check result and output
         Assert.assertEquals(result, ExecutionResult.ABORT);
         Assert.assertEquals(reason, expectedReason);
-        //Assert.assertNotNull(error);
     }
     
     @Test()
@@ -152,15 +153,19 @@ public class TestJwtParseEdgeCallout {
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
         // retrieve output
-        String error = msgCtxt.getVariable("jwt_clienterror");
+        String isValid = msgCtxt.getVariable("jwt_isValid");
         String expiry = msgCtxt.getVariable("jwt_expirationTimeFormatted");
         String reason = msgCtxt.getVariable("jwt_reason");
-        System.out.println("expiry: " + expiry);
+        String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        System.out.println("test3 expiry: " + expiry);
 
         // check result and output
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        Assert.assertEquals(isValid, "false");
+        Assert.assertEquals(hasExpiry, "true");
+        Assert.assertEquals(isExpired, "true");
         Assert.assertEquals(reason, expectedReason);
-        //Assert.assertNotNull(error);
     }
 
     @Test()
@@ -175,13 +180,13 @@ public class TestJwtParseEdgeCallout {
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
         // retrieve output
-        String error = msgCtxt.getVariable("jwt_clienterror");
         String reason = msgCtxt.getVariable("jwt_reason");
+        String isValid = msgCtxt.getVariable("jwt_isValid");
 
         // check result and output
-        Assert.assertEquals(result, ExecutionResult.ABORT);
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
         Assert.assertEquals(reason, expectedReason);
-        //Assert.assertNotNull(error);
+        Assert.assertEquals(isValid, "false");
     }
     
     @Test()
@@ -196,13 +201,13 @@ public class TestJwtParseEdgeCallout {
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
         // retrieve output
-        String error = msgCtxt.getVariable("jwt_clienterror");
+        String isValid = msgCtxt.getVariable("jwt_isValid");
         String reason = msgCtxt.getVariable("jwt_reason");
-
+        
         // check result and output
-        Assert.assertEquals(result, ExecutionResult.ABORT);
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        Assert.assertEquals(isValid, "false");
         Assert.assertEquals(reason, expectedReason);
-        //Assert.assertNotNull(error);
     }
 
         
@@ -212,7 +217,12 @@ public class TestJwtParseEdgeCallout {
         properties.put("algorithm", "HS256");
         properties.put("debug", "true");
         properties.put("jwt", jwtMap.get("sample1"));
-        properties.put("secret-key", "secret");
+        
+        // The nimbus library requires the secret-key to be at least 256
+        // bits in length.  This translates to 32 x 8-bit characters.
+        //                            ----------1---------2---------3--
+        //                            012345678901234567890123456789012
+        properties.put("secret-key", "secret123456-ABC**secret123456-ABC");
         properties.put("claim_sub", "1234567890");
         properties.put("claim_name", "John Doe");
 
@@ -220,17 +230,20 @@ public class TestJwtParseEdgeCallout {
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
         // retrieve output
-        String error = msgCtxt.getVariable("jwt_clienterror");
         String isValid = msgCtxt.getVariable("jwt_isValid");
         String reason = msgCtxt.getVariable("jwt_reason");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
 
         // check result and output
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
         Assert.assertEquals(isValid,"true");
-        Assert.assertEquals(reason,"");
-        Assert.assertNull(error);
+        Assert.assertEquals(reason, null);
+        Assert.assertEquals(isExpired, "false");
+        Assert.assertEquals(hasExpiry, "false");
     }
-    
+
+
     @Test()
     public void test5_SimpleClaims2() {
         String expectedReason = "mismatch in claim name, expected:Jane Williams provided:John Doe";
@@ -238,7 +251,7 @@ public class TestJwtParseEdgeCallout {
         properties.put("algorithm", "HS256");
         //properties.put("debug", "true");
         properties.put("jwt", jwtMap.get("sample1"));
-        properties.put("secret-key", "secret");
+        properties.put("secret-key", "secret123456-ABC**secret123456-ABC");
         properties.put("claim_sub", "1234567890");
         properties.put("claim_name", "Jane Williams");
 
@@ -246,7 +259,6 @@ public class TestJwtParseEdgeCallout {
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
         // retrieve output
-        String error = msgCtxt.getVariable("jwt_clienterror");
         String reason = msgCtxt.getVariable("jwt_reason");
         String isValid = msgCtxt.getVariable("jwt_isValid");
 
@@ -254,7 +266,6 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
         Assert.assertEquals(isValid,"false");
         Assert.assertEquals(reason, expectedReason);
-        Assert.assertNull(error);
     }
     
     @Test()
@@ -264,23 +275,21 @@ public class TestJwtParseEdgeCallout {
         properties.put("algorithm", "HS256");
         //properties.put("debug", "true");
         properties.put("jwt", jwtMap.get("sample1"));
-        properties.put("secret-key", "secret");
+        properties.put("secret-key", "secret123456-ABC**secret123456-ABC");
         properties.put("claim_sub", "ABCDEFG");
         properties.put("claim_name", "John Doe");
 
         JwtParserCallout callout = new JwtParserCallout(properties);
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
-        String isValid = msgCtxt.getVariable("jwt_isValid");
 
         // retrieve output
-        String error = msgCtxt.getVariable("jwt_clienterror");
+        String isValid = msgCtxt.getVariable("jwt_isValid");
         String reason = msgCtxt.getVariable("jwt_reason");
 
         // check result and output
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
         Assert.assertEquals(isValid,"false");
         Assert.assertEquals(reason, expectedReason);
-        Assert.assertNull(error);
     }
     
     @Test()
@@ -289,24 +298,80 @@ public class TestJwtParseEdgeCallout {
         properties.put("algorithm", "HS256");
         properties.put("debug", "true");
         properties.put("jwt", jwtMap.get("sample2"));
-        properties.put("secret-key", "Qwerty123");
+        //                            ----------1---------2---------3-
+        //                            01234567890123456789012345678901
+        properties.put("secret-key", "Qwerty123-Qwerty123-Qwerty123-Qwerty123");
         properties.put("claim_given_name", "Dino");
         properties.put("claim_family_name", "Chiesa");
 
         JwtParserCallout callout = new JwtParserCallout(properties);
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
-        String isValid = msgCtxt.getVariable("jwt_isValid");
 
         // retrieve output
-        String error = msgCtxt.getVariable("jwt_clienterror");
+        String isValid = msgCtxt.getVariable("jwt_isValid");
         String reason = msgCtxt.getVariable("jwt_reason");
+        String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
 
         // check result and output
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
         Assert.assertEquals(isValid,"true");
-        Assert.assertEquals(reason, "");
-        Assert.assertNull(error);
+        Assert.assertEquals(reason, null);
+        Assert.assertEquals(hasExpiry,"false");
+    }
+    
+    
+    @Test()
+    public void test6_UnsignedJwt() {
+        String expectedReason = "the JWT did not parse.";
+        Map properties = new HashMap();
+        properties.put("algorithm", "none");
+        properties.put("debug", "true");
+        properties.put("jwt", jwtMap.get("unsigned1"));
+        properties.put("claim_username", "john.doe");
+
+        JwtParserCallout callout = new JwtParserCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // retrieve output
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String reason = msgCtxt.getVariable("jwt_reason");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        Assert.assertEquals(isValid,"false");
+        Assert.assertEquals(reason, expectedReason);
     }
 
-    
+       
+    @Test()
+    public void test7_BadHmacKey() {
+        String expectedReason = "the signature could not be verified";
+        Map properties = new HashMap();
+        properties.put("algorithm", "HS256");
+        properties.put("debug", "true");
+        properties.put("jwt", jwtMap.get("sample1"));
+        
+        // The nimbus library requires the secret-key to be at least 256
+        // bits in length.  This translates to 32 x 8-bit characters.
+        //                            ----------1---------2---------3--
+        //                            012345678901234567890123456789012
+        properties.put("secret-key", "IncorrectSecretKey-01929292929292");
+        properties.put("claim_sub", "1234567890");
+        properties.put("claim_name", "John Doe");
+
+        JwtParserCallout callout = new JwtParserCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // retrieve output
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String verified = msgCtxt.getVariable("jwt_verified");
+        String reason = msgCtxt.getVariable("jwt_reason");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        Assert.assertEquals(isValid,"false");
+        Assert.assertEquals(verified,"false");
+        Assert.assertEquals(reason, expectedReason);
+    }
+
 }

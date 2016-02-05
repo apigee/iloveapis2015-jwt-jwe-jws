@@ -1,5 +1,5 @@
-JWT (signed) - Test proxy
-========================
+# JWT (signed) - Test proxy
+
 
 This API proxy creates and validates signed JWT, aka JSON Web Tokens.  
 JWT is an IETF standard.
@@ -23,27 +23,39 @@ verify JWT.  This proxy shows how to use a Java callout to do those
 things.
 
 
-Deploying
-========
+## Deploying
 
 Before you deploy the proxy you need to create a cache on the 
 environment. The cache should be named 'cache1'.  
 
 
-Invoking
-========
+## Invoking
+
 
 There are two kinds of requests you can make: generate and verify. There are two types of tokens: RS256 and HS256. 
 
 Generate a token with alg=HS256: 
 
 ```
-    curl -i -X POST -d 'key=SECRET' http://myorg-myenv.apigee.net/jwt_signed/create-hs256
+    curl -i -X POST -d 'key=ThisSecretPassphraseMustBeAtLeast32CharactersLong' \
+         http://myorg-myenv.apigee.net/jwt_signed/create-hs256
 ```
 
 The formparam key is the shared secret that is used to produce the HMAC. 
 
-The response is something like this: 
+Note: [RFC7518 (JWA)](https://tools.ietf.org/html/rfc7518#section-3.2) states that for HMAC, 
+
+> A key of the same size as the hash output (for instance, 256 bits for
+"HS256") or larger MUST be used with this algorithm. (This
+requirement is based on Section 5.3.4 (Security Effect of the HMAC
+Key) of [NIST SP 800-117](http://csrc.nist.gov/publications/nistpubs/800-107-rev1/sp800-107-rev1.pdf), which states that the
+effective security strength is the minimum of the security strength
+of the key and two times the size of the internal hash value.)
+
+If you try using a secret key that is shorter than 32 ascii characters in length, you will see an error.  
+
+
+If you use a key of the appropriate length, the response is something like this: 
 
 ```json
 {
@@ -55,7 +67,7 @@ To verify a token with HS256:
 
 ```
   $ curl -i -X POST http://myorg-test.apigee.net/jwt_signed/validate-hs256 \
-    -d "jwt=JWT_HERE&key=SECRET"
+    -d "jwt=JWT_HERE&key=ThisSecretPassphraseMustBeAtLeast32CharactersLong"
 ```
 
 Response:
@@ -151,8 +163,7 @@ http://dinochiesa.github.io/openid-connect/sf-login.html
 
 
 
-Commentary:
-============
+## Commentary:
 
 The Java code includes two classes, one for JWT creation, and one for parsing. 
 Configuring the Java callouts is done in the policy XML, using properties. 
@@ -538,4 +549,8 @@ If you specify more than one of {A,B,C,D} the callout will use the first
 one it finds.  It's not the order in which the properties appear in the
 file; it's the order described here. 
 
+
+## About HMAC Keys 
+
+This example proxy, when creating HS256-signed JWT, shows the direct use of ascii passphrases for keys for the HMAC. This is not a recommended method for performing HMAC, because the entropy of passwords is not high. Better to use a key-dreivation function such as HKDF or PBKDF2 to obtain the key. That is outside the scope of this example. 
 

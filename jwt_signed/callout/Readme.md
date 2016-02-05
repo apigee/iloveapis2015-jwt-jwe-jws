@@ -17,7 +17,7 @@ These instructions describe how to do either.
 
 1. unpack (if you can read this, you've already done that).
 
-2. build the binary with maven:  
+2. build the binary with [Apache maven](https://maven.apache.org/). You need to first install it, and then you can:  
    ```
    mvn clean package
    ```
@@ -96,6 +96,7 @@ v1.3 JSON Smart
 
 v18.0 of Google Guava 
     http://central.maven.org/maven2/com/google/guava/guava/18.0/guava-18.0.jar
+
 
 
 Configuring the Callout Policy:
@@ -290,18 +291,23 @@ signature with the specified key, and then parses the resulting claims.
 
 It sets these context variables: 
 
+      jwt_jwt - the jwt string you passed in 
       jwt_claims - a json-formatted string of all claims
       jwt_issuer
       jwt_audience
       jwt_subject
       jwt_issueTime
       jwt_issueTimeFormatted ("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+      jwt_hasExpiry  (true/false)
       jwt_expirationTime
       jwt_expirationTimeFormatted
       jwt_secondsRemaining
       jwt_timeRemainingFormatted   (HH:mm:ss.xxx)
+      jwt_signed (true/false indicating if JWT is signed)
+      jwt_verified (true/false indicating if signature has been verified)
       jwt_isExpired  (true/false)
       jwt_isValid  (true/false)
+      jwt_reason - human explanation for the reason a JWT is not valid
 
 
 The "Formatted" versions of the times are for diagnostic or display
@@ -309,6 +315,20 @@ purposes. It's easier to understand a time when displayed that way.
 
 The isValid indicates whether the JWT should be honored - true if and
 only if the signature verifies and the times are valid, and all the required claims match.
+
+### Let's talk about Verification
+
+The policy may return SUCCESS or ABORT - in other words it may succeed, or it may put the proxy into Fault processing. Faults occur only case of an un-foreseeable runtime error, or when there is an incorrect configuration. Examples of incorrect configuration: 
+
+* if you specify algorithm=RS256 but do not specify a 
+  certificate or public-key with which to perform the validation. 
+* if you specify algorithm=HS256 but do not specify a secret-key. 
+* if you do not specify a jwt property
+
+In all other cases, the callout will return SUCCESS, even if the signature does not verify properly, or if it is expired, and so on. SUCCESS indicates that the policy has completed its check, it does not indicate that the policy found the provided JWT to satisfy the configured constraints. For this reason, api proxy logic should check for the presence and value of variables like jwt_isValid, jwt_isExpired, and jwt_verified. 
+
+It is possible for a JWT to be signed and verified but not valid, according to the configured claims you are enforcing. If the JWT signature is not verifiable, then the JWT will also be not valid (jwt_isValid = false).
+
 
 **Parsing and Verifying a JWT - RS256**
 

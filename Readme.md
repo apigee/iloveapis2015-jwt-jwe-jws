@@ -1,7 +1,7 @@
 # iloveapis2015-jwt-jwe-jws
 
 This is the top-level project containing source code, documentation, and tools for the Devevloper Forum session entitied "ADVANCED SECURITY EXTENSIONS IN APIGEE EDGE: JWT, JWE, JWS"
- at the 2015 I-love-APIs conference in San Jose, California, from 2015 October 12-14.  We also repeated this content in a recorded webcast on 2016 February 4. 
+ at the 2015 I-love-APIs conference in San Jose, California, 2015 October 12-14.  We also repeated this content in a recorded webcast on 2016 February 4. 
 
 
 ## What's going on here?

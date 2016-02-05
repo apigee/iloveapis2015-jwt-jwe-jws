@@ -31,19 +31,22 @@
 			"order": [
 				"1090bf4e-f4e0-7278-f6e9-e805e80fa442",
 				"bbd58738-8353-5f46-e9d0-54cd32649983",
+				"f309c9ae-f6d3-ac21-6e7a-a95db5914a81",
+				"abfd8db3-e104-9d18-4b00-f6d3cfb57012",
 				"0c1a54c4-e52c-69d5-adc4-c28ca192996f",
 				"e982d75d-b4fd-5923-a807-6cba67bcfbe8",
 				"a3d4c677-7566-6c6d-6859-12e098f5ee12",
 				"4cdf8803-4fa2-176b-ab19-c466ee18d458",
 				"9425fe80-7e2b-e0de-2d4c-908066ad427b"
 			],
-			"owner": "2578"
+			"owner": "2578",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681"
 		}
 	],
 	"timestamp": 1444441511317,
 	"owner": "2578",
+	"remoteLink": "",
 	"public": false,
-	"hasRequests": true,
 	"requests": [
 		{
 			"id": "0c1a54c4-e52c-69d5-adc4-c28ca192996f",
@@ -70,29 +73,27 @@
 			"id": "1090bf4e-f4e0-7278-f6e9-e805e80fa442",
 			"headers": "",
 			"url": "{{proxy_endpoint}}/jwt_signed/create-hs256",
-			"pathVariables": {},
 			"preRequestScript": "var prScript",
+			"pathVariables": {},
 			"method": "POST",
-			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
 			"data": [
 				{
 					"key": "key",
-					"value": "secret",
+					"value": "ThisSecretPassphraseMustBeAtLeast32CharactersLong",
 					"type": "text",
 					"enabled": true
 				}
 			],
 			"dataMode": "urlencoded",
-			"name": "JWT_Signed_Create-hs256",
-			"description": "",
-			"descriptionFormat": "html",
-			"time": 1444444098412,
 			"version": 2,
-			"responses": [],
 			"tests": "var tests;",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
+			"time": 1454645355361,
+			"name": "JWT_Signed_Create-hs256",
+			"description": "",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"responses": []
 		},
 		{
 			"id": "3c3a20cb-e9cb-ec44-fa53-2dd7efa4c919",
@@ -229,17 +230,42 @@
 			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
 		},
 		{
-			"id": "bbd58738-8353-5f46-e9d0-54cd32649983",
+			"id": "abfd8db3-e104-9d18-4b00-f6d3cfb57012",
 			"headers": "",
-			"url": "{{proxy_endpoint}}/jwt_signed/validate-hs256",
-			"pathVariables": {},
+			"url": "{{proxy_endpoint}}/jwt_signed/create-hs256",
 			"preRequestScript": "var prScript",
+			"pathVariables": {},
 			"method": "POST",
-			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
 			"data": [
 				{
 					"key": "key",
-					"value": "secret",
+					"value": "this-key-is-too-short",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"version": 2,
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1454647228706,
+			"name": "JWT_Signed_Create-hs256 (short key)",
+			"description": "This request passes a key that is too short.",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"responses": []
+		},
+		{
+			"id": "bbd58738-8353-5f46-e9d0-54cd32649983",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_signed/validate-hs256",
+			"preRequestScript": "var prScript",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "key",
+					"value": "this-secret-is-too-short",
 					"type": "text",
 					"enabled": true
 				},
@@ -251,16 +277,15 @@
 				}
 			],
 			"dataMode": "urlencoded",
-			"name": "JWT_Signed-Validate-hs256",
-			"description": "",
-			"descriptionFormat": "html",
-			"time": 1444444258689,
 			"version": 2,
-			"responses": [],
 			"tests": "var tests;",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
+			"time": 1454647179957,
+			"name": "JWT_Signed-Validate-hs256 (bad key)",
+			"description": "The key length is too short on this request. ",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"responses": []
 		},
 		{
 			"id": "e4d5588e-b72a-cba0-c51f-dc89fd7d3662",
@@ -300,29 +325,59 @@
 			"id": "e982d75d-b4fd-5923-a807-6cba67bcfbe8",
 			"headers": "",
 			"url": "{{proxy_endpoint}}/jwt_signed/validate-rs256",
-			"pathVariables": {},
 			"preRequestScript": "var prScript",
+			"pathVariables": {},
 			"method": "POST",
-			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
 			"data": [
 				{
 					"key": "jwt",
-					"value": "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE0NDQ1MzA3NzMsInN1YiI6Imp3dF9zaWduZWQiLCJhdWQiOiJPcHRpb25hbC1TdHJpbmctb3ItVVJJIiwiaXNzIjoiaHR0cDpcL1wvZGlub2NoaWVzYS5uZXQiLCJwcmltYXJ5bGFuZ3VhZ2UiOiJFbmdsaXNoIiwibW90dG8iOiJJbG92ZWFwaXMiLCJzaG9lc2l6ZSI6IjguNSIsImlhdCI6MTQ0NDQ0NDM3M30.soVpunGnuX77CHs_UEA-grG_Igpkyl_GvCCSGarAOix-OMG2iesWT2azVKFr6QWc9hHisRcFv5VWYacOovn3yxrZANbYIPMC6mbjivRaaPP9gv5Bzpy3gHOJM1txzkk30oerKBBXI5y12PaIdqncJ46KtaZjSQag2WqDYHVzc1hi6yVkF8ZqEyMMzEpM_gdh816fkIJfqNhoCD1IchyLJQApb9Tb41efqZEe5fj2I9FaOvPhyvjW5pI-Ap3LBeBU7HIk9qi_C2xk-uLf5p1pTqpt5mBWNSAeyrndlQPymPCYMcjIffAW1fGyCkauQA9Dm3yT9v4Qebcn1P6YTg0l1A",
+					"value": "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE0NTQ2NTA4NDUsInN1YiI6Imp3dF9zaWduZWQiLCJhdWQiOiJPcHRpb25hbC1TdHJpbmctb3ItVVJJIiwiaXNzIjoiaHR0cDpcL1wvZGlub2NoaWVzYS5uZXQiLCJwcmltYXJ5bGFuZ3VhZ2UiOiJFbmdsaXNoIiwic2hvZXNpemUiOiI4LjUiLCJtb3R0byI6Iklsb3ZlYXBpcyIsImlhdCI6MTQ1NDY0NzI0NX0.Kl1eV9GPrGoxM6Z3DFUBC3WEVKhj-ETmVpvR2RN_92hdKMNZLg3bfyhLsvJQiKqrYl6iWjeNt5VEDQOKw6Q7e7WvUbFJ1QfYbGfqFJVPT_HIsEIpHoaxGzagJ7WhIGYteib8jBSWm9HRhshLeYmKnTW5yaf-GwF6R9H__FeRULt81YDiw2W6odbXju5_3Vb8ZWiAbFB7XBYwRhzb9Y3YEe75sIt9l2s4YunAhXbWV2EuLS84w4VdeQ6bJHkQ_OeIsvpbXCJplcA23AoEDvemKiVyGVqZRONuMzVayFjaMhZYhe3zqjp3TB_l10Mqqtao3AQXbYX_Q8qST2QgxzLzvg",
 					"type": "text",
 					"enabled": true
 				}
 			],
 			"dataMode": "urlencoded",
-			"name": "JWT_Signed-Validate-rs256",
-			"description": "",
-			"descriptionFormat": "html",
-			"time": 1444444425622,
 			"version": 2,
-			"responses": [],
 			"tests": "var tests;",
 			"currentHelper": "normal",
 			"helperAttributes": {},
-			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
+			"time": 1454647309864,
+			"name": "JWT_Signed-Validate-rs256",
+			"description": "",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"responses": []
+		},
+		{
+			"id": "f309c9ae-f6d3-ac21-6e7a-a95db5914a81",
+			"headers": "",
+			"url": "{{proxy_endpoint}}/jwt_signed/validate-hs256",
+			"preRequestScript": "var prScript",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "key",
+					"value": "ThisSecretPassphraseMustBeAtLeast32CharactersLong",
+					"type": "text",
+					"enabled": true
+				},
+				{
+					"key": "jwt",
+					"value": "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0NTQ2NDg1ODAsInN1YiI6Imh0dHA6XC9cL2Rpbm9jaGllc2EubmV0IiwiYXVkIjoiand0X3NpZ25lZCIsImlzcyI6IkFwaWdlZUVkZ2UtZGVlY2VlLXRlc3QtXC9qd3Rfc2lnbmVkXC9jcmVhdGUtaHMyNTYiLCJzaG9lc2l6ZSI6IjkiLCJtb3R0byI6Iklsb3ZlYXBpcyIsImlhdCI6MTQ1NDY0Njc4MH0.O1piuIF2Y9ZJQvwN0l5b-EMldhGzED3TFO756wfvZwY",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"version": 2,
+			"tests": "var tests;",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1454646793372,
+			"name": "JWT_Signed-Validate-hs256 (good)",
+			"description": "",
+			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
+			"responses": []
 		},
 		{
 			"id": "fcfcbb14-4b5f-f5e0-f565-216f20cc200d",

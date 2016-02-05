@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.PublicKey;
 import java.security.KeyFactory;
+import java.security.spec.KeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.interfaces.RSAPublicKey;
@@ -47,7 +48,8 @@ import com.apigee.callout.jwtsigned.KeyUtils;
 
 @IOIntensive
 public class JwtParserCallout implements Execution {
-
+    private static final String _varPrefix = "jwt_";
+    private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     private Map<String,String> properties; // read-only
 
     public JwtParserCallout (Map properties) {
@@ -81,6 +83,8 @@ public class JwtParserCallout implements Execution {
 
         return in;
     }
+
+    private static final String varName(String s) { return _varPrefix + s; }
 
     private String getJwt(MessageContext msgCtxt) throws Exception {
         String jwt = (String) this.properties.get("jwt");
@@ -141,12 +145,9 @@ public class JwtParserCallout implements Execution {
     }
 
 
-    private void recordTimeVariable(MessageContext msgContext, String prefix,
-                                    SimpleDateFormat sdf, Date d, String label) {
-        String varName = prefix + "_" + label;
-        msgContext.setVariable(varName, d.getTime() + "");
-        varName = varName + "Formatted";
-        msgContext.setVariable(varName, sdf.format(d));
+    private void recordTimeVariable(MessageContext msgContext, Date d, String label) {
+        msgContext.setVariable(varName(label), d.getTime() + "");
+        msgContext.setVariable(varName(label + "Formatted"), sdf.format(d));
     }
 
 
@@ -248,7 +249,9 @@ public class JwtParserCallout implements Execution {
 
         if (alg.equals("HS256")) {
             String key = getSecretKey(msgCtxt);
+            // byte[] keyBytes = KeyUtils.getKeyBytesForHmac256(key);
             byte[] keyBytes = key.getBytes("UTF-8");
+            // NB: this will throw if the string is not at least 16 chars long
             return new MACVerifier(keyBytes);
         }
         else if (alg.equals("RS256")) {
@@ -276,8 +279,6 @@ public class JwtParserCallout implements Execution {
 
     public ExecutionResult execute (MessageContext msgCtxt,
                                     ExecutionContext exeCtxt) {
-        String varName;
-        String varPrefix = "jwt";
         // The validity of the JWT depends on:
         // - the structure. it must be valid.
         // - the algorithm. must match what is required.
@@ -294,98 +295,88 @@ public class JwtParserCallout implements Execution {
                 signedJWT = SignedJWT.parse(jwt);
             }
             catch ( java.text.ParseException pe1) {
-                varName = varPrefix + "_clienterror";
-                msgCtxt.setVariable(varName, "failed to parse that JWT. Is it well-formed?");
+                msgCtxt.setVariable(varName("isValid"),"false");
+                msgCtxt.setVariable(varName("reason"), "the JWT did not parse.");
                 return ExecutionResult.SUCCESS;
             }
             ReadOnlyJWTClaimsSet claims = null;
-            varName = varPrefix + "_isSigned";
-            msgCtxt.setVariable(varName, true+"");
+            msgCtxt.setVariable(varName("isSigned"), "true");
 
             // diagnostics: emit the jwt and header
-            varName = varPrefix + "_jwt";
-            msgCtxt.setVariable(varName, jwt);
+            msgCtxt.setVariable(varName("jwt"), jwt);
             JWSHeader jwsh = signedJWT.getHeader();
             net.minidev.json.JSONObject json = jwsh.toJSONObject();
-            varName = varPrefix + "_jwtheader";
-            msgCtxt.setVariable(varName, json.toString());
-            msgCtxt.setVariable(varPrefix + "_reason", "");
+            msgCtxt.setVariable(varName("jwtheader"), json.toString());
 
             // 2. check that the provided algorithm matches what is required
             String requiredAlgorithm = getAlgorithm(msgCtxt);
             String providedAlgorithm = jwsh.getAlgorithm().toString();
             if (!providedAlgorithm.equals("HS256") && !providedAlgorithm.equals("RS256")) {
+                // invalid configuration, throw an exception (fault)
                 throw new UnsupportedOperationException("provided Algorithm=" + providedAlgorithm);
             }
-            if (!providedAlgorithm.equals(requiredAlgorithm)){
-                throw new UnsupportedOperationException("Algorithm mismatch. provided=" + providedAlgorithm + ", required=" + requiredAlgorithm);
+            if (!providedAlgorithm.equals(requiredAlgorithm)) {
+                msgCtxt.setVariable(varName("isValid"), "false");
+                msgCtxt.setVariable(varName("reason"),
+                                    String.format("Algorithm mismatch. provided=%s, required=%s",
+                                                  providedAlgorithm, requiredAlgorithm));
+                return ExecutionResult.SUCCESS;
             }
 
             // 3. set up the signature verifier according to the required algorithm and its inputs
+            boolean valid = true;
             JWSVerifier verifier = generateVerifier(requiredAlgorithm, msgCtxt);
 
             // 4. actually verify the signature
             if (!signedJWT.verify(verifier)) {
-                varName = varPrefix + "_verified";
-                msgCtxt.setVariable(varName, false+"");
-
-                // varName = varPrefix + "_error";
-                // msgCtxt.setVariable(varName, "Error: JWT signature does not verify");
-                // varName = varPrefix + "_reason";
-                // msgCtxt.setVariable(varName, "JWT verification failed");
-                // return ExecutionResult.ABORT;
+                msgCtxt.setVariable(varName("verified"), "false");
+                msgCtxt.setVariable(varName("isValid"), "false");
+                msgCtxt.setVariable(varName("reason"), "the signature could not be verified");
+                return ExecutionResult.SUCCESS;
             }
             else {
-                varName = varPrefix + "_verified";
-                msgCtxt.setVariable(varName, true+"");
+                msgCtxt.setVariable(varName("verified"), "true");
             }
 
             // 5. Retrieve and parse the JWT claims
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-
             // diagnostics: emit all claims, formatted as json, into a variable
             claims = signedJWT.getJWTClaimsSet();
             json = claims.toJSONObject();
-            varName = varPrefix + "_claims";
-            msgCtxt.setVariable(varName, json.toString());
+
+            msgCtxt.setVariable(varName("claims"), json.toString());
 
             // 6. emit some specific standard claims into their own context variables
             // 6a. subject
             String subject = claims.getSubject();
-            varName = varPrefix +"_subject";
-            msgCtxt.setVariable(varName, subject);
+            msgCtxt.setVariable(varName("subject"), subject);
 
             // 6b. audience (optional)
             List<String> auds = claims.getAudience();
             if (auds != null) {
                 String[] audiences = auds.toArray(new String[0]);
-                varName = varPrefix + "_audience";
                 if (audiences != null && audiences.length>0) {
-                    msgCtxt.setVariable(varName, StringUtils.join(audiences, ","));
+                    msgCtxt.setVariable(varName("audience"), StringUtils.join(audiences, ","));
                 }
                 else {
-                    msgCtxt.setVariable(varName, "-not-set-");
+                    msgCtxt.setVariable(varName("audience"), "-not-set-");
                 }
             }
             else {
-                msgCtxt.setVariable(varName, "-not-set-");
+                msgCtxt.setVariable(varName("audience"), "-not-set-");
             }
 
             // 6c. issuer
             String issuer = claims.getIssuer();
-            varName = varPrefix + "_issuer";
-            msgCtxt.setVariable(varName, issuer);
+            msgCtxt.setVariable(varName("issuer"), issuer);
 
             Date now = new Date();
-            recordTimeVariable(msgCtxt,varPrefix,sdf,now,"now");
-
-            boolean valid = true;
+            recordTimeVariable(msgCtxt,now,"now");
 
             // 6d. issued-at
             long ms, secsRemaining;
             Date t1 = claims.getIssueTime();
             if (t1 != null) {
-                recordTimeVariable(msgCtxt,varPrefix,sdf,t1,"issueTime");
+                recordTimeVariable(msgCtxt,t1,"issueTime");
                 ms = now.getTime() - t1.getTime();
                 valid = (ms >= 0);
             }
@@ -393,50 +384,43 @@ public class JwtParserCallout implements Execution {
             // 6e. expiration
             Date t2 = claims.getExpirationTime();
             if (t2 != null) {
-                recordTimeVariable(msgCtxt,varPrefix,sdf,t2,"expirationTime");
+                msgCtxt.setVariable(varName("hasExpiry"), "true");
+                recordTimeVariable(msgCtxt,t2,"expirationTime");
 
                 // 6f. elaborated values for expiry
-                varName = varPrefix + "_secondsRemaining";
                 ms = t2.getTime() - now.getTime();
                 secsRemaining = ms/1000;
-                msgCtxt.setVariable(varName, secsRemaining + "");
-                varName = varPrefix + "_timeRemainingFormatted";
-                if (ms<0) {
-                    msgCtxt.setVariable(varName, "-" + DurationFormatUtils.formatDurationHMS(0-ms));
-                }
-                else {
-                    msgCtxt.setVariable(varName, DurationFormatUtils.formatDurationHMS(ms));
-                }
+                msgCtxt.setVariable(varName("secondsRemaining"), secsRemaining + "");
+                msgCtxt.setVariable(varName("timeRemainingFormatted"),
+                                    (ms<0) ?
+                                    "-" + DurationFormatUtils.formatDurationHMS(0-ms) :
+                                    DurationFormatUtils.formatDurationHMS(ms));
 
                 // 6g. computed boolean isExpired
-                varName = varPrefix + "_isExpired";
                 boolean expired = (ms <= 0);
-                msgCtxt.setVariable(varName, expired + "");
+                msgCtxt.setVariable(varName("isExpired"), expired + "");
                 if (expired) {
                     valid = false;
-                    msgCtxt.setVariable(varPrefix + "_reason", "the token is expired");
+                    msgCtxt.setVariable(varName("reason"), "the token is expired");
                 }
             }
             else {
-                varName = varPrefix + "_isExpired";
-                msgCtxt.setVariable(varName, "false");
+                msgCtxt.setVariable(varName("isExpired"), "false");
+                msgCtxt.setVariable(varName("hasExpiry"), "false");
             }
 
             // optional nbf (not-Before) (Sec 4.1.5)
             Date t3 = claims.getNotBeforeTime();
 
-            // 7. validate expiry and not-before-time
+            // 7. validate not-before-time
             if (t3 != null) {
-                recordTimeVariable(msgCtxt,varPrefix,sdf,t3,"notBeforeTime");
+                recordTimeVariable(msgCtxt,t3,"notBeforeTime");
                 if (valid) {
                     ms = now.getTime() - t3.getTime();
-                    valid = valid && (ms >= 0);
-                    if (!valid) {
-                        msgCtxt.setVariable(varPrefix + "_reason", "notBeforeTime");
+                    if (ms < 0) {
+                        msgCtxt.setVariable(varName("reason"), "notBeforeTime is in the future");
+                        valid = false;
                     }
-                }
-                else {
-                    msgCtxt.setVariable(varPrefix + "_reason", "the token is expired");
                 }
             }
 
@@ -447,12 +431,12 @@ public class JwtParserCallout implements Execution {
                 if (requiredClaims.size() > 0) {
                     // iterate the map
                     for (Map.Entry<String, String> entry : requiredClaims.entrySet()) {
+                        if (valid) {
                         String key = entry.getKey();
                         String expectedValue = entry.getValue();
                         expectedValue = resolvePropertyValue(expectedValue, msgCtxt);
                         // diagnostics: show the expected value
-                        varName = varPrefix + "_" + key + "_expected";
-                        msgCtxt.setVariable(varName, expectedValue);
+                        msgCtxt.setVariable(varName(key + "_expected"), expectedValue);
 
                         String[] parts = StringUtils.split(key,"_");
                         // sanity check - is this a required claim?
@@ -460,48 +444,47 @@ public class JwtParserCallout implements Execution {
                             String claimName =  parts[1];
                             // special case aud, which is an array
                             if (claimName.equals("aud")) {
-                                valid = valid && (auds.indexOf(expectedValue) != -1);
+                                if (auds.indexOf(expectedValue) == -1) {
+                                    valid = false;
+                                    msgCtxt.setVariable(varName("reason"), "audience violation");
+                                }
                             }
                             else {
                                 // string match all other required claims
                                 String providedValue = claims.getStringClaim(claimName);
                                 boolean match = expectedValue.equals(providedValue);
                                 if (!match) {
-                                    msgCtxt.setVariable(varPrefix + "_reason",
+                                    msgCtxt.setVariable(varName("reason"),
                                                         String.format("mismatch in claim %s, expected:%s provided:%s",
                                                                       claimName, expectedValue, providedValue));
                                     valid = false;
                                 }
-                                varName = varPrefix + "_" + key + "_provided";
-                                msgCtxt.setVariable(varName, providedValue);
+                                msgCtxt.setVariable(varName(key + "_provided"), providedValue);
                             }
+                        }
                         }
                     }
                 }
             }
 
             // 9. finally, set the valid context variable
-            varName = varPrefix + "_isValid";
-            msgCtxt.setVariable(varName, valid + "");
+            msgCtxt.setVariable(varName("isValid"), valid + "");
         }
         catch (Exception e) {
-            if (debug) {
-                e.printStackTrace();
-            }
-            varName = varPrefix + "_error";
+            // unhandled exceptions
+            if (debug) { e.printStackTrace(); }
             String error = e.toString();
-            msgCtxt.setVariable(varName, error);
+            msgCtxt.setVariable(varName("error"), error);
             int ch = error.indexOf(':');
             if (ch >= 0) {
-                msgCtxt.setVariable(varPrefix + "_reason", error.substring(ch+2));
+                msgCtxt.setVariable(varName("reason"), error.substring(ch+2));
             }
             else {
-                msgCtxt.setVariable(varPrefix + "_reason", error);
+                msgCtxt.setVariable(varName("reason"), error);
             }
 
             //System.out.println("exception: " + e.toString());
-            varName = varPrefix + "_stacktrace";
-            msgCtxt.setVariable(varName, ExceptionUtils.getStackTrace(e));
+            msgCtxt.setVariable(varName("stacktrace"), ExceptionUtils.getStackTrace(e));
             return ExecutionResult.ABORT;
         }
         return ExecutionResult.SUCCESS;

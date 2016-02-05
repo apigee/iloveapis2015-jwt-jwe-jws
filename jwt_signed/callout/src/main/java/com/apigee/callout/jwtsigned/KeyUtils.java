@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.KeyFactory;
+import java.security.Provider;
 import java.security.spec.RSAPublicKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -13,6 +14,18 @@ import java.security.spec.X509EncodedKeySpec;
 import java.security.cert.X509Certificate;
 import java.security.cert.CertificateFactory;
 
+// import org.bouncycastle.crypto.generators.PKCS5S2ParametersGenerator;
+// import org.bouncycastle.crypto.digests.SHA256Digest;
+// import org.bouncycastle.crypto.params.KeyParameter;
+
+// //import javax.crypto.Mac;
+// import javax.crypto.SecretKey;
+// //import javax.crypto.spec.SecretKeySpec;
+// import com.nimbusds.jose.crypto.PBKDF2;
+// import com.nimbusds.jose.crypto.PRFParams;
+// import com.nimbusds.jose.JWEAlgorithm;
+
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +33,8 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
 public final class KeyUtils {
+    private static final int pbkdf2Iterations = 65536;
+    private static final String salt = "9C2CC0D9-F090-4260-A4B0-896CB6CD1733";
 
     private KeyUtils() {}
 
@@ -124,5 +139,26 @@ public final class KeyUtils {
             "-----END PUBLIC KEY-----\n";
         return pem;
     }
+
+    // public static byte[] getKeyBytes(String passphrase)
+    //     throws java.io.UnsupportedEncodingException {
+    //     PKCS5S2ParametersGenerator gen = new PKCS5S2ParametersGenerator(new SHA256Digest());
+    //     gen.init(passphrase.getBytes("UTF-8"), salt.getBytes(), pbkdf2Iterations);
+    //     byte[] dk = ((KeyParameter) gen.generateDerivedParameters(256)).getKey();
+    //     return dk;
+    // }
+
+    // public static byte[] getKeyBytesForHmac256(String passphrase) {
+    //     Provider macProvider = null;
+    //     PRFParams prfParams = new PRFParams("HmacSHA256", macProvider, 16);
+    //     byte[] formattedSalt = PBKDF2.formatSalt(JWEAlgorithm.PBES2_HS256_A128KW, salt.getBytes());
+    //
+    //     SecretKey secretKey = PBKDF2.deriveKey(passphrase.getBytes("UTF-8"),
+    //                                            formattedSalt,
+    //                                            pbkdf2Iterations,
+    //                                            prfParams);
+    //
+    //     return secretKey.getEncoded();
+    // }
 
 }

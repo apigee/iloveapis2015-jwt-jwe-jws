@@ -23,6 +23,7 @@ import com.nimbusds.jwt.SignedJWT;
 import org.apache.commons.ssl.PKCS8Key;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
 
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -40,9 +41,11 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import com.google.common.base.Predicate;
 
+import com.apigee.utils.TemplateString;
+
 @IOIntensive
 public class JwtCreatorCallout implements Execution {
-
+    private static final String _varPrefix = "jwt_";
     private Map<String,String> properties; // read-only
 
     public JwtCreatorCallout (Map properties) {
@@ -76,6 +79,8 @@ public class JwtCreatorCallout implements Execution {
 
         return in;
     }
+
+    private static final String varName(String s) { return _varPrefix + s; }
 
     private String getSubject(MessageContext msgCtxt) throws Exception {
         String subject = (String) this.properties.get("subject");
@@ -292,18 +297,26 @@ public class JwtCreatorCallout implements Execution {
     // eg, {apiproxy.name}, then "resolve" the value by de-referencing
     // the context variable whose name appears between the curlies.
     private String resolvePropertyValue(String spec, MessageContext msgCtxt) {
-        if (spec.startsWith("{") && spec.endsWith("}")) {
-            String varname = spec.substring(1,spec.length() - 1);
-            String value = msgCtxt.getVariable(varname);
-            return value;
+        if (spec.indexOf('{') > -1 && spec.indexOf('}')>-1) {
+            // Replace ALL curly-braced items in the spec string with
+            // the value of the corresponding context variable.
+            TemplateString ts = new TemplateString(spec);
+            Map<String,String> valuesMap = new HashMap<String,String>();
+            for (String s : ts.variableNames) {
+                valuesMap.put(s, (String) msgCtxt.getVariable(s));
+            }
+            StrSubstitutor sub = new StrSubstitutor(valuesMap);
+            String resolvedString = sub.replace(ts.template);
+            return resolvedString;
         }
         return spec;
     }
 
+
     public ExecutionResult execute(MessageContext msgCtxt, ExecutionContext exeCtxt)
     {
-        String varName;
-        String varPrefix = "jwt";
+        String wantDebug = this.properties.get("debug");
+        boolean debug = (wantDebug != null) && Boolean.parseBoolean(wantDebug);
         try {
             JWSAlgorithm jwsAlg;
             String ISSUER = getIssuer(msgCtxt);
@@ -351,21 +364,21 @@ public class JwtCreatorCallout implements Execution {
                             providedValue = resolvePropertyValue(providedValue, msgCtxt);
                             claims.setCustomClaim(claimName, providedValue);
                         }
-                        varName = varPrefix + "_" + key + "_provided";
-                        msgCtxt.setVariable(varName, providedValue);
+                        msgCtxt.setVariable(varName("provided"), providedValue);
                     }
                 }
             }
 
             // 3. serialize to a string, for diagnostics purposes
             net.minidev.json.JSONObject json = claims.toJSONObject();
-            varName = varPrefix + "_claims";
-            msgCtxt.setVariable(varName, json.toString());
+            msgCtxt.setVariable(varName("claims"), json.toString());
 
             // 3. vet the algorithm, and set up the signer
             if (ALG.equals("HS256")) {
-                String SIGNING_KEY = getSecretKey(msgCtxt);
-                byte[] keyBytes = SIGNING_KEY.getBytes("UTF-8");
+                String key = getSecretKey(msgCtxt);
+                //byte[] keyBytes = KeyUtils.getKeyBytesForHmac256(key);
+                byte[] keyBytes = key.getBytes("UTF-8");
+                // NB: this will throw if the string is not at least 16 chars long
                 signer = new MACSigner(keyBytes);
                 jwsAlg = JWSAlgorithm.HS256;
             }
@@ -380,21 +393,29 @@ public class JwtCreatorCallout implements Execution {
             }
 
             // 4. Apply the signature
-            SignedJWT signedJWT = new SignedJWT(new JWSHeader(jwsAlg), claims);
+            JWSHeader h = new JWSHeader(jwsAlg);
+            //h.setType("JWT");
+            SignedJWT signedJWT = new SignedJWT(h, claims);
             signedJWT.sign(signer);
 
             // 5. serialize to compact form, produces something like
             // eyJhbGciOiJIUzI1NiJ9.SGVsbG8sIHdvcmxkIQ.onOUhyuz0Y18UASXlSc1eS0NkWyA
             String jwt = signedJWT.serialize();
-            varName = varPrefix + "_jwt";
-            msgCtxt.setVariable(varName, jwt);
+            msgCtxt.setVariable(varName("jwt"), jwt);
         }
         catch (Exception e) {
-            e.printStackTrace();
-            varName = varPrefix + "_error";
-            msgCtxt.setVariable(varName, "Exception " + e.toString());
-            varName = varPrefix + "_stacktrace";
-            msgCtxt.setVariable(varName, ExceptionUtils.getStackTrace(e));
+            // unhandled exceptions
+            if (debug) { e.printStackTrace(); }
+            String error = e.toString();
+            msgCtxt.setVariable(varName("error"), error);
+            int ch = error.indexOf(':');
+            if (ch >= 0) {
+                msgCtxt.setVariable(varName("reason"), error.substring(ch+2));
+            }
+            else {
+                msgCtxt.setVariable(varName("reason"), error);
+            }
+            msgCtxt.setVariable(varName("stacktrace"), ExceptionUtils.getStackTrace(e));
             return ExecutionResult.ABORT;
         }
         return ExecutionResult.SUCCESS;
