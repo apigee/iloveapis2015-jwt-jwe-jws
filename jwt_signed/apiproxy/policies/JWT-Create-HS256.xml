@@ -6,10 +6,10 @@
     <Property name='secret-key'>{request.formparam.key}</Property>
 
     <!-- standard claims -->
-    <Property name="subject">{apiproxy.name}</Property>
-    <Property name="issuer">http://dinochiesa.net</Property>
-    <Property name="audience">Optional-String-or-URI</Property>
-    <Property name="expiresIn">86400</Property> <!-- in seconds -->
+    <Property name="subject">http://dinochiesa.net</Property>
+    <Property name="issuer">ApigeeEdge-{organization.name}-{environment.name}-{request.path}</Property>
+    <Property name="audience">{apiproxy.name}</Property>
+    <Property name="expiresIn">1800</Property> <!-- in seconds -->
 
     <!-- custom claims -->
     <Property name="claim_shoesize">9</Property>

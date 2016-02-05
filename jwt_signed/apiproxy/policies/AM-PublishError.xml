@@ -1,5 +1,4 @@
 <AssignMessage name='AM-PublishError'>
-  <Description></Description>
   <!-- <AssignTo createNew='false' transport='http' type='request'></AssignTo> -->
   <IgnoreUnresolvedVariables>true</IgnoreUnresolvedVariables>
   <Set>
@@ -8,7 +7,8 @@
   "error" : {
     "code" : 500,
     "jwt_error" : "jwt_error",
-    "message" : "%jwt_error#"
+    "message" : "%jwt_error#",
+    "reason" : "%jwt_reason#"
   }
 }
 ]]></Payload>

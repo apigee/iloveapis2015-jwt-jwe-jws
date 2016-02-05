@@ -11,7 +11,7 @@
     <Property name="subject">{apiproxy.name}</Property>
     <Property name="issuer">http://dinochiesa.net</Property>
     <Property name="audience">Optional-String-or-URI</Property>
-    <Property name="expiresIn">86400</Property> <!-- in seconds -->
+    <Property name="expiresIn">3600</Property> <!-- in seconds -->
 
     <!-- custom claims -->
     <Property name="claim_primarylanguage">English</Property>

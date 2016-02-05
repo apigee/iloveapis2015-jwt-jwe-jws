@@ -26,8 +26,7 @@
    "signed" : "%jwt_isSigned#",
    "verified" : "%jwt_verified#",
    "isExpired" : "%jwt_isExpired#",
-   "isValid" : "%jwt_isValid#",
-   "message" : "%jwt_reason#"
+   "isValid" : "%jwt_isValid#"
  }
  ]]></Payload>
     <StatusCode>200</StatusCode>
