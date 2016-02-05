@@ -91,7 +91,13 @@ these commands:
     <dependency>
       <groupId>com.nimbusds</groupId>
       <artifactId>nimbus-jose-jwt</artifactId>
-      <version>3.1.2</version>
+      <version>3.10</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk15on</artifactId>
+      <version>1.50</version>
     </dependency>
 
     <dependency>
@@ -185,7 +191,7 @@ these commands:
                     <!-- the following are the required dependencies -->
                     <include name="lib/guava-18.0.jar"/>
                     <include name="lib/json-smart-1.3.jar"/>
-                    <include name="lib/nimbus-jose-jwt-3.1.2.jar"/>
+                    <include name="lib/nimbus-jose-jwt-3.10.jar"/>
                   </fileset>
                   <mapper type="flatten"/>
                 </copy>
