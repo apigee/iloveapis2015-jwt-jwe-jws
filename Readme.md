@@ -3,6 +3,8 @@
 This is the top-level project containing source code, documentation, and tools for the Devevloper Forum session entitied "ADVANCED SECURITY EXTENSIONS IN APIGEE EDGE: JWT, JWE, JWS"
  at the 2015 I-love-APIs conference in San Jose, California, 2015 October 12-14.  We also repeated this content in a recorded webcast on 2016 February 4. 
 
+The proxies included here will work on the Apigee Edge public cloud release, or on OPDK 16.01 or later. These proxies will not work on OPDK 15.07 or earlier. 
+
 
 ## What's going on here?
 

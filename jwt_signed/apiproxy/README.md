@@ -23,6 +23,9 @@ verify JWT.  This proxy shows how to use a Java callout to do those
 things.
 
 
+This proxy will work on the Apigee Edge public cloud release, or on OPDK 16.01 or later. It will not work on OPDK 15.07 or earlier. 
+
+
 ## Deploying
 
 Before you deploy the proxy you need to create a cache on the 
