@@ -9,29 +9,13 @@ The API Proxy subdirectory, which is a sibling to this one, includes the pre-bui
 However, you may wish to modify this code for your own purposes. In that case, you will modify the Java code, re-build, then copy that JAR into the appropriate apiproxy/resources/java directory for the API Proxy.  
 
 
-Building the Jar:
-----------------
+## Using the Jar
 
-You can use the Java callout binary, or you can build the binary yourself. 
-These instructions describe how to do either. 
+You do not need to build the JAR in order to use it. 
+To use it: 
 
-1. unpack (if you can read this, you've already done that).
-
-2. build the binary with [Apache maven](https://maven.apache.org/). You need to first install it, and then you can:  
-   ```
-   mvn clean package
-   ```
-
-3. maven will copy all the required jar files to your apiproxy/resources/java directory. 
-   If for some reason your project directory is not set up properly, you can do this manually. 
-   copy target/jwt-signed-edge-callout.jar to your apiproxy/resources/java directory. 
-   Also copy from the target/lib directory, these jars:  
-     json-smart-1.3.jar
-     nimbus-jose-jwt-3.1.2.jar
-     guava-18.0.jar
-
-4. be sure to include a Java callout policy in your
-   apiproxy/resources/policies directory. It should look like
+1. Include the Java callout policy in your
+   apiproxy/resources/policies directory. The configuration should look like
    this:
     ```xml
     <JavaCallout name="JavaJwtHandler" enabled='true'
@@ -43,14 +27,15 @@ These instructions describe how to do either.
     </JavaCallout>
    ```
 
-5. Deploy your API Proxy, using 
+2. Deploy your API Proxy, using 
    pushapi (See https://github.com/carloseberhardt/apiploy)
    or a similar alternative tool.
 
+For some examples of how to configure the callout, see the related api proxy bundle. 
 
 
-Dependencies
-------------------
+
+## Dependencies
 
 Jars available in Edge:   
  - Apigee Edge expressions v1.0
@@ -68,7 +53,8 @@ All these jars must be available on the classpath for the compile to
 succeed. The build.sh script should download all of these files for
 you, automatically.
 
-**Manual Download of Depencencies?**
+
+### Manual Download of Depencencies?
 
 Maven will download all of these dependencies for you. If you wish to download them manually: 
 
@@ -99,8 +85,8 @@ v18.0 of Google Guava
 
 
 
-Configuring the Callout Policy:
---------
+## Configuring the Callout Policy:
+
 
 There are two callout classes, one to generate a JWT and one to validate
 and parse a JWT. How the JWT is generated or validated, respectively,
@@ -540,6 +526,43 @@ If you specify more than one of {A,B,C,D} the callout will use the first
 one it finds.  It's not the order in which the properties appear in the
 file; it's the order described here. 
 
+
+
+## Runtime Errors 
+
+When verifying a JWT, you may see one of the following errors: 
+
+| Error Reason | Explanation | 
+|--------------|-------------|
+| the signature could not be verified. | If using RS256, the certificate or public keydoes not match the private key used to sign the token.  Or, if using HS256, the secret key does not match the secret key used to sign the token.  Or, the token has been modified after having been signed. For example a claim in the JWT was added or removed after signing, or an existing claim was modified after signing. |
+| notBeforeTime is in the future | the not-before-time (nbf) claim on the token is in the future. This means the issuer intended that the token should not yet be used. | 
+| the token is expired | the expiry (exp) claim on the token is in the past. This means the issuer intended that the token should not be used past that time. | 
+| there is a mismatch in a claim | One of the claims to be verified did not match what was found in the token. |
+| audience violation | None of the audience values on token token match the audience given in the policy configuration |
+| Algorithm mismtatch | the token is signed with an algorithm that does not match what is provided in the policy configuration |
+
+
+
+
+## Building the Jar
+
+To build the binary JAR yourself, follow 
+these instructions. 
+
+1. unpack (if you can read this, you've already done that).
+
+2. build the binary with [Apache maven](https://maven.apache.org/). You need to first install it, and then you can:  
+   ```
+   mvn clean package
+   ```
+
+3. maven will copy all the required jar files to your apiproxy/resources/java directory. 
+   If for some reason your project directory is not set up properly, you can do this manually. 
+   copy target/jwt-signed-edge-callout.jar to your apiproxy/resources/java directory. 
+   Also copy from the target/lib directory, these depedencies:  
+     json-smart-1.3.jar
+     nimbus-jose-jwt-3.1.2.jar
+     guava-18.0.jar
 
 
 
