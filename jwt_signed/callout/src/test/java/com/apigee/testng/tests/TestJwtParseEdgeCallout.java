@@ -66,7 +66,7 @@ public class TestJwtParseEdgeCallout {
         exeCtxt = new MockUp<ExecutionContext>(){ }.getMockInstance();
     }
 
-    
+
     private static final Map<String, String> jwtMap;
     private static final Map<String, String> certMap;
     static {
@@ -140,7 +140,7 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(result, ExecutionResult.ABORT);
         Assert.assertEquals(reason, expectedReason);
     }
-    
+
     @Test()
     public void test3_ExpiredJwt() {
         String expectedReason = "the token is expired";
@@ -188,7 +188,7 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(reason, expectedReason);
         Assert.assertEquals(isValid, "false");
     }
-    
+
     @Test()
     public void test4_MismatchedAlgorithm2() {
         String expectedReason = "Algorithm mismatch. provided=HS256, required=RS256";
@@ -203,21 +203,21 @@ public class TestJwtParseEdgeCallout {
         // retrieve output
         String isValid = msgCtxt.getVariable("jwt_isValid");
         String reason = msgCtxt.getVariable("jwt_reason");
-        
+
         // check result and output
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
         Assert.assertEquals(isValid, "false");
         Assert.assertEquals(reason, expectedReason);
     }
 
-        
+
     @Test()
     public void test5_SimpleClaims1() {
         Map properties = new HashMap();
         properties.put("algorithm", "HS256");
         properties.put("debug", "true");
         properties.put("jwt", jwtMap.get("sample1"));
-        
+
         // The nimbus library requires the secret-key to be at least 256
         // bits in length.  This translates to 32 x 8-bit characters.
         //                            ----------1---------2---------3--
@@ -267,7 +267,7 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(isValid,"false");
         Assert.assertEquals(reason, expectedReason);
     }
-    
+
     @Test()
     public void test5_SimpleClaims3() {
         String expectedReason = "mismatch in claim sub, expected:ABCDEFG provided:1234567890";
@@ -291,7 +291,7 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(isValid,"false");
         Assert.assertEquals(reason, expectedReason);
     }
-    
+
     @Test()
     public void test5_SimpleClaims4() {
         Map properties = new HashMap();
@@ -318,8 +318,8 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(reason, null);
         Assert.assertEquals(hasExpiry,"false");
     }
-    
-    
+
+
     @Test()
     public void test6_UnsignedJwt() {
         String expectedReason = "the JWT did not parse.";
@@ -342,7 +342,7 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(reason, expectedReason);
     }
 
-       
+
     @Test()
     public void test7_BadHmacKey() {
         String expectedReason = "the signature could not be verified";
@@ -350,7 +350,7 @@ public class TestJwtParseEdgeCallout {
         properties.put("algorithm", "HS256");
         properties.put("debug", "true");
         properties.put("jwt", jwtMap.get("sample1"));
-        
+
         // The nimbus library requires the secret-key to be at least 256
         // bits in length.  This translates to 32 x 8-bit characters.
         //                            ----------1---------2---------3--
@@ -372,6 +372,36 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(isValid,"false");
         Assert.assertEquals(verified,"false");
         Assert.assertEquals(reason, expectedReason);
+    }
+
+    @Test()
+    public void test8_ExpiredJwtDisabledTimeCheck() {
+        //String expectedReason = "the token is expired";
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("jwt", jwtMap.get("ms1"));
+        properties.put("timeAllowance", "-1");
+        properties.put("certificate", certMap.get("ms1"));
+
+        JwtParserCallout callout = new JwtParserCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // retrieve output
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String expiry = msgCtxt.getVariable("jwt_expirationTimeFormatted");
+        String reason = msgCtxt.getVariable("jwt_reason");
+        String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        String timeCheckDisabled = msgCtxt.getVariable("jwt_timeCheckDisabled");
+        System.out.println("test3 expiry: " + expiry);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        Assert.assertEquals(isValid, "true");
+        Assert.assertEquals(hasExpiry, "true");
+        Assert.assertEquals(isExpired, "true");
+        Assert.assertEquals(timeCheckDisabled, "true");
+        //Assert.assertEquals(reason, expectedReason);
     }
 
 }

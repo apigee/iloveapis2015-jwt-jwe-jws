@@ -49,6 +49,7 @@ import com.apigee.callout.jwtsigned.KeyUtils;
 @IOIntensive
 public class JwtParserCallout implements Execution {
     private static final String _varPrefix = "jwt_";
+    private static long defaultTimeAllowanceMilliseconds = 1000L;
     private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
     private Map<String,String> properties; // read-only
 
@@ -102,6 +103,21 @@ public class JwtParserCallout implements Execution {
         }
 
         return jwt.trim();
+    }
+
+    private long getTimeAllowance(MessageContext msgCtxt) {
+        String timeAllowance = (String) this.properties.get("timeAllowance");
+        if (StringUtils.isBlank(timeAllowance)) {
+            return defaultTimeAllowanceMilliseconds;
+        }
+        timeAllowance = resolvePropertyValue(timeAllowance, msgCtxt);
+        if (StringUtils.isBlank(timeAllowance)) {
+            return defaultTimeAllowanceMilliseconds;
+        }
+        long longValue = StringUtils.isBlank(timeAllowance) ?
+            defaultTimeAllowanceMilliseconds :
+            Long.parseLong(timeAllowance, 10);
+        return longValue;
     }
 
     private String getAlgorithm(MessageContext msgCtxt) throws IllegalStateException {
@@ -382,6 +398,11 @@ public class JwtParserCallout implements Execution {
             }
 
             // 6e. expiration
+            long timeAllowance = getTimeAllowance(msgCtxt);
+            msgCtxt.setVariable(varName("timeAllowance"), Long.toString(timeAllowance,10));
+            if (timeAllowance < 0L) {
+                msgCtxt.setVariable(varName("timeCheckDisabled"), "true");
+            }
             Date t2 = claims.getExpirationTime();
             if (t2 != null) {
                 msgCtxt.setVariable(varName("hasExpiry"), "true");
@@ -397,11 +418,13 @@ public class JwtParserCallout implements Execution {
                                     DurationFormatUtils.formatDurationHMS(ms));
 
                 // 6g. computed boolean isExpired
-                boolean expired = (ms <= 0);
+                boolean expired = (ms <= timeAllowance);
                 msgCtxt.setVariable(varName("isExpired"), expired + "");
-                if (expired) {
-                    valid = false;
-                    msgCtxt.setVariable(varName("reason"), "the token is expired");
+                if (timeAllowance >= 0L) {
+                    if (expired) {
+                        valid = false;
+                        msgCtxt.setVariable(varName("reason"), "the token is expired");
+                    }
                 }
             }
             else {
@@ -414,12 +437,16 @@ public class JwtParserCallout implements Execution {
 
             // 7. validate not-before-time
             if (t3 != null) {
+                // log whether valid or not
                 recordTimeVariable(msgCtxt,t3,"notBeforeTime");
                 if (valid) {
-                    ms = now.getTime() - t3.getTime();
-                    if (ms < 0) {
-                        msgCtxt.setVariable(varName("reason"), "notBeforeTime is in the future");
-                        valid = false;
+                    ms = now.getTime() - t3.getTime(); // positive means valid
+                    msgCtxt.setVariable(varName("nbf_delta"), Long.toString(ms,10));
+                    if (timeAllowance >= 0L) {
+                        if (ms < timeAllowance) {
+                            msgCtxt.setVariable(varName("reason"), "notBeforeTime is in the future");
+                            valid = false;
+                        }
                     }
                 }
             }

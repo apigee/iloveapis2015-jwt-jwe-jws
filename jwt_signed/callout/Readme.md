@@ -340,6 +340,7 @@ To parse and verify a RS256 JWT, then you need to use a configuration like this:
     <Properties>
       <Property name="algorithm">RS256</Property>
       <Property name="jwt">{request.formparam.jwt}</Property>
+      <Property name="timeAllowance">30000</Property>
 
       <!-- public-key used only for algorithm = RS256 -->
       <Property name="public-key">
@@ -366,12 +367,22 @@ To parse and verify a RS256 JWT, then you need to use a configuration like this:
 ```
 
 By default, the Parser callout, whether using HS256 or RS256, verifies
-that the NBF and EXP are valid - in other words the JWT is within it's
-documented valid time range. You may wish to verify other arbitrary
-claims on the JWT .  At this time the only supported check is for
-string equivalence.  So you may verify the issuer, the audience, or
-the value of any custom custom claim (either public/registered, or
-private).
+that the nbf (not-before) and exp (expiry) claims are valid - in other
+words the JWT is within it's documented valid time range. By default the
+Parser allows a 1s skew for exp and nbf claims. You can modify this with
+an additional property, as shown above, "timeAllowance". This is useful
+if the time on the issuing system is skewed from the time on the
+validating system. Set this value in milliseconds. In the example above,
+the value 30000 means that a JWT with a nbf time that is less than 30
+seconds in the future will be treated as valid.  Similarly a JWT with an
+exp which is less than 30 seconds in the past will also be treated as
+valid. Use a negative value (eg, -1) to disable validity checks on nbf
+and exp.
+
+Beyond times, you may wish to verify other arbitrary claims on the
+JWT. At this time the only supported check is for string equivalence. So
+you may verify the issuer, the audience, or the value of any custom
+custom claim (either public/registered, or private).
 
 Regarding audience - the spec states that the audience is an array of
 strings. The parser class validates that the audience value you pass
