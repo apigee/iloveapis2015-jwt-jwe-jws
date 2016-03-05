@@ -409,7 +409,7 @@ public class JwtParserCallout implements Execution {
                 recordTimeVariable(msgCtxt,t2,"expirationTime");
 
                 // 6f. elaborated values for expiry
-                ms = t2.getTime() - now.getTime();
+                ms = t2.getTime() - now.getTime(); // positive means still valid
                 secsRemaining = ms/1000;
                 msgCtxt.setVariable(varName("secondsRemaining"), secsRemaining + "");
                 msgCtxt.setVariable(varName("timeRemainingFormatted"),
@@ -417,14 +417,21 @@ public class JwtParserCallout implements Execution {
                                     "-" + DurationFormatUtils.formatDurationHMS(0-ms) :
                                     DurationFormatUtils.formatDurationHMS(ms));
 
-                // 6g. computed boolean isExpired
-                boolean expired = (ms <= timeAllowance);
-                msgCtxt.setVariable(varName("isExpired"), expired + "");
+                // 6g. computed boolean expired
+                boolean expired = (ms <= 0L);
+                msgCtxt.setVariable(varName("isActuallyExpired"), expired + "");
                 if (timeAllowance >= 0L) {
+                    expired = (ms + timeAllowance <= 0L);
+                    msgCtxt.setVariable(varName("willBeTreatedAsExpired"), expired + "");
+                    msgCtxt.setVariable(varName("isExpired"), expired + "");
                     if (expired) {
                         valid = false;
                         msgCtxt.setVariable(varName("reason"), "the token is expired");
                     }
+                }
+                else {
+                    msgCtxt.setVariable(varName("willBeTreatedAsExpired"), "false");
+                    msgCtxt.setVariable(varName("isExpired"), "false");
                 }
             }
             else {
@@ -443,7 +450,7 @@ public class JwtParserCallout implements Execution {
                     ms = now.getTime() - t3.getTime(); // positive means valid
                     msgCtxt.setVariable(varName("nbf_delta"), Long.toString(ms,10));
                     if (timeAllowance >= 0L) {
-                        if (ms < timeAllowance) {
+                        if (ms + timeAllowance < 0L ) {
                             msgCtxt.setVariable(varName("reason"), "notBeforeTime is in the future");
                             valid = false;
                         }

@@ -392,6 +392,7 @@ public class TestJwtParseEdgeCallout {
         String reason = msgCtxt.getVariable("jwt_reason");
         String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
         String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        String isActuallyExpired = msgCtxt.getVariable("jwt_isActuallyExpired");
         String timeCheckDisabled = msgCtxt.getVariable("jwt_timeCheckDisabled");
         System.out.println("test3 expiry: " + expiry);
 
@@ -399,7 +400,8 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
         Assert.assertEquals(isValid, "true");
         Assert.assertEquals(hasExpiry, "true");
-        Assert.assertEquals(isExpired, "true");
+        Assert.assertEquals(isActuallyExpired, "true");
+        Assert.assertEquals(isExpired, "false");
         Assert.assertEquals(timeCheckDisabled, "true");
         //Assert.assertEquals(reason, expectedReason);
     }
