@@ -422,7 +422,7 @@ public class JwtParserCallout implements Execution {
                 msgCtxt.setVariable(varName("isActuallyExpired"), expired + "");
                 if (timeAllowance >= 0L) {
                     expired = (ms + timeAllowance <= 0L);
-                    msgCtxt.setVariable(varName("willBeTreatedAsExpired"), expired + "");
+                    msgCtxt.setVariable(varName("hasExpiryAllowance"), "true");
                     msgCtxt.setVariable(varName("isExpired"), expired + "");
                     if (expired) {
                         valid = false;
@@ -430,7 +430,7 @@ public class JwtParserCallout implements Execution {
                     }
                 }
                 else {
-                    msgCtxt.setVariable(varName("willBeTreatedAsExpired"), "false");
+                    msgCtxt.setVariable(varName("hasExpiryAllowance"), "false");
                     msgCtxt.setVariable(varName("isExpired"), "false");
                 }
             }
