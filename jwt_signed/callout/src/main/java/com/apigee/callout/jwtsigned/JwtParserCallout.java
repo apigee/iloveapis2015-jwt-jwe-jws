@@ -526,8 +526,8 @@ public class JwtParserCallout implements Execution {
                                             }
                                             if (!match) {
                                                 msgCtxt.setVariable(varName("reason"),
-                                                                    String.format("mismatch in claim %s, expected:%s provided:%s",
-                                                                                  claimName, expectedValue, a.toJSONString()));
+                                                                    String.format("mismatch in claim %s, expected:%s",
+                                                                                  claimName, expectedValue));
                                                 valid = false;
                                             }
                                         }
