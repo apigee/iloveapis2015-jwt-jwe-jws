@@ -97,7 +97,9 @@ public class JwtParserCallout implements Execution {
             throw new IllegalStateException("jwt is null or empty.");
         }
 
-        // strip the Bearer prefix if necessary
+        // strip the Bearer prefix if necessary.
+        // RFC 6750 "The OAuth 2.0 Authorization Framework: Bearer Token Usage", section 2.1
+        // states that the prefix is "Bearer ", case-sensitive.
         if (jwt.startsWith("Bearer ")) {
             jwt = jwt.substring(7);
         }
@@ -458,7 +460,15 @@ public class JwtParserCallout implements Execution {
                 }
             }
 
-            // 8. evaluate all the claims that have been configured as
+            // 8. get the id, if any
+            if (valid) {
+                String jti = claims.getJWTID();
+                if (jti != null) {
+                    msgCtxt.setVariable(varName("jti"), jti);
+                }
+            }
+
+            // 9. evaluate all the claims that have been configured as
             // required on this token.
             if (valid) {
                 Map<String,String> requiredClaims = requiredClaimsProperties();
@@ -466,36 +476,70 @@ public class JwtParserCallout implements Execution {
                     // iterate the map
                     for (Map.Entry<String, String> entry : requiredClaims.entrySet()) {
                         if (valid) {
-                        String key = entry.getKey();
-                        String expectedValue = entry.getValue();
-                        expectedValue = resolvePropertyValue(expectedValue, msgCtxt);
-                        // diagnostics: show the expected value
-                        msgCtxt.setVariable(varName(key + "_expected"), expectedValue);
+                            String key = entry.getKey();
+                            String expectedValue = entry.getValue();
+                            expectedValue = resolvePropertyValue(expectedValue, msgCtxt);
+                            // diagnostics: show the expected value
+                            msgCtxt.setVariable(varName(key + "_expected"), expectedValue);
 
-                        String[] parts = StringUtils.split(key,"_");
-                        // sanity check - is this a required claim?
-                        if (parts.length == 2 && parts[0].equals("claim")) {
-                            String claimName =  parts[1];
-                            // special case aud, which is an array
-                            if (claimName.equals("aud")) {
-                                if (auds.indexOf(expectedValue) == -1) {
-                                    valid = false;
-                                    msgCtxt.setVariable(varName("reason"), "audience violation");
+                            String[] parts = StringUtils.split(key,"_",2);
+                            // sanity check - is this a required claim?
+                            if (parts.length == 2 && parts[0].equals("claim")) {
+                                String claimName = parts[1];
+                                // special case aud, which is always an array
+                                if (claimName.equals("aud")) {
+                                    if (auds.indexOf(expectedValue) == -1) {
+                                        valid = false;
+                                        msgCtxt.setVariable(varName("reason"), "audience violation");
+                                    }
+                                }
+                                else {
+                                    // sometimes a List<String>, and sometimes not.
+                                    Object providedValue = claims.getClaim(claimName);
+                                    boolean match = false;
+                                    if (providedValue == null) {
+                                        System.out.printf("key(%s) = null\n", key);
+                                    }
+                                    else {
+                                        //System.out.printf("key(%s) type(%s)\n", key, providedValue.getClass().getCanonicalName());
+                                        String type = providedValue.getClass().getCanonicalName();
+                                        if (type.equals("java.lang.String")) {
+                                            // simple string match
+                                            msgCtxt.setVariable(varName(key + "_provided"), providedValue);
+                                            match = expectedValue.equals((String)providedValue);
+                                            if (!match) {
+                                                msgCtxt.setVariable(varName("reason"),
+                                                                    String.format("mismatch in claim %s, expected:%s provided:%s",
+                                                                                  claimName, expectedValue, providedValue));
+                                                valid = false;
+                                            }
+                                        }
+                                        else if (type.equals("net.minidev.json.JSONArray")) {
+                                            // it's a list of Object (often String)
+                                            net.minidev.json.JSONArray a = (net.minidev.json.JSONArray) providedValue;
+                                            msgCtxt.setVariable(varName(key + "_provided"), a.toJSONString());
+                                            match = false;
+                                            for (Object item : a) {
+                                                if (item.getClass().getCanonicalName().equals("java.lang.String")) {
+                                                    if (expectedValue.equals((String) item)) { match = true;}
+                                                }
+                                            }
+                                            if (!match) {
+                                                msgCtxt.setVariable(varName("reason"),
+                                                                    String.format("mismatch in claim %s, expected:%s provided:%s",
+                                                                                  claimName, expectedValue, a.toJSONString()));
+                                                valid = false;
+                                            }
+                                        }
+                                        else {
+                                            msgCtxt.setVariable(varName("reason"),
+                                                                String.format("could not verify claim %s, expected:%s", claimName, expectedValue));
+                                            valid = false;
+                                        }
+                                    }
+
                                 }
                             }
-                            else {
-                                // string match all other required claims
-                                String providedValue = claims.getStringClaim(claimName);
-                                boolean match = expectedValue.equals(providedValue);
-                                if (!match) {
-                                    msgCtxt.setVariable(varName("reason"),
-                                                        String.format("mismatch in claim %s, expected:%s provided:%s",
-                                                                      claimName, expectedValue, providedValue));
-                                    valid = false;
-                                }
-                                msgCtxt.setVariable(varName(key + "_provided"), providedValue);
-                            }
-                        }
                         }
                     }
                 }

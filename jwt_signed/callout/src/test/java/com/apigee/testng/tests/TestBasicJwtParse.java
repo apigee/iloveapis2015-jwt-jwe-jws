@@ -19,7 +19,7 @@ import com.apigee.flow.execution.ExecutionResult;
 
 import com.apigee.callout.jwtsigned.JwtParserCallout;
 
-public class TestJwtParseEdgeCallout {
+public class TestBasicJwtParse {
 
     MessageContext msgCtxt;
     ExecutionContext exeCtxt;
@@ -70,11 +70,13 @@ public class TestJwtParseEdgeCallout {
     private static final Map<String, String> jwtMap;
     private static final Map<String, String> certMap;
     static {
+        // TODO - put this data in a resources directory in the filesystem
         Map<String, String> m = new HashMap<String,String>();
         m.put("ms1", "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6Ik1uQ19WWmNBVGZNNXBPWWlKSE1iYTlnb0VLWSIsImtpZCI6Ik1uQ19WWmNBVGZNNXBPWWlKSE1iYTlnb0VLWSJ9.eyJhdWQiOiI2M2I0YzljMS05YTYyLTQ0OTctYjJmZS05YWY3MTMwNWEyMzciLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC9mYTI2MTNkZC0xYzdiLTQ2OWItOGY5Mi04OGNkMjY4NTYyNDAvIiwiaWF0IjoxNDUyNjYxNTM2LCJuYmYiOjE0NTI2NjE1MzYsImV4cCI6MTQ1MjY2NTQzNiwiYW1yIjpbInB3ZCJdLCJlbWFpbCI6ImRwY2hpZXNhQGhvdG1haWwuY29tIiwiZmFtaWx5X25hbWUiOiJjaGllc2EiLCJnaXZlbl9uYW1lIjoiZGlubyIsImlkcCI6ImxpdmUuY29tIiwibmFtZSI6ImRpbm8gY2hpZXNhIiwibm9uY2UiOiJhYmNkZSIsIm9pZCI6ImY5NmYxNGM5LTc5MTAtNGNjNy1iM2I2LTM1YmU2MWMzNjhmMiIsInB3ZF9leHAiOiIwIiwicHdkX3VybCI6Imh0dHBzOi8vcG9ydGFsLm1pY3Jvc29mdG9ubGluZS5jb20vQ2hhbmdlUGFzc3dvcmQuYXNweCIsInN1YiI6IlhBT19xSnNybnd6amQ0MXljcDM4eUotNjRSVU1OMXhvZHlDQnllR3ZJQkkiLCJ0aWQiOiJmYTI2MTNkZC0xYzdiLTQ2OWItOGY5Mi04OGNkMjY4NTYyNDAiLCJ1bmlxdWVfbmFtZSI6ImxpdmUuY29tI2RwY2hpZXNhQGhvdG1haWwuY29tIiwidmVyIjoiMS4wIn0.cAWs-P-e-QbIK4FCFoPQUKBJL88Nw7wbPKuG443WpD76b-E4SQ8fAG5-GjLO7TTgmvvR4mWCrrSJ-MCvTcGtf3J5UIagvbUCfj1rTSPikLaGz96DL66WLVRPeSlegeHdAJOyqj6yCOzQSScdFfJu5I7t3joGUI4t1rCtvdCaT1fwqsZQ0GNDkle2lVSqMFyfMuiT1cGx4kTnzH-pDZ9hRePLOjNY9tKJaisk5J54Qlqz0Tgqzcvq3OD7MKN1IwHmZP8acGCiFdbISXaYEh-cLxjd19hIUX6lQPA7UzilHaJo3H1RVzpuhjWHF5VLB42ng5XUZXmFvjjDxa2GUkWeyw");
         m.put("sample1", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZW1haWwiOiJqZDJAZXhtYXBsZS5jb20iLCJhZG1pbiI6dHJ1ZX0.DJZX3Nsuj7SN0B0XYgzKt5wWqkBlEefnCd_MRVxEmTA");
         m.put("sample2", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxN0M0QjEwNS00MDhFLTRGNUMtQTBCMS1FOTUxODYwODU1OUYiLCJnaXZlbl9uYW1lIjoiRGlubyIsImZhbWlseV9uYW1lIjoiQ2hpZXNhIiwiaXNzIjoidXJuOjBCOTA5MjAzLTQyREItNDdENy1CNzAyLUVFOTIwNTY0MEFDOCIsInNob2VzaXplIjoiOSJ9.mrsvlFYJ2oMfHAVE-v8dOspKbusOkt4BfwhwJh11JCo");
         m.put("unsigned1", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTMzNywidXNlcm5hbWUiOiJqb2huLmRvZSJ9");
+        m.put("sample3", "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE0NTc0NTY2MjMsInVzZXJfbmFtZSI6InRlc3QjI2NvbWNhc3QiLCJhdXRob3JpdGllcyI6WyJST0xFX0FETUlOIiwiUk9MRV9VU0VSIl0sImp0aSI6IjljNDExZTc3LWQzZTItNDQ0Ny04ODJjLWYwODdhMTExZTBmYiIsImNsaWVudF9pZCI6ImFwaWdlZS10ZXN0Iiwic2NvcGUiOlsicmVhZCJdfQ.aQK7DEmRzZLH8_8kExoJaLd109CwOywiOilMgJU_h5l4Ohzl6BQs2auaGpOGSAQTTtixdVUcuKW51IfD8glR558r0cbhs2VC27q2PDibmcUsJUr68WOxko-uIveXITghY1OQEUQDV1cvd57uhaE-brgruHYC9h9TZ7lpD7Su20Itv4PdGj1uG7zobgXyaww2fzpNxzOWnCrQdpajhkkf1I3GA-c0fwVlYQpPqm4Qnwb5PPBAb2TX6IC5XgLBt1jdFvS-2Ayi4lWEUaxW6UjrgI8PhMbfEdieYg96wy9Zmn9VxMb7m9as8lmMnWvlL16ynHy4945VxnKEPncOl27tsw");
         jwtMap = java.util.Collections.unmodifiableMap(m);
 
         m = new HashMap<String,String>();
@@ -96,9 +98,25 @@ public class TestJwtParseEdgeCallout {
 "YRlhG1KmSBtrsKsCBQoBzwH/rXfksTO9JoUYLXiW0IppB7DhNH4PJ5hZI91R8rR0\n" +
 "H3/bKkLSuDaKLWSqMhozdhXsIIKvJQ==\n" +
             "-----END CERTIFICATE-----\n");
-
+        m.put("sample3", "-----BEGIN CERTIFICATE-----\n" +
+"MIIDdTCCAl2gAwIBAgIEMUkvSTANBgkqhkiG9w0BAQsFADBrMQswCQYDVQQGEwJVUzELMAkGA1UE\n" +
+"CBMCUEExGTAXBgNVBAcTEFBseW1vdXRoIE1lZXRpbmcxETAPBgNVBAoTCEFjY29sYWRlMQwwCgYD\n" +
+"VQQLEwNFVEcxEzARBgNVBAMTClJvbiBBbGxldmEwHhcNMTYwMjA4MDY1MzQzWhcNMTYwNTA4MDY1\n" +
+"MzQzWjBrMQswCQYDVQQGEwJVUzELMAkGA1UECBMCUEExGTAXBgNVBAcTEFBseW1vdXRoIE1lZXRp\n" +
+"bmcxETAPBgNVBAoTCEFjY29sYWRlMQwwCgYDVQQLEwNFVEcxEzARBgNVBAMTClJvbiBBbGxldmEw\n" +
+"ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCWX1bhTErNhi3dndEdNW5EI10wb+fh6+BO\n" +
+"IsS7EVBPIlBqFwHG6/ShwFiyqNDnY4+TZwTuDuN8iyHeaH1LEEW5UNs2pVmlL8JcSpR7h6svofPu\n" +
+"ykHE0iGqgM2FovcqkrRge+lPe1Y/xBgdv/M4ck6wOZbGx45qLrEt4OzXwnq7mjonnywdclgmaa9z\n" +
+"i5vlqOmQx6YcK+xGC0Pn+y5A56F4zeOYzFyOZlzfoJcKihHkU2NKZrZh7M6ZBTE2QVul26Q7TAi2\n" +
+"5i8KetnYeZKOfSUuHYKX/aeiP7g+PQcnLQfU5oufCSDORZDmxlFdwsMPs4GsEQ0FTq23VCnMXA/5\n" +
+"xuMHAgMBAAGjITAfMB0GA1UdDgQWBBQCRpmCetKOlvbXHjk2XU+fAZbN1DANBgkqhkiG9w0BAQsF\n" +
+"AAOCAQEAayrUgvc7g4VwQ5ZPS/WqjFUWVBApGLoq1B3y2gmj+pbmq7Kchnca5dqGuSiP6ZVB85/L\n" +
+"yV023rK46+qOB0JxhAycbY9uxWJZEDbgQ0ov5kMCYKogvGSl9uH8cV5HZzoXhhSwdhylVMyjrWKY\n" +
+"Knh8Iqe4LEgguSm2LLB4kVeyJnlTeHy1VcuN9drzS5KlP3nmxEqJLb5IxUoW9KoT4bWSShlboNJh\n" +
+"fGSUCZ4yp8IlANuSKJ05UNOHorW6FdTaZ+TCb4j3PCfb3cRwTxjk6qMu1sp8AN6AQ2AchPRhyg3U\n" +
+"qv86xeUxpiXENHvPlWGtqBjrFn5NwFXwP81YPc5AI65CqQ==\n" +
+"-----END CERTIFICATE-----");
         certMap = java.util.Collections.unmodifiableMap(m);
-
     }
 
 
@@ -158,7 +176,7 @@ public class TestJwtParseEdgeCallout {
         String reason = msgCtxt.getVariable("jwt_reason");
         String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
         String isExpired = msgCtxt.getVariable("jwt_isExpired");
-        System.out.println("test3 expiry: " + expiry);
+        //System.out.println("test3 expiry: " + expiry);
 
         // check result and output
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
@@ -236,11 +254,11 @@ public class TestJwtParseEdgeCallout {
         String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
 
         // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid,"true");
-        Assert.assertEquals(reason, null);
-        Assert.assertEquals(isExpired, "false");
-        Assert.assertEquals(hasExpiry, "false");
+        Assert.assertEquals(result, ExecutionResult.SUCCESS, "ExecutionResult");
+        Assert.assertEquals(isValid,"true", "isValid");
+        Assert.assertEquals(reason, null, "reason");
+        Assert.assertEquals(isExpired, "false", "isExpired");
+        Assert.assertEquals(hasExpiry, "false", "hasExpiry");
     }
 
 
@@ -263,9 +281,9 @@ public class TestJwtParseEdgeCallout {
         String isValid = msgCtxt.getVariable("jwt_isValid");
 
         // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid,"false");
-        Assert.assertEquals(reason, expectedReason);
+        Assert.assertEquals(result, ExecutionResult.SUCCESS, "ExecutionResult");
+        Assert.assertEquals(isValid, "false", "isValid");
+        Assert.assertEquals(reason, expectedReason, "reason");
     }
 
     @Test()
@@ -287,9 +305,9 @@ public class TestJwtParseEdgeCallout {
         String reason = msgCtxt.getVariable("jwt_reason");
 
         // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid,"false");
-        Assert.assertEquals(reason, expectedReason);
+        Assert.assertEquals(result, ExecutionResult.SUCCESS, "ExecutionResult");
+        Assert.assertEquals(isValid, "false", "isValid");
+        Assert.assertEquals(reason, expectedReason, "reason");
     }
 
     @Test()
@@ -394,7 +412,7 @@ public class TestJwtParseEdgeCallout {
         String isExpired = msgCtxt.getVariable("jwt_isExpired");
         String isActuallyExpired = msgCtxt.getVariable("jwt_isActuallyExpired");
         String timeCheckDisabled = msgCtxt.getVariable("jwt_timeCheckDisabled");
-        System.out.println("test3 expiry: " + expiry);
+        //System.out.println("test8 expiry: " + expiry);
 
         // check result and output
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
@@ -404,6 +422,29 @@ public class TestJwtParseEdgeCallout {
         Assert.assertEquals(isExpired, "false");
         Assert.assertEquals(timeCheckDisabled, "true");
         //Assert.assertEquals(reason, expectedReason);
+    }
+
+
+    @Test()
+    public void test9_Sample3() {
+        String expectedReason = "the token is expired";
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("jwt", jwtMap.get("sample3"));
+        properties.put("certificate", certMap.get("sample3"));
+
+        JwtParserCallout callout = new JwtParserCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // retrieve output
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String reason = msgCtxt.getVariable("jwt_reason");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        Assert.assertEquals(reason, expectedReason);
+        Assert.assertEquals(isValid,"false");
     }
 
 }

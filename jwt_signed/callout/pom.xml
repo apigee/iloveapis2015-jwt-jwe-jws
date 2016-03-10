@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.apigee</groupId>
   <artifactId>jwt-signed-edge-callout</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.3</version>
   <name>JwtSignedEdgeCallout</name>
   <url>http://maven.apache.org</url>
   <packaging>jar</packaging>
@@ -16,6 +16,9 @@
     <apiproxy.java.rsrc.dir>../apiproxy/resources/java</apiproxy.java.rsrc.dir>
     <testng.version>6.8.7</testng.version> <!-- current: 6.9.4 -->
     <jmockit.version>1.7</jmockit.version>
+    <jackson.version>2.5.4</jackson.version>
+    <guava.version>18.0</guava.version>
+    <bcprov.version>1.50</bcprov.version>
   </properties>
 
   <dependencies>
@@ -97,13 +100,13 @@ these commands:
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.50</version>
+      <version>${bcprov.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>18.0</version>
+      <version>${guava.version}</version>
     </dependency>
 
     <dependency>
@@ -116,9 +119,30 @@ these commands:
     <dependency>
       <groupId>com.googlecode.jmockit</groupId>
       <artifactId>jmockit</artifactId>
-      <version>1.7</version>
+      <version>${jmockit.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.0.1</version>
+        <scope>test</scope>
+    </dependency>
+
 
   </dependencies>
   <build>
