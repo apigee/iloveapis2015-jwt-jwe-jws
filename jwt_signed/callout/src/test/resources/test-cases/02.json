@@ -20,7 +20,7 @@
         "jti": "9c411e77-d3e2-4447-882c-f087a111e0fb",
         "claim_client_id_provided": "apigee-test",
         "claim_user_name_provided": "test##comcast",
-        "claim_scope_provided": "[\"read\"]",
+        "claim_scope_provided": "read",
         "reason": null,
         "result": "SUCCESS"
     },

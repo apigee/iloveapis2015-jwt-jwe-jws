@@ -517,7 +517,7 @@ public class JwtParserCallout implements Execution {
                                         else if (type.equals("net.minidev.json.JSONArray")) {
                                             // it's a list of Object (often String)
                                             net.minidev.json.JSONArray a = (net.minidev.json.JSONArray) providedValue;
-                                            msgCtxt.setVariable(varName(key + "_provided"), a.toJSONString());
+                                            msgCtxt.setVariable(varName(key + "_provided"), StringUtils.join(a,"|"));
                                             match = false;
                                             for (Object item : a) {
                                                 if (item.getClass().getCanonicalName().equals("java.lang.String")) {
@@ -526,8 +526,8 @@ public class JwtParserCallout implements Execution {
                                             }
                                             if (!match) {
                                                 msgCtxt.setVariable(varName("reason"),
-                                                                    String.format("mismatch in claim %s, expected:%s",
-                                                                                  claimName, expectedValue));
+                                                                    String.format("mismatch in claim %s, expected:%s provided:%s",
+                                                                                  claimName, expectedValue, StringUtils.join(a,"|")));
                                                 valid = false;
                                             }
                                         }
