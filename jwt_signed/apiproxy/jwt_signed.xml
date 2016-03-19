@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <APIProxy revision="9" name="jwt_signed">
     <ConfigurationVersion minorVersion="0" majorVersion="4"/>
+    <Description>A proxy that validates signed JWT</Description>
     <CreatedAt>1408643295583</CreatedAt>
     <CreatedBy>DChiesa@apigee.com</CreatedBy>
     <DisplayName>jwt_signed</DisplayName>
-    <LastModifiedAt>1444276951071</LastModifiedAt>
+    <LastModifiedAt>1454647127154</LastModifiedAt>
     <LastModifiedBy>DChiesa@apigee.com</LastModifiedBy>
     <Policies/>
     <ProxyEndpoints>

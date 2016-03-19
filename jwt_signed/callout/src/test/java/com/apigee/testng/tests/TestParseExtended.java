@@ -25,6 +25,7 @@ import com.apigee.flow.message.MessageContext;
 import com.apigee.flow.execution.ExecutionResult;
 
 import com.apigee.callout.jwtsigned.JwtParserCallout;
+import com.apigee.callout.jwtsigned.JwtCreatorCallout;
 
 public class TestParseExtended {
     private static String testDataDir = "src/test/resources/test-cases";
@@ -81,6 +82,55 @@ public class TestParseExtended {
         Object[][] tests = getDataForBatch1();
         System.out.println("extended tests: " + tests.length);
         Assert.assertTrue(tests.length > 0);
+    }
+
+
+
+    @Test
+    public void testCreateThenVerify() throws IOException {
+        String audUuid = java.util.UUID.randomUUID().toString();
+        Map<String,String> createProps = new HashMap<String,String>();
+        createProps.put("algorithm","HS256");
+        createProps.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
+        createProps.put("issuer","http://dinochiesa.net");
+        createProps.put("subject","http://dinochiesa.net");
+        createProps.put("audience", audUuid);
+        createProps.put("debug", "true");
+        createProps.put("expiresIn","1800");
+        createProps.put("claim_motto","Iloveapis");
+        JwtCreatorCallout callout1 = new JwtCreatorCallout(createProps);
+        ExecutionResult result = callout1.execute(msgCtxt, exeCtxt);
+
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        Assert.assertNotNull(jwt);
+
+        // now verify the signature
+        Map<String,String> verifyProps = new HashMap<String,String>();
+        verifyProps.put("algorithm","HS256");
+        verifyProps.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
+        verifyProps.put("jwt", jwt);
+        verifyProps.put("claim_sub","http://dinochiesa.net");
+        verifyProps.put("debug", "true");
+        verifyProps.put("claim_aud", audUuid);
+        verifyProps.put("claim_motto","Iloveapis");
+        JwtParserCallout callout2 = new JwtParserCallout(verifyProps);
+        result = callout2.execute(msgCtxt, exeCtxt);
+
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
+        String verified = msgCtxt.getVariable("jwt_verified");
+
+        Assert.assertEquals(isValid, "true");
+        Assert.assertEquals(isExpired, "false");
+        Assert.assertEquals(hasExpiry, "true");
+        Assert.assertEquals(verified, "true");
+
+        String claims = msgCtxt.getVariable("jwt_claims");
+        Assert.assertNotNull(claims);
     }
 
     @Test(dataProvider = "batch1")

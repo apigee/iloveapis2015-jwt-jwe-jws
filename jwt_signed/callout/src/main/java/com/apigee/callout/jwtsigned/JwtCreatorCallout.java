@@ -30,7 +30,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.KeyFactory;
 import java.io.InputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
@@ -40,12 +41,20 @@ import java.security.spec.InvalidKeySpecException;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import com.google.common.base.Predicate;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.CacheLoader;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
 
 import com.apigee.utils.TemplateString;
 
 @IOIntensive
 public class JwtCreatorCallout implements Execution {
     private static final String _varPrefix = "jwt_";
+    private Object lock;
+    private LoadingCache<String, JWSSigner> macKeyCache;
+    private LoadingCache<PrivateKeyInfo, JWSSigner> rsaKeyCache;
     private Map<String,String> properties; // read-only
 
     public JwtCreatorCallout (Map properties) {
@@ -60,6 +69,50 @@ public class JwtCreatorCallout implements Execution {
             }
         }
         this.properties = m;
+
+        macKeyCache = CacheBuilder.newBuilder()
+            .concurrencyLevel(4)
+            //.weakKeys()
+            .maximumSize(1048000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<String, JWSSigner>() {
+                    public JWSSigner load(String key) throws UnsupportedEncodingException {
+                        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+                        // NB: this will throw if the string is not at least 16 chars long
+                        return new MACSigner(keyBytes);
+                    }
+                }
+                );
+
+        rsaKeyCache = CacheBuilder.newBuilder()
+            .concurrencyLevel(4)
+            .maximumSize(1048000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<PrivateKeyInfo, JWSSigner>() {
+                    public JWSSigner load(PrivateKeyInfo info) throws InvalidKeySpecException, GeneralSecurityException {
+                        RSAPrivateKey privateKey = (RSAPrivateKey) getPrivateKey(info);
+                        return new RSASSASigner(privateKey);
+                    }
+                }
+                );
+    }
+
+
+    private JWSSigner getMacSigner(MessageContext msgCtxt) throws Exception {
+        String key = getSecretKey(msgCtxt);
+        return macKeyCache.get(key);
+    }
+
+    private JWSSigner getRsaSigner(MessageContext msgCtxt)
+        throws IOException, ExecutionException {
+        PrivateKeyInfo info = new PrivateKeyInfo(getPrivateKeyBytes(msgCtxt), getPrivateKeyPassword(msgCtxt));
+        return rsaKeyCache.get(info);
+    }
+
+    class PrivateKeyInfo {
+        public PrivateKeyInfo(byte[] bytes, String p) { keyBytes = bytes; password = p;}
+        public byte[] keyBytes;
+        public String password;
     }
 
     private static InputStream getResourceAsStream(String resourceName)
@@ -175,8 +228,6 @@ public class JwtCreatorCallout implements Execution {
     //     return pemfile;
     // }
 
-
-
     private String getPrivateKeyPassword(MessageContext msgCtxt) {
         String password = (String) this.properties.get("private-key-password");
         if (password == null || password.equals("")) {
@@ -231,15 +282,14 @@ public class JwtCreatorCallout implements Execution {
     }
 
 
-    private PrivateKey getPrivateKey(MessageContext msgCtxt)
-        throws IOException,
-               GeneralSecurityException,
-               NoSuchAlgorithmException,
-               InvalidKeySpecException
+    private byte[] getPrivateKeyBytes(MessageContext msgCtxt)
+        throws IOException
+               // GeneralSecurityException,
+               // NoSuchAlgorithmException,
+               // InvalidKeySpecException
     {
         byte[] keyBytes = null;
         String privateKey = (String) this.properties.get("private-key");
-        String passwd = getPrivateKeyPassword(msgCtxt);
         if (privateKey==null) {
             String pemfile = (String) this.properties.get("pemfile");
             if (pemfile == null || pemfile.equals("")) {
@@ -267,17 +317,22 @@ public class JwtCreatorCallout implements Execution {
             privateKey = privateKey.trim();
             // clear any leading whitespace on each line
             privateKey = privateKey.replaceAll("([\\r|\\n] +)","\n");
-            keyBytes = privateKey.getBytes(Charset.forName("UTF-8"));
+            keyBytes = privateKey.getBytes(StandardCharsets.UTF_8);
         }
+        return keyBytes;
+    }
 
+    private PrivateKey getPrivateKey(PrivateKeyInfo info)
+        throws InvalidKeySpecException, GeneralSecurityException,NoSuchAlgorithmException
+    {
         // If the provided data is encrypted, we need a password to decrypt
         // it. If the InputStream is not encrypted, then the password is ignored
         // (can be null).  The InputStream can be DER (raw ASN.1) or PEM (base64).
-        PKCS8Key pkcs8 = new PKCS8Key( keyBytes, passwd.toCharArray() );
+        PKCS8Key pkcs8 = new PKCS8Key( info.keyBytes, info.password.toCharArray() );
 
         // If an unencrypted PKCS8 key was provided, then getDecryptedBytes()
         // actually returns exactly what was originally passed in (with no
-        // changes).  If an OpenSSL key was provided, it gets reformatted as
+        // changes). If an OpenSSL key was provided, it gets reformatted as
         // PKCS #8.
         byte[] decrypted = pkcs8.getDecryptedBytes();
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec( decrypted );
@@ -364,7 +419,7 @@ public class JwtCreatorCallout implements Execution {
                             providedValue = resolvePropertyValue(providedValue, msgCtxt);
                             claims.setCustomClaim(claimName, providedValue);
                         }
-                        msgCtxt.setVariable(varName("provided"), providedValue);
+                        msgCtxt.setVariable(varName("provided_")+claimName, providedValue);
                     }
                 }
             }
@@ -375,17 +430,12 @@ public class JwtCreatorCallout implements Execution {
 
             // 3. vet the algorithm, and set up the signer
             if (ALG.equals("HS256")) {
-                String key = getSecretKey(msgCtxt);
-                //byte[] keyBytes = KeyUtils.getKeyBytesForHmac256(key);
-                byte[] keyBytes = key.getBytes("UTF-8");
-                // NB: this will throw if the string is not at least 16 chars long
-                signer = new MACSigner(keyBytes);
+                signer = getMacSigner(msgCtxt);
                 jwsAlg = JWSAlgorithm.HS256;
             }
             else if (ALG.equals("RS256")) {
                 // Create RSA-signer with the private key
-                RSAPrivateKey privateKey = (RSAPrivateKey) getPrivateKey(msgCtxt);
-                signer = new RSASSASigner(privateKey);
+                signer = getRsaSigner(msgCtxt);
                 jwsAlg = JWSAlgorithm.RS256;
             }
             else {
@@ -394,7 +444,7 @@ public class JwtCreatorCallout implements Execution {
 
             // 4. Apply the signature
             JWSHeader h = new JWSHeader(jwsAlg);
-            //h.setType("JWT");
+            //h.setType("JWT"); // why not?
             SignedJWT signedJWT = new SignedJWT(h, claims);
             signedJWT.sign(signer);
 

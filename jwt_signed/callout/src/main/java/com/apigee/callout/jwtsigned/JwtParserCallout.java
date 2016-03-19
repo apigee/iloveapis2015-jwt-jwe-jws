@@ -30,6 +30,7 @@ import com.nimbusds.jwt.ReadOnlyJWTClaimsSet;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.security.KeyFactory;
 import java.security.spec.KeySpec;
@@ -268,7 +269,7 @@ public class JwtParserCallout implements Execution {
         if (alg.equals("HS256")) {
             String key = getSecretKey(msgCtxt);
             // byte[] keyBytes = KeyUtils.getKeyBytesForHmac256(key);
-            byte[] keyBytes = key.getBytes("UTF-8");
+            byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
             // NB: this will throw if the string is not at least 16 chars long
             return new MACVerifier(keyBytes);
         }
@@ -537,7 +538,6 @@ public class JwtParserCallout implements Execution {
                                             valid = false;
                                         }
                                     }
-
                                 }
                             }
                         }

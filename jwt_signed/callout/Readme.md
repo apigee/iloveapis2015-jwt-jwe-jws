@@ -134,6 +134,7 @@ time automatically gets the value accurately indicating when the JWT is
 generated.
 
 
+
 **Generate a JWT using RS256**
 
 To generate a key signed with RS256, you can specify the private RSA key inside the policy configuration, like this:
@@ -525,6 +526,15 @@ D. pemfile
 If you specify more than one of {A,B,C,D} the callout will use the first
 one it finds.  It's not the order in which the properties appear in the
 file; it's the order described here. 
+
+
+## Some comments about Performance
+
+Performance of this policy will vary depending on many factors: the machine (CPU, memory) that supports the message processor, the other things running on the machine, the other traffic being handled by the message processor, and so on.
+
+In my tests, it takes between 4ms and 12ms to generate a HS256-signed JWT on the Trial (free) version of hosted Apigee Edge. Caching the MACSigner in the Java code optimizes that. When the key is in cache, HS256 signing takes <1ms. Verifying signatures with HS256 takes about 1ms. The verifiers are not cached, at this time. 
+
+I haven't measured verification or creation of RS256-signed JWT. 
 
 
 
