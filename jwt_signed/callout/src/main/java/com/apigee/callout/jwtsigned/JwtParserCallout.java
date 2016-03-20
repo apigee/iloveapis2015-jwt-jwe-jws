@@ -10,14 +10,13 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.ssl.PKCS8Key;
-import org.apache.commons.codec.binary.Base64;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.text.SimpleDateFormat;
+import org.apache.commons.lang3.time.FastDateFormat;
 
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.PlainJWT;
@@ -43,15 +42,22 @@ import java.security.cert.CertificateException;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import com.google.common.base.Predicate;
-
-import com.apigee.callout.jwtsigned.KeyUtils;
-
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.LoadingCache;
+import com.google.common.cache.CacheLoader;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
 
 @IOIntensive
 public class JwtParserCallout implements Execution {
     private static final String _varPrefix = "jwt_";
+    private LoadingCache<String, JWSVerifier> macVerifierCache;
+    private LoadingCache<PublicKeySource, JWSVerifier> rsaVerifierCache;
     private static long defaultTimeAllowanceMilliseconds = 1000L;
-    private final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
+    // NB: SimpleDateFormat is not thread-safe
+    private static final FastDateFormat fdf = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+
     private Map<String,String> properties; // read-only
 
     public JwtParserCallout (Map properties) {
@@ -66,6 +72,35 @@ public class JwtParserCallout implements Execution {
             }
         }
         this.properties = m;
+
+        macVerifierCache = CacheBuilder.newBuilder()
+            .concurrencyLevel(4)
+            //.weakKeys()
+            .maximumSize(1048000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<String, JWSVerifier>() {
+                    public JWSVerifier load(String key) throws UnsupportedEncodingException {
+                        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+                        // NB: this will throw if the string is not at least 16 chars long
+                        return new MACVerifier(keyBytes);
+                    }
+                }
+                );
+
+        rsaVerifierCache = CacheBuilder.newBuilder()
+            .concurrencyLevel(4)
+            //.weakKeys()
+            .maximumSize(1048000)
+            .expireAfterAccess(10, TimeUnit.MINUTES)
+            .build(new CacheLoader<PublicKeySource, JWSVerifier>() {
+                    public JWSVerifier load(PublicKeySource source)
+                        throws NoSuchAlgorithmException, InvalidKeySpecException,
+                               CertificateException, UnsupportedEncodingException {
+                        RSAPublicKey publicKey = (RSAPublicKey) source.getPublicKey();
+                        return new RSASSAVerifier(publicKey);
+                    }
+                }
+                );
     }
 
     private static InputStream getResourceAsStream(String resourceName)
@@ -163,24 +198,17 @@ public class JwtParserCallout implements Execution {
         return spec;
     }
 
-
     private void recordTimeVariable(MessageContext msgContext, Date d, String label) {
         msgContext.setVariable(varName(label), d.getTime() + "");
-        msgContext.setVariable(varName(label + "Formatted"), sdf.format(d));
+        msgContext.setVariable(varName(label + "Formatted"), fdf.format(d));
     }
 
+    private PublicKeySource getPublicKeySource(MessageContext msgCtxt)
+        throws IOException {
+        // There are various ways to specify the public key in configuration
 
-    private PublicKey getPublicKey(MessageContext msgCtxt)
-        throws IOException,
-               NoSuchAlgorithmException,
-               InvalidKeySpecException,
-               CertificateException
-    {
+        // 1. Try "public-key"
         String publicKeyString = (String) this.properties.get("public-key");
-
-        // There are various ways to specify the public key.
-
-        // Try "public-key"
         if (publicKeyString !=null) {
             if (publicKeyString.equals("")) {
                 throw new IllegalStateException("public-key must be non-empty");
@@ -190,14 +218,10 @@ public class JwtParserCallout implements Execution {
             if (publicKeyString==null || publicKeyString.equals("")) {
                 throw new IllegalStateException("public-key variable resolves to empty; invalid when algorithm is RS*");
             }
-            PublicKey key = KeyUtils.publicKeyStringToPublicKey(publicKeyString);
-            if (key==null) {
-                throw new InvalidKeySpecException("must be PKCS#1 or PKCS#8");
-            }
-            return key;
+            return PublicKeySource.fromString(publicKeyString);
         }
 
-        // Try "modulus" + "exponent"
+        // 2. Try "modulus" + "exponent"
         String modulus = (String) this.properties.get("modulus");
         String exponent = (String) this.properties.get("exponent");
 
@@ -210,11 +234,10 @@ public class JwtParserCallout implements Execution {
                 throw new IllegalStateException("modulus or exponent resolves to empty; invalid when algorithm is RS*");
             }
 
-            PublicKey key = KeyUtils.pubKeyFromModulusAndExponent(modulus, exponent);
-            return key;
+            return PublicKeySource.fromModulusAndExponent(modulus, exponent);
         }
 
-        // Try certificate
+        // 3. Try certificate
         String certString = (String) this.properties.get("certificate");
         if (certString !=null) {
             if (certString.equals("")) {
@@ -225,20 +248,16 @@ public class JwtParserCallout implements Execution {
             if (certString==null || certString.equals("")) {
                 throw new IllegalStateException("certificate variable resolves to empty; invalid when algorithm is RS*");
             }
-            PublicKey key = KeyUtils.certStringToPublicKey(certString);
-            if (key==null) {
-                throw new InvalidKeySpecException("invalid certificate format");
-            }
-            return key;
+
+            return PublicKeySource.fromCertificate(certString);
         }
 
-        // last chance
+        // 4. last chance, try pemfile
         String pemfile = (String) this.properties.get("pemfile");
         if (pemfile == null || pemfile.equals("")) {
             throw new IllegalStateException("must specify pemfile or public-key or certificate when algorithm is RS*");
         }
         pemfile = resolvePropertyValue(pemfile, msgCtxt);
-        //msgCtxt.setVariable("jwt_pemfile", pemfile);
         if (pemfile == null || pemfile.equals("")) {
             throw new IllegalStateException("pemfile resolves to nothing; invalid when algorithm is RS*");
         }
@@ -249,33 +268,26 @@ public class JwtParserCallout implements Execution {
         in.close();
         publicKeyString = new String(keyBytes, "UTF-8");
 
-        // allow pemfile resolution as Certificate or Public Key
-        PublicKey key = KeyUtils.pemFileStringToPublicKey(publicKeyString);
-        if (key==null) {
-            throw new InvalidKeySpecException("invalid pemfile format");
-        }
-        return key;
+        return PublicKeySource.fromPemFileString(publicKeyString);
     }
 
+    private JWSVerifier getMacVerifier(MessageContext msgCtxt) throws Exception {
+        String key = getSecretKey(msgCtxt);
+        return macVerifierCache.get(key);
+    }
 
-    private JWSVerifier generateVerifier(String alg, MessageContext msgCtxt)
-        throws IllegalStateException,
-               UnsupportedEncodingException,
-               IOException,
-               InvalidKeySpecException,
-               CertificateException,
-               NoSuchAlgorithmException {
+    private JWSVerifier getRsaVerifier(MessageContext msgCtxt) throws Exception {
+        PublicKeySource source = getPublicKeySource(msgCtxt);
+        return rsaVerifierCache.get(source);
+    }
 
+    private JWSVerifier getVerifier(String alg, MessageContext msgCtxt)
+        throws Exception {
         if (alg.equals("HS256")) {
-            String key = getSecretKey(msgCtxt);
-            // byte[] keyBytes = KeyUtils.getKeyBytesForHmac256(key);
-            byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
-            // NB: this will throw if the string is not at least 16 chars long
-            return new MACVerifier(keyBytes);
+            return getMacVerifier(msgCtxt);
         }
         else if (alg.equals("RS256")) {
-            RSAPublicKey publicKey = (RSAPublicKey) getPublicKey(msgCtxt);
-            return new RSASSAVerifier(publicKey);
+            return getRsaVerifier(msgCtxt);
         }
 
         throw new IllegalStateException("algorithm is unsupported: " + alg);
@@ -344,7 +356,7 @@ public class JwtParserCallout implements Execution {
 
             // 3. set up the signature verifier according to the required algorithm and its inputs
             boolean valid = true;
-            JWSVerifier verifier = generateVerifier(requiredAlgorithm, msgCtxt);
+            JWSVerifier verifier = getVerifier(requiredAlgorithm, msgCtxt);
 
             // 4. actually verify the signature
             if (!signedJWT.verify(verifier)) {

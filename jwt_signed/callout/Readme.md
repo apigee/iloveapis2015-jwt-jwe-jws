@@ -41,13 +41,14 @@ Jars available in Edge:
  - Apigee Edge expressions v1.0
  - Apigee Edge message-flow v1.0
  - Apache commons lang v2.6 - String and Date utilities
- - Apache commons codec 1.7 - Base64 decoder
+ - Apache commons codec 1.7 - Base64 and Hex codecs
  - not-yet-commons-ssl v0.3.9 - RSA private/public crypto
 
 Jars not available in Edge:
  - Nimbus JOSE JWT v3.1.2
  - json-smart v1.3
- - Google Guava 18.0 (for collections utilities)
+ - Google Guava 18.0 (for collections utilities and cache)
+ - Apache commons lang3 v3.4 - FastDateFormat
 
 All these jars must be available on the classpath for the compile to
 succeed. The build.sh script should download all of these files for
@@ -65,28 +66,13 @@ produced by Apigee; contact Apigee support to obtain these jars to allow
 the compile, or get them here: 
 https://github.com/apigee/api-platform-samples/tree/master/doc-samples/java-cookbook/lib
 
-The Apache Commons Lang and Codec jar is shipped by the Apache
-Software Foundation. You need the versions specified here, because
-that is what Apigee Edge currently uses.
-    http://commons.apache.org/proper/commons-lang/
-    http://commons.apache.org/proper/commons-codec/
+The rest of the Jars are available on your choice of maven repository.
 
-not-yet-commons-ssl 
-    http://juliusdavies.ca/commons-ssl/download.html
-
-v3.1.2 jar for Nimbus Jose JWT 
-    http://connect2id.com/products/nimbus-jose-jwt
-
-v1.3 JSON Smart 
-    http://mvnrepository.com/artifact/net.minidev/json-smart
-
-v18.0 of Google Guava 
-    http://central.maven.org/maven2/com/google/guava/guava/18.0/guava-18.0.jar
-
+The FOUR jars that are not available in Edge MUST BE INCLUDED in your API Proxy scripts.
+The pom.xml file will copy these JARs to the apiproxy resources directory, if you build from source. Otherwise, you need to make sure you include these JARs into the api proxy bundle.
 
 
 ## Configuring the Callout Policy:
-
 
 There are two callout classes, one to generate a JWT and one to validate
 and parse a JWT. How the JWT is generated or validated, respectively,
@@ -524,7 +510,7 @@ C. certificate
 D. pemfile  
 
 If you specify more than one of {A,B,C,D} the callout will use the first
-one it finds.  It's not the order in which the properties appear in the
+one it finds. It's not the order in which the properties appear in the
 file; it's the order described here. 
 
 
@@ -532,9 +518,9 @@ file; it's the order described here.
 
 Performance of this policy will vary depending on many factors: the machine (CPU, memory) that supports the message processor, the other things running on the machine, the other traffic being handled by the message processor, and so on.
 
-In my tests, it takes between 4ms and 12ms to generate a HS256-signed JWT on the Trial (free) version of hosted Apigee Edge. Caching the MACSigner in the Java code optimizes that. When the key is in cache, HS256 signing takes <1ms. Verifying signatures with HS256 takes about 1ms. The verifiers are not cached, at this time. 
+In my tests, it takes between 4ms and 12ms to generate a HS256-signed JWT on the Trial (free) version of hosted Apigee Edge. Caching the MACSigner in the Java code optimizes that. When the key is in cache, HS256 signing takes <1ms. Verifying signatures with HS256 takes about 1ms, with caching. 
 
-I haven't measured verification or creation of RS256-signed JWT. 
+The signers and verifiers for RS256 are also cached, as of 2016 March 20. I haven't measured verification or creation of RS256-signed JWT. The cache will make a difference only at high load.
 
 
 

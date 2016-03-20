@@ -52,7 +52,6 @@ import com.apigee.utils.TemplateString;
 @IOIntensive
 public class JwtCreatorCallout implements Execution {
     private static final String _varPrefix = "jwt_";
-    private Object lock;
     private LoadingCache<String, JWSSigner> macKeyCache;
     private LoadingCache<PrivateKeyInfo, JWSSigner> rsaKeyCache;
     private Map<String,String> properties; // read-only
