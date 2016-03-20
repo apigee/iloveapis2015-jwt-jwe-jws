@@ -9,7 +9,6 @@ import com.apigee.flow.message.MessageContext;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.ssl.PKCS8Key;
 
 import java.util.Date;
 import java.util.Map;
@@ -30,15 +29,12 @@ import java.io.InputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.security.PublicKey;
-import java.security.KeyFactory;
-import java.security.spec.KeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.interfaces.RSAPublicKey;
 import java.security.cert.CertificateException;
 
-// Google's Guava collections tools
+// for collections and Cache magic
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Maps;
 import com.google.common.base.Predicate;
@@ -63,7 +59,7 @@ public class JwtParserCallout implements Execution {
     public JwtParserCallout (Map properties) {
         // convert the untyped Map to a generic map
         Map<String,String> m = new HashMap<String,String>();
-        Iterator iterator =  properties.keySet().iterator();
+        Iterator iterator = properties.keySet().iterator();
         while(iterator.hasNext()){
             Object key = iterator.next();
             Object value = properties.get(key);
@@ -75,7 +71,6 @@ public class JwtParserCallout implements Execution {
 
         macVerifierCache = CacheBuilder.newBuilder()
             .concurrencyLevel(4)
-            //.weakKeys()
             .maximumSize(1048000)
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build(new CacheLoader<String, JWSVerifier>() {
@@ -89,7 +84,6 @@ public class JwtParserCallout implements Execution {
 
         rsaVerifierCache = CacheBuilder.newBuilder()
             .concurrencyLevel(4)
-            //.weakKeys()
             .maximumSize(1048000)
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build(new CacheLoader<PublicKeySource, JWSVerifier>() {
