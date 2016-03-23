@@ -316,6 +316,7 @@ public class JwtCreatorCallout implements Execution {
             privateKey = privateKey.trim();
             // clear any leading whitespace on each line
             privateKey = privateKey.replaceAll("([\\r|\\n] +)","\n");
+
             keyBytes = privateKey.getBytes(StandardCharsets.UTF_8);
         }
         return keyBytes;
@@ -416,7 +417,8 @@ public class JwtCreatorCallout implements Execution {
                         }
                         else {
                             providedValue = resolvePropertyValue(providedValue, msgCtxt);
-                            claims.setCustomClaim(claimName, providedValue);
+                            //claims.setCustomClaim(claimName, providedValue);
+                            claims.setClaim(claimName, providedValue);
                         }
                         msgCtxt.setVariable(varName("provided_")+claimName, providedValue);
                     }

@@ -24,6 +24,7 @@ public class TestBasicJwtParse {
     MessageContext msgCtxt;
     ExecutionContext exeCtxt;
 
+
     @BeforeMethod()
     public void testSetup1() {
 
@@ -139,6 +140,27 @@ public class TestBasicJwtParse {
         Assert.assertEquals(reason, expectedReason);
         //Assert.assertNotNull(error);
     }
+
+
+    @Test()
+    public void MissingJwt() {
+        String expectedReason = "jwt is not specified or is empty.";
+        // now parse and verify
+        Map properties = new HashMap();
+        properties.put("algorithm", "HS256");
+        properties.put("debug", "true");
+        properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
+        JwtParserCallout callout = new JwtParserCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String reason = msgCtxt.getVariable("jwt_reason");
+
+        Assert.assertEquals(result, ExecutionResult.ABORT);
+        Assert.assertEquals(isValid, "false", "isValid");
+        Assert.assertEquals(reason, expectedReason, "reason");
+    }
+
 
     @Test()
     public void test2_Rs256JwtMissingPemfile() {

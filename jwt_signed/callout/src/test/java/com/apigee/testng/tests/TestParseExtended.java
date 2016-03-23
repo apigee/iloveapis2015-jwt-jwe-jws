@@ -28,7 +28,7 @@ import com.apigee.callout.jwtsigned.JwtParserCallout;
 import com.apigee.callout.jwtsigned.JwtCreatorCallout;
 
 public class TestParseExtended {
-    private static String testDataDir = "src/test/resources/test-cases";
+    private static String testDataDir = "src/test/resources/parse";
     private static File testdir = new File(testDataDir);
 
     MessageContext msgCtxt;

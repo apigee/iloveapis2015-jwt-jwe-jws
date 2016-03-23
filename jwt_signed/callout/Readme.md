@@ -86,7 +86,7 @@ form of properties on the policy.  Some examples follow.
     <Properties>
       <Property name="algorithm">HS256</Property>
       <!-- the key is likely the client_secret -->
-      <Property name="key">{organization.name}</Property>
+      <Property name="secret-key">{organization.name}</Property>
       <!-- claims -->
       <Property name="subject">{apiproxy.name}</Property>
       <Property name="issuer">http://dinochiesa.net</Property>
@@ -250,7 +250,7 @@ For parsing and verifying a JWT, you need to specify a different Java class. Con
       <Property name="jwt">{request.formparam.jwt}</Property>
 
       <!-- name of var that holds the shared key (likely the client_secret) -->
-      <Property name="key">{organization.name}</Property>
+      <Property name="secret-key">{organization.name}</Property>
 
     </Properties>
 

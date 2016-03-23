@@ -566,6 +566,7 @@ public class JwtParserCallout implements Execution {
             else {
                 msgCtxt.setVariable(varName("reason"), error);
             }
+            msgCtxt.setVariable(varName("isValid"), "false");
 
             //System.out.println("exception: " + e.toString());
             msgCtxt.setVariable(varName("stacktrace"), ExceptionUtils.getStackTrace(e));
