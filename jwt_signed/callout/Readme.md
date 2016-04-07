@@ -133,7 +133,7 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
 
       <!-- private-key and private-key-password used only for algorithm = RS256 -->
       <Property name="private-key">
-      -----BEGIN RSA PRIVATE KEY-----
+      -----BEGIN PRIVATE KEY-----
       Proc-Type: 4,ENCRYPTED
       DEK-Info: DES-EDE3-CBC,049E6103F40FBE84
 
@@ -141,7 +141,7 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
       ApEZC1CxzsyRfvKDtiKWfQKdYKLccl8pA4Jj0sCxVgL4MBFDNDDEau4vRfXBv2EF
       ....
       7ZOF1UXVaoldDs+izZo5biVF/NNIBtg2FkZd4hh/cFlF1PV+M5+5mA==
-      -----END RSA PRIVATE KEY-----
+      -----END PRIVATE KEY-----
       </Property>
 
       <!-- this value should not be hardcoded. Put it in the vault! -->
@@ -162,6 +162,14 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
     <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
     <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
   </JavaCallout>
+```
+
+The private key should be in pkcs8 format.
+You can produce a keypair in the correct format with this set of shell commands:
+```
+openssl genrsa -out private.pem 2048
+openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+openssl pkcs8 -topk8 -inform pem -in private.pem -outform pem -nocrypt -out private-pkcs8.pem
 ```
 
 The private key need not be encrypted. If it is, obviously you need to

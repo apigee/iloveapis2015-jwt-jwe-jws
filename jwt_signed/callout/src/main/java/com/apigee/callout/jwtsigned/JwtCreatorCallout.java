@@ -20,6 +20,7 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.ssl.PKCS8Key;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -89,7 +90,7 @@ public class JwtCreatorCallout implements Execution {
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build(new CacheLoader<PrivateKeyInfo, JWSSigner>() {
                     public JWSSigner load(PrivateKeyInfo info) throws InvalidKeySpecException, GeneralSecurityException {
-                        RSAPrivateKey privateKey = (RSAPrivateKey) getPrivateKey(info);
+                        RSAPrivateKey privateKey = (RSAPrivateKey) generatePrivateKey(info);
                         return new RSASSASigner(privateKey);
                     }
                 }
@@ -306,6 +307,7 @@ public class JwtCreatorCallout implements Execution {
             in.close();
         }
         else {
+            // it's a string...
             if (privateKey.equals("")) {
                 throw new IllegalStateException("private-key must be non-empty");
             }
@@ -314,21 +316,30 @@ public class JwtCreatorCallout implements Execution {
                 throw new IllegalStateException("private-key variable resolves to empty; invalid when algorithm is RS*");
             }
             privateKey = privateKey.trim();
+
+            if (privateKey.startsWith("-----BEGIN PRIVATE KEY-----") &&
+                privateKey.endsWith("-----END PRIVATE KEY-----")) {
+                privateKey = privateKey.substring(27, privateKey.length() - 25);
+            }
+
             // clear any leading whitespace on each line
             privateKey = privateKey.replaceAll("([\\r|\\n] +)","\n");
-
-            keyBytes = privateKey.getBytes(StandardCharsets.UTF_8);
+            keyBytes = Base64.decodeBase64(privateKey);
+            //keyBytes = privateKey.getBytes(StandardCharsets.UTF_8);
         }
         return keyBytes;
     }
 
-    private PrivateKey getPrivateKey(PrivateKeyInfo info)
+    private PrivateKey generatePrivateKey(PrivateKeyInfo info)
         throws InvalidKeySpecException, GeneralSecurityException,NoSuchAlgorithmException
     {
         // If the provided data is encrypted, we need a password to decrypt
         // it. If the InputStream is not encrypted, then the password is ignored
         // (can be null).  The InputStream can be DER (raw ASN.1) or PEM (base64).
-        PKCS8Key pkcs8 = new PKCS8Key( info.keyBytes, info.password.toCharArray() );
+        char[] password = (info.password != null && !info.password.isEmpty()) ?
+            info.password.toCharArray() : null;
+
+        PKCS8Key pkcs8 = new PKCS8Key( info.keyBytes, password );
 
         // If an unencrypted PKCS8 key was provided, then getDecryptedBytes()
         // actually returns exactly what was originally passed in (with no
@@ -445,7 +456,7 @@ public class JwtCreatorCallout implements Execution {
 
             // 4. Apply the signature
             JWSHeader h = new JWSHeader(jwsAlg);
-            //h.setType("JWT"); // why not?
+            //h.setType("JWT"); // this field is optional, not necessary
             SignedJWT signedJWT = new SignedJWT(h, claims);
             signedJWT.sign(signer);
 
