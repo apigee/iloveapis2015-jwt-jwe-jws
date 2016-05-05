@@ -34,8 +34,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.interfaces.RSAPublicKey;
 import java.security.cert.CertificateException;
 
-// for collections and Cache magic
-import com.google.common.collect.Collections2;
+// for collections and Guava Cache magic
 import com.google.common.collect.Maps;
 import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
@@ -46,10 +45,16 @@ import java.util.concurrent.ExecutionException;
 
 @IOIntensive
 public class JwtParserCallout implements Execution {
-    private static final String _varPrefix = "jwt_";
-    private LoadingCache<String, JWSVerifier> macVerifierCache;
-    private LoadingCache<PublicKeySource, JWSVerifier> rsaVerifierCache;
-    private static long defaultTimeAllowanceMilliseconds = 1000L;
+    private final static String _varPrefix = "jwt_";
+    private static LoadingCache<String, JWSVerifier> macVerifierCache;
+    private static LoadingCache<PublicKeySource, JWSVerifier> rsaVerifierCache;
+    // We may wish to allow a grace period on the expiry or a not-before-time
+    // of a JWT.  In particular, for the nbf, if the token is acquired from a
+    // remote system and then immediately presented here, the nbf may yet be
+    // in the future. This number quantifies the allowance for time skew
+    // between issuer and verifier (=this code).
+    private final static long defaultTimeAllowanceMilliseconds = 1000L;
+    private final static int MAX_CACHE_ENTRIES = 10240;
 
     // NB: SimpleDateFormat is not thread-safe
     private static final FastDateFormat fdf = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
@@ -71,7 +76,7 @@ public class JwtParserCallout implements Execution {
 
         macVerifierCache = CacheBuilder.newBuilder()
             .concurrencyLevel(4)
-            .maximumSize(1048000)
+            .maximumSize(MAX_CACHE_ENTRIES)
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build(new CacheLoader<String, JWSVerifier>() {
                     public JWSVerifier load(String key) throws UnsupportedEncodingException {
@@ -84,7 +89,7 @@ public class JwtParserCallout implements Execution {
 
         rsaVerifierCache = CacheBuilder.newBuilder()
             .concurrencyLevel(4)
-            .maximumSize(1048000)
+            .maximumSize(MAX_CACHE_ENTRIES)
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build(new CacheLoader<PublicKeySource, JWSVerifier>() {
                     public JWSVerifier load(PublicKeySource source)
