@@ -413,7 +413,7 @@ public class JwtCreatorCallout implements Execution {
                 for (Map.Entry<String, String> entry : customClaims.entrySet()) {
                     String key = entry.getKey();
                     String providedValue = entry.getValue();
-                    String[] parts = StringUtils.split(key,"_");
+                    String[] parts = StringUtils.split(key,"_",2);
                     // sanity check - is this a valid claim?
                     if (parts.length == 2 && parts[0].equals("claim") &&
                         providedValue != null) {

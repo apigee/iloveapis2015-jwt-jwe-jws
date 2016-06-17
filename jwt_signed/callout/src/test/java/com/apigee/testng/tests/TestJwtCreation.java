@@ -340,13 +340,14 @@ public class TestJwtCreation {
         String jwt = msgCtxt.getVariable("jwt_jwt");
         System.out.println("jwt: " + jwt);
 
-        // now parse and verify, audience as desired
+        // now parse and verify the token. Check that all the claim_* claims are present.
         properties = new HashMap();
         properties.put("algorithm", "RS256");
         properties.put("jwt", jwt);
         properties.put("debug", "true");
         properties.put("claim_aud", audience);
         properties.put("claim_sub", subject);
+        properties.put("claim_box_sub_type", "enterprise");
         properties.put("public-key", publicKeyMap.get("rsa2"));
         JwtParserCallout callout2 = new JwtParserCallout(properties);
         result = callout2.execute(msgCtxt, exeCtxt);

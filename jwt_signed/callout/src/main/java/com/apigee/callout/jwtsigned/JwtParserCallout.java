@@ -510,7 +510,10 @@ public class JwtParserCallout implements Execution {
                                     Object providedValue = claims.getClaim(claimName);
                                     boolean match = false;
                                     if (providedValue == null) {
-                                        System.out.printf("key(%s) = null\n", key);
+                                        msgCtxt.setVariable(varName("reason"),
+                                                            String.format("mismatch in claim %s, expected:%s provided:null",
+                                                                          claimName, expectedValue));
+                                                valid = false;
                                     }
                                     else {
                                         //System.out.printf("key(%s) type(%s)\n", key, providedValue.getClass().getCanonicalName());
