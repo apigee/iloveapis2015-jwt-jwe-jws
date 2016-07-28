@@ -551,12 +551,12 @@ URL-safe base64 or non-URL-safe base64.
 
 The order of precedence the callout uses for determining the public key is this: 
 
-|X| description|
-|-|-------|
-|A| public-key |
-|B| modulus and exponent |
-|C| certificate |
-|D| pemfile |
+|  X  | description   |
+| --- | ------------- |
+|  A  | public-key    |
+|  B  | modulus and exponent |
+|  C  | certificate   |
+|  D  | pemfile       |
 
 If you specify more than one of {A,B,C,D} the callout will use the first
 one it finds.  It's not the order in which the properties appear in the
