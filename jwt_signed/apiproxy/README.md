@@ -28,7 +28,13 @@ This proxy will work on the Apigee Edge public cloud release, or on OPDK 16.01 o
 
 ## Deploying
 
-Before you deploy the proxy you need to create a cache on the 
+Several notes:
+
+* use a tool like [apigeetool](https://github.com/apigee/apigeetool-node) or [pushapi](https://github.com/carloseberhardt/apiploy) to deploy the proxy
+
+* the apiproxy must include the JAR, and all of its dependencies. See the [resources/java](resources/java) directory for those dependencies. Include them all in the proxy you deploy. 
+
+* Before you deploy the proxy you need to create a cache on the 
 environment. The cache should be named 'cache1'.  
 
 
@@ -543,10 +549,10 @@ URL-safe base64 or non-URL-safe base64.
 
 The order of precedence the callout uses for determining the public key is this: 
 
-A- public-key 
-B- modulus and exponent 
-C- certificate 
-D- pemfile 
+|A| public-key |
+|B| modulus and exponent |
+|C| certificate |
+|D| pemfile |
 
 If you specify more than one of {A,B,C,D} the callout will use the first
 one it finds.  It's not the order in which the properties appear in the

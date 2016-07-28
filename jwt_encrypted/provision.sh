@@ -16,7 +16,7 @@
 # 
 # 
 # Created: <Thu Nov  5 13:30:29 2015>
-# Last Updated: <2016-January-21 15:24:13>
+# Last Updated: <2016-April-25 10:52:53>
 #
 
 apiname=jwt_encrypted
@@ -31,6 +31,7 @@ mgmtserver=""
 org=""
 env=""
 credentials=""
+netrccreds=0
 
 vaultexists=0
 quotalimit=1000
@@ -630,8 +631,8 @@ while getopts "hm:o:e:f:p:b:u:nr" opt; do
     f) privkeyfile=$OPTARG ;;
     p) privkeypasswd=$OPTARG ;;
     b) pubkeyfile=$OPTARG ;;
-    u) credentials="-u $OPTARG" ;;
-    n) credentials="-n" ;;
+    u) credentials=$OPTARG ;;
+    n) netrccreds=1 ;;
     r) resetonly=1 ;;
     *) echo "unknown arg" && usage ;;
   esac
@@ -643,8 +644,18 @@ if [ "X$mgmtserver" = "X" ]; then
   mgmtserver="$defaultmgmtserver"
 fi 
 
-if [ "X$credentials" = "X" ]; then
-  choose_credentials
+
+if [ ${netrccreds} -eq 1 ]; then
+  echo "using credentials from .netrc"
+  credentials='-n'
+elif [ "X$credentials" = "X" ]; then
+    choose_credentials
+elif [[ $credentials == *":"* ]]; then
+    ## credentials contains a colon; its a username:password
+  credentials="-u $credentials"
+else
+    # no colon; prompt for password
+    choose_password $credentials
 fi
 
 echo
