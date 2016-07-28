@@ -551,6 +551,7 @@ URL-safe base64 or non-URL-safe base64.
 
 The order of precedence the callout uses for determining the public key is this: 
 
+|-|-------|
 |A| public-key |
 |B| modulus and exponent |
 |C| certificate |
