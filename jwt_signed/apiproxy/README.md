@@ -1,6 +1,5 @@
 # JWT (signed) - Test proxy
 
-
 This API proxy creates and validates signed JWT, aka JSON Web Tokens.  
 JWT is an IETF standard.
 https://tools.ietf.org/html/rfc7519
@@ -26,7 +25,7 @@ This proxy will work on the Apigee Edge public cloud release, or on OPDK 16.01 o
 
 ## Support
 
-This is an open-source project of the Apigee Corporation. It is not covered by Apigee support contracts. However, we will support you as best we can. For help, please open an issue in this GitHub project, or ask on [community](https://community.apigee.com). You are also always welcome to submit a pull request.
+This is an open-source project of the Apigee Corporation. It is not covered by Apigee support contracts. However, we will support you as best we can. For help, please open an issue in this GitHub project, or ask on [The Apigee community site](https://community.apigee.com). You are also always welcome to submit a pull request.
 
 ## Deploying
 
