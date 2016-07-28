@@ -12,6 +12,11 @@ decrypt JWE.  This proxy shows how to use a Java callout to do those
 things.
 
 
+## Support
+
+This is an open-source project of the Apigee Corporation. It is not covered by Apigee support contracts. However, we will support you as best we can. For help, please open an issue in this GitHub project, or ask on [community](https://community.apigee.com). You are also always welcome to submit a pull request.
+
+
 Example Invocations:
 ----------------
 

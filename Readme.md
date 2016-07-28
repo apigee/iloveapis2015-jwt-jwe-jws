@@ -6,7 +6,6 @@ This is the top-level project containing source code, documentation, and tools f
 The example proxies included here will work on the Apigee Edge public cloud release, or on OPDK 16.01 or later. These proxies will not work on OPDK 15.07 or earlier.  This restriction does not apply to the Java callouts.  The custom Java policy work on OPDK 15.07 or on the Apigee public cloud. 
 
 
-
 ## What's going on here?
 
 You will find subdirectories here, containing independent projects:
@@ -17,6 +16,12 @@ You will find subdirectories here, containing independent projects:
 
 
 Each directory includes the Java source code for a callout, as well as an example API proxy, which shows how to use the callout. 
+
+
+## Support
+
+This is an open-source project of the Apigee Corporation. It is not covered by Apigee support contracts. However, we will support you as best we can. For help, please open an issue in this GitHub project, or ask on [community](https://community.apigee.com). You are also always welcome to submit a pull request.
+
 
 ## About Building
 

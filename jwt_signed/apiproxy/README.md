@@ -22,9 +22,11 @@ Apigee Edge doesn't currently contain "built-in" capability to create or
 verify JWT.  This proxy shows how to use a Java callout to do those
 things.
 
-
 This proxy will work on the Apigee Edge public cloud release, or on OPDK 16.01 or later. It will not work on OPDK 15.07 or earlier. 
 
+## Support
+
+This is an open-source project of the Apigee Corporation. It is not covered by Apigee support contracts. However, we will support you as best we can. For help, please open an issue in this GitHub project, or ask on [community](https://community.apigee.com). You are also always welcome to submit a pull request.
 
 ## Deploying
 

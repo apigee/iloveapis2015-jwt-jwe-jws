@@ -16,7 +16,7 @@
 # 
 # 
 # Created: <Thu Nov  5 13:30:29 2015>
-# Last Updated: <2016-April-25 10:52:53>
+# Last Updated: <2016-July-28 08:44:43>
 #
 
 apiname=jwt_encrypted
@@ -72,22 +72,21 @@ function random_string() {
   echo ${rand_string}
 }
 
+## function MYCURL
+## Print the curl command, omitting sensitive parameters, then run it.
+## There are side effects:
+## 1. puts curl output into file named ${CURL_OUT}. If the CURL_OUT
+##    env var is not set prior to calling this function, it is created
+##    and the name of a tmp file in /tmp is placed there.
+## 2. puts curl http_status into variable CURL_RC
 function MYCURL() {
-  local allargs
-  local ix=0
-  # grab the curl args
-  while [ "$1" ]; do
-    allargs[$ix]=$1
-    let "ix+=1"
-    shift
-  done
-  [ -z "${CURL_OUT}" ] && CURL_OUT=`mktemp /tmp/apigee-${apiname}.curl.out.XXXXXX`
+  [ -z "${CURL_OUT}" ] && CURL_OUT=`mktemp /tmp/apigee-iloveapis2015-provision.curl.out.XXXXXX`
   [ -f "${CURL_OUT}" ] && rm ${CURL_OUT}
-  echo "curl ${allargs[@]}"
+  [ $verbosity -gt 0 ] && echo "curl $@"
 
   # run the curl command
-  CURL_RC=`curl $credentials -s -w "%{http_code}" -o "${CURL_OUT}" "${allargs[@]}"`
-  echo "==> ${CURL_RC}"
+  CURL_RC=`curl $credentials -s -w "%{http_code}" -o "${CURL_OUT}" "$@"`
+  [ $verbosity -gt 0 ] && echo "==> ${CURL_RC}"
 }
 
 function parse_deployments_output() {

@@ -11,6 +11,13 @@ things.
 
 ....
 
+
+## Support
+
+This is an open-source project of the Apigee Corporation. It is not covered by Apigee support contracts. However, we will support you as best we can. For help, please open an issue in this GitHub project, or ask on [community](https://community.apigee.com). You are also always welcome to submit a pull request.
+
+
+
 ## JWT (encrypted) API Proxy
 
 This directory contains Java source code for a callout which verifies and creates an encrypted JWT,
