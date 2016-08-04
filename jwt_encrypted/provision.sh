@@ -698,7 +698,7 @@ if [ $resetonly -eq 0 ] ; then
     MYCURL -X POST -H content-type:application/json \
       $mgmtserver/v1/o/$org/e/$env/vaults \
       -d '{ "name": "'$vaultname'" }'
-    if [ ${CURL_RC} -ne 200 ]; then
+    if [ ${CURL_RC} -ne 201 ]; then
       echo failed.
       cat ${CURL_OUT} 
       echo

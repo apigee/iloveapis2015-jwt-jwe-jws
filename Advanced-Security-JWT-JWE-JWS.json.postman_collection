@@ -30,8 +30,8 @@
 			"description": "",
 			"order": [
 				"1090bf4e-f4e0-7278-f6e9-e805e80fa442",
-				"bbd58738-8353-5f46-e9d0-54cd32649983",
 				"f309c9ae-f6d3-ac21-6e7a-a95db5914a81",
+				"bbd58738-8353-5f46-e9d0-54cd32649983",
 				"abfd8db3-e104-9d18-4b00-f6d3cfb57012",
 				"0c1a54c4-e52c-69d5-adc4-c28ca192996f",
 				"e982d75d-b4fd-5923-a807-6cba67bcfbe8",
@@ -64,7 +64,7 @@
 			"time": 1444444367035,
 			"version": 2,
 			"responses": [],
-			"tests": "var tests;",
+			"tests": "var jsonData = JSON.parse(responseBody);\npostman.setEnvironmentVariable(\"jwt_signed_rs256\", jsonData.jwt);",
 			"currentHelper": "normal",
 			"helperAttributes": {},
 			"folder": "bd13ea0f-7471-0624-beb8-ad8ec9e0b6cd"
@@ -86,7 +86,7 @@
 			],
 			"dataMode": "urlencoded",
 			"version": 2,
-			"tests": "var tests;",
+			"tests": "var jsonData = JSON.parse(responseBody);\npostman.setEnvironmentVariable(\"jwt_signed\", jsonData.jwt);",
 			"currentHelper": "normal",
 			"helperAttributes": {},
 			"time": 1454645355361,
@@ -105,7 +105,7 @@
 			"data": [],
 			"dataMode": "urlencoded",
 			"version": 2,
-			"tests": "var tests;",
+			"tests": "var jsonData = JSON.parse(responseBody);\npostman.setEnvironmentVariable(\"jwt_encrypted\", jsonData.jwt);",
 			"currentHelper": "normal",
 			"helperAttributes": {},
 			"time": 1444442136435,
@@ -184,7 +184,7 @@
 				},
 				{
 					"key": "jwe",
-					"value": "eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwiYWxnIjoiUEJFUzItSFMyNTYrQTEyOEtXIiwicDJjIjo4MTkyLCJwMnMiOiJoZF9yaWhzZnc5emF6U3M3In0.J9BxBJkgLFC27bxEbTe7Klvb4WCwJA7l8R42--KgcFt3UGIs09_yNA.UWXt7jSK-HUIv_kcjQou4g.ILJQff1WVM-2zqHA3ngR1Db8zTgISH7jIKFrMI--yeo.o1unTQz1Yfb482e-xcRdug",
+					"value": "{{jwe}}",
 					"type": "text",
 					"enabled": true
 				}
@@ -265,13 +265,13 @@
 			"data": [
 				{
 					"key": "key",
-					"value": "this-secret-is-too-short",
+					"value": "this-secret-is-not-a-valid-secret",
 					"type": "text",
 					"enabled": true
 				},
 				{
 					"key": "jwt",
-					"value": "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0NDQ1MzA1NDQsInN1YiI6Imp3dF9zaWduZWQiLCJhdWQiOiJPcHRpb25hbC1TdHJpbmctb3ItVVJJIiwiaXNzIjoiaHR0cDpcL1wvZGlub2NoaWVzYS5uZXQiLCJtb3R0byI6Iklsb3ZlYXBpcyIsInNob2VzaXplIjoiOSIsImlhdCI6MTQ0NDQ0NDE0NH0.f5nAgpTC8zFdGpETU2jJ4GAfdS_VApGpKO5JgHxCYbA",
+					"value": "{{jwt_signed}}",
 					"type": "text",
 					"enabled": true
 				}
@@ -283,7 +283,7 @@
 			"helperAttributes": {},
 			"time": 1454647179957,
 			"name": "JWT_Signed-Validate-hs256 (bad key)",
-			"description": "The key length is too short on this request. ",
+			"description": "The key value is not valid on this request. ",
 			"collectionId": "c6630223-9935-84f8-f97f-ea59d80fb681",
 			"responses": []
 		},
@@ -316,7 +316,7 @@
 			"time": 1444443308295,
 			"version": 2,
 			"responses": [],
-			"tests": "var tests;",
+			"tests": "var jsonData = JSON.parse(responseBody);\npostman.setEnvironmentVariable(\"jwe\", jsonData.jwe);",
 			"currentHelper": "normal",
 			"helperAttributes": {},
 			"folder": "dd75c8c6-2601-e5a5-ca2d-b7b1da112bd7"
@@ -331,7 +331,7 @@
 			"data": [
 				{
 					"key": "jwt",
-					"value": "eyJhbGciOiJSUzI1NiJ9.eyJleHAiOjE0NTQ2NTA4NDUsInN1YiI6Imp3dF9zaWduZWQiLCJhdWQiOiJPcHRpb25hbC1TdHJpbmctb3ItVVJJIiwiaXNzIjoiaHR0cDpcL1wvZGlub2NoaWVzYS5uZXQiLCJwcmltYXJ5bGFuZ3VhZ2UiOiJFbmdsaXNoIiwic2hvZXNpemUiOiI4LjUiLCJtb3R0byI6Iklsb3ZlYXBpcyIsImlhdCI6MTQ1NDY0NzI0NX0.Kl1eV9GPrGoxM6Z3DFUBC3WEVKhj-ETmVpvR2RN_92hdKMNZLg3bfyhLsvJQiKqrYl6iWjeNt5VEDQOKw6Q7e7WvUbFJ1QfYbGfqFJVPT_HIsEIpHoaxGzagJ7WhIGYteib8jBSWm9HRhshLeYmKnTW5yaf-GwF6R9H__FeRULt81YDiw2W6odbXju5_3Vb8ZWiAbFB7XBYwRhzb9Y3YEe75sIt9l2s4YunAhXbWV2EuLS84w4VdeQ6bJHkQ_OeIsvpbXCJplcA23AoEDvemKiVyGVqZRONuMzVayFjaMhZYhe3zqjp3TB_l10Mqqtao3AQXbYX_Q8qST2QgxzLzvg",
+					"value": "{{jwt_signed_rs256}}",
 					"type": "text",
 					"enabled": true
 				}
@@ -363,7 +363,7 @@
 				},
 				{
 					"key": "jwt",
-					"value": "eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0NTQ2NDg1ODAsInN1YiI6Imh0dHA6XC9cL2Rpbm9jaGllc2EubmV0IiwiYXVkIjoiand0X3NpZ25lZCIsImlzcyI6IkFwaWdlZUVkZ2UtZGVlY2VlLXRlc3QtXC9qd3Rfc2lnbmVkXC9jcmVhdGUtaHMyNTYiLCJzaG9lc2l6ZSI6IjkiLCJtb3R0byI6Iklsb3ZlYXBpcyIsImlhdCI6MTQ1NDY0Njc4MH0.O1piuIF2Y9ZJQvwN0l5b-EMldhGzED3TFO756wfvZwY",
+					"value": "{{jwt_signed}}",
 					"type": "text",
 					"enabled": true
 				}
@@ -382,7 +382,7 @@
 		{
 			"id": "fcfcbb14-4b5f-f5e0-f565-216f20cc200d",
 			"headers": "",
-			"url": "http://iloveapis2015-test.apigee.net/jwt_encrypted/validate?apikey=Xmzm0xlH27YerSdWzk78Gf3QHaP1WyQd",
+			"url": "{{proxy_endpoint}}/jwt_encrypted/validate?apikey={{apikey}}",
 			"preRequestScript": "var prScript",
 			"pathVariables": {},
 			"method": "POST",

@@ -69,7 +69,7 @@
   <HTTPProxyConnection>
     <BasePath>/jwt_encrypted</BasePath>
     <Properties/>
-    <VirtualHost>default</VirtualHost>
+    <VirtualHost>secure</VirtualHost>
   </HTTPProxyConnection>
 
   <RouteRule name="nodeJsTarget">
