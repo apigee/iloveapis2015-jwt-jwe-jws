@@ -520,6 +520,7 @@ public class JwtParserCallout implements Execution {
                                         String type = providedValue.getClass().getCanonicalName();
                                         if (type.equals("java.lang.String")) {
                                             // simple string match
+
                                             msgCtxt.setVariable(varName(key + "_provided"), providedValue);
                                             match = expectedValue.equals((String)providedValue);
                                             if (!match) {

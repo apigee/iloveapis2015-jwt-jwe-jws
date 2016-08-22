@@ -15,6 +15,7 @@ import java.util.Iterator;
 import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -56,6 +57,7 @@ public class JwtCreatorCallout implements Execution {
     private LoadingCache<String, JWSSigner> macKeyCache;
     private LoadingCache<PrivateKeyInfo, JWSSigner> rsaKeyCache;
     private Map<String,String> properties; // read-only
+    private final static JOSEObjectType TYP_JWT = new JOSEObjectType("JWT");
 
     public JwtCreatorCallout (Map properties) {
         // convert the untyped Map to a generic map
@@ -138,15 +140,16 @@ public class JwtCreatorCallout implements Execution {
     private String getSubject(MessageContext msgCtxt) throws Exception {
         String subject = (String) this.properties.get("subject");
         if (subject == null || subject.equals("")) {
-            throw new IllegalStateException("subject is not specified or is empty.");
+            // throw new IllegalStateException("subject is not specified or is empty.");
+            return null; // subject is OPTIONAL
         }
         subject = resolvePropertyValue(subject, msgCtxt);
         if (subject == null || subject.equals("")) {
-            throw new IllegalStateException("subject is null or empty.");
+            //throw new IllegalStateException("subject is null or empty.");
+            return null; // subject is OPTIONAL
         }
         return subject;
     }
-
 
     private String getSecretKey(MessageContext msgCtxt) throws Exception {
         String key = (String) this.properties.get("secret-key");
@@ -163,11 +166,13 @@ public class JwtCreatorCallout implements Execution {
     private String getIssuer(MessageContext msgCtxt) throws Exception {
         String issuer = (String) this.properties.get("issuer");
         if (issuer == null || issuer.equals("")) {
-            throw new IllegalStateException("issuer is not specified or is empty.");
+            //throw new IllegalStateException("issuer is not specified or is empty.");
+            return null; // "iss" is OPTIONAL per RFC-7519
         }
         issuer = resolvePropertyValue(issuer, msgCtxt);
         if (issuer == null || issuer.equals("")) {
-            throw new IllegalStateException("issuer is not specified or is empty.");
+            // throw new IllegalStateException("issuer is not specified or is empty.");
+            return null; // "iss" is OPTIONAL per RFC-7519
         }
         return issuer;
     }
@@ -203,15 +208,19 @@ public class JwtCreatorCallout implements Execution {
     }
 
     private String getJwtId(MessageContext msgCtxt) throws Exception {
-        String jti = (String) this.properties.get("id");
-        if (jti == null || jti.equals("")) {
+        if (!this.properties.containsKey("id")) {
             // don't care. ID is optional, per JWT Spec sec 4.1.7
             return null;
         }
+        String jti = (String) this.properties.get("id");
+        if (jti == null || jti.equals("")) {
+            // The value is not specified. Generate a UUID.
+            return java.util.UUID.randomUUID().toString();
+        }
         jti = resolvePropertyValue(jti, msgCtxt);
         if (jti == null || jti.equals("")) {
-            // The variable resolves to nothing. still don't care.
-            return null;
+            // The variable resolves to nothing. Generate one.
+            return java.util.UUID.randomUUID().toString();
         }
         return jti;
     }
@@ -396,12 +405,10 @@ public class JwtCreatorCallout implements Execution {
 
             // 1. Prepare JWT with the set of standard claims
             JWTClaimsSet claims = new JWTClaimsSet();
-            claims.setIssuer(ISSUER);
-            claims.setSubject(SUBJECT);
-            if (AUDIENCE != null) {
-                claims.setAudience(java.util.Arrays.asList(AUDIENCE));
-            }
-            if (JTI != null) { claims.setJWTID(JTI); }
+            if (ISSUER != null) claims.setIssuer(ISSUER);
+            if (SUBJECT != null) claims.setSubject(SUBJECT);
+            if (AUDIENCE != null) claims.setAudience(java.util.Arrays.asList(AUDIENCE));
+            if (JTI != null) claims.setJWTID(JTI);
             claims.setIssueTime(now);
             Date expiry = getExpiryDate(now,msgCtxt);
             if (expiry != null) { claims.setExpirationTime(expiry); }
@@ -455,8 +462,11 @@ public class JwtCreatorCallout implements Execution {
             }
 
             // 4. Apply the signature
-            JWSHeader h = new JWSHeader(jwsAlg);
-            //h.setType("JWT"); // this field is optional, not necessary
+            //JWSHeader h = new JWSHeader(jwsAlg);
+            // JWSHeader.setType() --> "Cannot find symbol"
+            // h.setType("JWT"); // this field is optional, not necessary
+
+            JWSHeader h = new JWSHeader.Builder(jwsAlg).type(TYP_JWT).build();
             SignedJWT signedJWT = new SignedJWT(h, claims);
             signedJWT.sign(signer);
 

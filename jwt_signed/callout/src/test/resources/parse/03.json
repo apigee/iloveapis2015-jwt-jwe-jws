@@ -1,0 +1,24 @@
+{
+    "description": "Verification of RS256 signed JWT - disable expiry check", 
+    "inputProperties": {
+        "timeAllowance": "-1",
+        "public-key": "file://pubkey2.txt",
+        "jwt": "file://jwt2.txt",
+        "subject": "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F",
+        "issuer": "api-key-goes-here-78B13CD0-CEFD-4F6A-BB76",
+        "debug": "true",
+        "claim_box_sub_type": "enterprise",
+        "algorithm": "RS256"
+    },
+    "expected": {
+        "isValid": "true",
+        "timeCheckDisabled": "true",
+        "isActuallyExpired": "true",
+        "hasExpiry": "true",
+        "verified": "true",
+        "jti": "2e8a36bc-5c14-4105-837f-3245abc03027",
+        "claim_box_sub_type_provided": "enterprise",
+        "reason": null,
+        "result": "SUCCESS"
+    }
+}

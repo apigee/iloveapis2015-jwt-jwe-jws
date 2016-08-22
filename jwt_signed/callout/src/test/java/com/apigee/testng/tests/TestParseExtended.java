@@ -85,7 +85,6 @@ public class TestParseExtended {
     }
 
 
-
     @Test
     public void testCreateThenVerify() throws IOException {
         String audUuid = java.util.UUID.randomUUID().toString();
@@ -141,6 +140,7 @@ public class TestParseExtended {
         // check result and output
         ExecutionResult expectedResult = getExpectedExecutionResult(tc);
         Assert.assertEquals(result, expectedResult);
+        System.out.printf("\n** Test case : %s\n", tc.getTestName());
 
         // retrieve output
         Map<String,String> expected = tc.getExpected();
@@ -152,6 +152,7 @@ public class TestParseExtended {
                 Assert.assertEquals(actualValue, expectedValue, key);
             }
         }
+        System.out.printf("\n\n");
         // String isValid = msgCtxt.getVariable("jwt_isValid");
         // String reason = msgCtxt.getVariable("jwt_reason");
         // Assert.assertEquals(reason, expected.get("reason"));

@@ -177,12 +177,61 @@ public class TestJwtCreation {
         String issuer = "urn:78B13CD0-CEFD-4F6A-BB76-AF236D876239";
         String audience = "everyone";
         String subject = "urn:F5CF2B90-DDF3-47EB-82EB-F67A5B561FD2";
+        String jti = "e7a0db4d-6bbe-476c-85be-385274dd0c0d";
         Map properties = new HashMap();
         properties.put("algorithm", "HS256");
         properties.put("debug", "true");
         properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
         properties.put("subject", subject);
         properties.put("issuer", issuer);
+        properties.put("id", jti);
+        properties.put("audience", audience);
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // retrieve output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // now parse and verify
+        properties = new HashMap();
+        properties.put("algorithm", "HS256");
+        properties.put("jwt", jwt);
+        properties.put("debug", "true");
+        properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
+        properties.put("claim_sub", subject);
+        properties.put("claim_jti", jti);
+        JwtParserCallout callout2 = new JwtParserCallout(properties);
+        result = callout2.execute(msgCtxt, exeCtxt);
+
+        String jwt_issuer = msgCtxt.getVariable("jwt_issuer");
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        String jwt_jti = msgCtxt.getVariable("jwt_jti");
+
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        Assert.assertEquals(jwt_issuer, issuer, "Issuer");
+        Assert.assertEquals(jwt_jti, jti, "jti");
+        Assert.assertEquals(isExpired, "false", "isExpired");
+        Assert.assertEquals(isValid, "true", "isValid");
+    }
+
+
+    @Test()
+    public void CreateAndParseWithGeneratedId() {
+        String issuer = "urn:78B13CD0-CEFD-4F6A-BB76-AF236D876239";
+        String audience = "everyone";
+        String subject = "urn:F5CF2B90-DDF3-47EB-82EB-F67A5B561FD2";
+        Map properties = new HashMap();
+        properties.put("algorithm", "HS256");
+        properties.put("debug", "true");
+        properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
+        properties.put("subject", subject);
+        properties.put("issuer", issuer);
+        properties.put("id", "");
         properties.put("audience", audience);
 
         JwtCreatorCallout callout = new JwtCreatorCallout(properties);
@@ -207,11 +256,14 @@ public class TestJwtCreation {
         String jwt_issuer = msgCtxt.getVariable("jwt_issuer");
         String isValid = msgCtxt.getVariable("jwt_isValid");
         String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        String jwt_jti = msgCtxt.getVariable("jwt_jti");
 
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
         Assert.assertEquals(jwt_issuer, issuer, "Issuer");
         Assert.assertEquals(isExpired, "false", "isExpired");
         Assert.assertEquals(isValid, "true", "isValid");
+        Assert.assertNotNull(jwt_jti, "jti");
+        Assert.assertNotEquals(jwt_jti, "", "jti");
     }
 
     @Test()
