@@ -22,6 +22,9 @@ Each directory includes the Java source code for a callout, as well as an exampl
 
 This is an open-source project of the Apigee Corporation. It is not covered by Apigee support contracts. However, we will support you as best we can. For help, please open an issue in this GitHub project, or ask on [community](https://community.apigee.com). You are also always welcome to submit a pull request.
 
+## License
+
+This project and all the code contained within is licensed under the [Apache 2.0 Source license](LICENSE).
 
 ## About Building
 

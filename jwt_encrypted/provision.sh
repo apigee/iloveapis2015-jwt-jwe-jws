@@ -16,7 +16,7 @@
 # 
 # 
 # Created: <Thu Nov  5 13:30:29 2015>
-# Last Updated: <2016-August-03 12:58:54>
+# Last Updated: <2016-August-03 13:06:30>
 #
 
 apiname=jwt_encrypted
@@ -80,20 +80,20 @@ function random_string() {
 ##    and the name of a tmp file in /tmp is placed there.
 ## 2. puts curl http_status into variable CURL_RC
 function MYCURL() {
-  [ -z "${CURL_OUT}" ] && CURL_OUT=`mktemp /tmp/apigee-iloveapis2015-provision.curl.out.XXXXXX`
-  [ -f "${CURL_OUT}" ] && rm ${CURL_OUT}
-  [ $verbosity -gt 0 ] && echo "curl $@"
+  [[ -z "${CURL_OUT}" ]] && CURL_OUT=`mktemp /tmp/apigee-iloveapis2015-provision.curl.out.XXXXXX`
+  [[ -f "${CURL_OUT}" ]] && rm ${CURL_OUT}
+  [[ $verbosity -gt 0 ]] && echo "curl $@"
 
   # run the curl command
   CURL_RC=`curl $credentials -s -w "%{http_code}" -o "${CURL_OUT}" "$@"`
-  [ $verbosity -gt 0 ] && echo "==> ${CURL_RC}"
+  [[ $verbosity -gt 0 ]] && echo "==> ${CURL_RC}"
 }
 
 function parse_deployments_output() {
   ## extract the environment names and revision numbers in the list of deployments.
   output_parsed=`cat ${CURL_OUT} | grep -A 6 -B 2 "revision"`
 
-  if [ $? -eq 0 ]; then
+  if [[ $? -eq 0 ]]; then
 
     deployed_envs=`echo "${output_parsed}" | grep -B 2 revision | grep name | sed -E 's/[\",]//g'| sed -E 's/name ://g'`
 
@@ -103,13 +103,13 @@ function parse_deployments_output() {
     IFS=' '; declare -a env_array=(${deployed_envs})
 
     m=${#rev_array[@]}
-    if [ $verbosity -gt 1 ]; then
+    if [[ $verbosity -gt 1 ]]; then
       echo "found ${m} deployed revisions"
     fi
 
     deployments=()
     let m-=1
-    while [ $m -ge 0 ]; do
+    while [[ $m -ge 0 ]]; do
       rev=${rev_array[m]}
       env=${env_array[m]}
       # trim spaces
@@ -133,7 +133,7 @@ function clear_env_state() {
 
   echo "  check for developers like ${apiname}..."
   MYCURL -X GET ${mgmtserver}/v1/o/${org}/developers
-  if [ ${CURL_RC} -ne 200 ]; then
+  if [[ ${CURL_RC} -ne 200 ]]; then
     echo 
     echo "Cannot retrieve developers from that organization..."
     exit 1
@@ -156,7 +156,7 @@ function clear_env_state() {
 
       echo "  delete the developer $dev..."
       MYCURL -X DELETE "${mgmtserver}/v1/o/${org}/developers/${dev}"
-      if [ ${CURL_RC} -ne 200 ]; then
+      if [[ ${CURL_RC} -ne 200 ]]; then
         echo 
         echo "  could not delete that developer (${dev})"
         echo 
@@ -180,7 +180,7 @@ function clear_env_state() {
     if [[ "$prod" =~ ^${apiname}.+$ ]] ; then
        echo "  found a matching product...deleting it."
        MYCURL -X DELETE ${mgmtserver}/v1/o/${org}/apiproducts/${prod}
-       if [ ${CURL_RC} -ne 200 ]; then
+       if [[ ${CURL_RC} -ne 200 ]]; then
          echo 
          echo "  could not delete that product (${prod})"
          echo 
@@ -191,7 +191,7 @@ function clear_env_state() {
 
   echo "  check for the ${apiname} apiproxy..."
   MYCURL -X GET "${mgmtserver}/v1/o/${org}/apis/${apiname}/deployments"
-  if [ ${CURL_RC} -eq 200 ]; then
+  if [[ ${CURL_RC} -eq 200 ]]; then
     echo "  found, querying it..."
     parse_deployments_output
 
@@ -214,10 +214,10 @@ function clear_env_state() {
       MYCURL -X DELETE "${mgmtserver}/v1/o/${org}/apis/${apiname}/revisions/${rev}"
     done
 
-    if [ $resetonly -eq 1 ] ; then
+    if [[ $resetonly -eq 1 ]] ; then
         echo "  delete the api"
         MYCURL -X DELETE ${mgmtserver}/v1/o/${org}/apis/${apiname}
-        if [ ${CURL_RC} -ne 200 ]; then
+        if [[ ${CURL_RC} -ne 200 ]]; then
           echo "failed to delete that API"
         fi 
     fi 
@@ -227,14 +227,14 @@ function clear_env_state() {
 
 function get_privatekey() {
   local value password
-  if [ "X$privkeyfile" = "X" ]; then
+  if [[ "X$privkeyfile" = "X" ]]; then
     read -p "private key file (${defaultprivkeyfile}) :: " value
     value="${value:-$defaultprivkeyfile}"
     privkeyfile=$value
     #echo "privkeyfile: $privkeyfile"
   fi
 
-  if [ ! -f "$privkeyfile" ]; then
+  if [[ ! -f "$privkeyfile" ]]; then
     echo "$privkeyfile is missing"
     echo
     exit 1
@@ -248,13 +248,13 @@ function get_privatekey() {
 
   echo "private key:"
   echo $privateKey
-  if [ -z "$privateKey" ]; then
+  if [[ -z "$privateKey" ]]; then
     echo "$privkeyfile is empty?"
     echo
     exit 1
   fi
   
-  if [ "X$privkeypasswd" = "X" ]; then
+  if [[ "X$privkeypasswd" = "X" ]]; then
     echo -n "Private key password: "
     read -s password
     echo
@@ -264,13 +264,13 @@ function get_privatekey() {
 
 function get_publickey() {
   local value 
-  if [ "X$pubkeyfile" = "X" ]; then
+  if [[ "X$pubkeyfile" = "X" ]]; then
     read -p "public key file (${defaultpubkeyfile}) :: " value
     value="${value:-$defaultpubkeyfile}"
     pubkeyfile=$value
   fi
 
-  if [ ! -f "$pubkeyfile" ]; then
+  if [[ ! -f "$pubkeyfile" ]]; then
     echo "$pubkeyfile is missing"
     echo
     exit 1
@@ -283,7 +283,7 @@ function get_publickey() {
   publicKey=`sed -e 'H;1h;$!d;x;y/\n/|/' $pubkeyfile`
   echo "public key:"
   echo $publicKey
-  if [ -z "$publicKey" ]; then
+  if [[ -z "$publicKey" ]]; then
     echo "$publicKey is empty?"
     echo
     exit 1
@@ -295,11 +295,11 @@ function delete_vault_entry_ifexists() {
   echo 
   echo inquire the vault entry
   MYCURL -X GET $mgmtserver/v1/o/$org/e/$env/vaults/${vaultname}/entries/$entry 
-  if [ ${CURL_RC} -eq 200 ]; then
+  if [[ ${CURL_RC} -eq 200 ]]; then
     echo 
     echo delete the existing entry
     MYCURL -X DELETE $mgmtserver/v1/o/$org/e/$env/vaults/${vaultname}/entries/$entry 
-    if [ ${CURL_RC} -ne 200 ]; then
+    if [[ ${CURL_RC} -ne 200 ]]; then
       echo failed.
       cat ${CURL_OUT} 
       echo
@@ -323,7 +323,7 @@ function insert_vault_entry() {
     --data-binary "$payload"
   echo
 
-  if [ ${CURL_RC} -ne 201 ]; then
+  if [[ ${CURL_RC} -ne 201 ]]; then
     echo failed.
     cat ${CURL_OUT} 
     echo
@@ -349,7 +349,7 @@ function choose_credentials() {
 function check_org() {
   echo "checking organization ${org}..."
   MYCURL -X GET  ${mgmtserver}/v1/o/${org}
-  if [ ${CURL_RC} -eq 200 ]; then
+  if [[ ${CURL_RC} -eq 200 ]]; then
     check_org=0
   else
     check_org=1
@@ -359,7 +359,7 @@ function check_org() {
 function check_env() {
   echo "checking environment ${env}..."
   MYCURL -X GET  ${mgmtserver}/v1/o/${org}/e/${env}
-  if [ ${CURL_RC} -eq 200 ]; then
+  if [[ ${CURL_RC} -eq 200 ]]; then
     check_env=0
   else
     check_env=1
@@ -369,11 +369,11 @@ function check_env() {
 function choose_org() {
   local all_done
   all_done=0
-  while [ $all_done -ne 1 ]; do
+  while [[ $all_done -ne 1 ]]; do
       echo
       read -p "  Which organization? " org
       check_org 
-      if [ ${check_org} -ne 0 ]; then
+      if [[ ${check_org} -ne 0 ]]; then
         echo cannot read that organization with the given creds.
         echo
         all_done=0
@@ -388,7 +388,7 @@ function choose_org() {
 function choose_env() {
   local all_done
   all_done=0
-  while [ $all_done -ne 1 ]; do
+  while [[ $all_done -ne 1 ]]; do
       echo
       read -p "  Which environment? " env
       check_env
@@ -412,8 +412,8 @@ function deploy_new_bundle() {
      exit 1
   fi
 
-  if [ -f "$apiname.zip" ]; then
-    if [ $verbosity -gt 0 ]; then
+  if [[ -f "$apiname.zip" ]]; then
+    if [[ $verbosity -gt 0 ]]; then
       echo "removing the existing zip..."
     fi
     rm -f "$apiname.zip"
@@ -429,7 +429,7 @@ function deploy_new_bundle() {
   MYCURL -X POST \
        "${mgmtserver}/v1/o/${org}/apis/?action=import&name=${apiname}" \
        -T ${apiname}.zip -H "Content-Type: application/octet-stream"
-  if [ ${CURL_RC} -ne 201 ]; then
+  if [[ ${CURL_RC} -ne 201 ]]; then
     echo
     echoerror "  failed importing that bundle."
     cat ${CURL_OUT}
@@ -442,7 +442,7 @@ function deploy_new_bundle() {
   sleep 2
   MYCURL -X POST \
   "${mgmtserver}/v1/o/${org}/apis/${apiname}/revisions/1/deployments?action=deploy&env=$env"
-  if [ ${CURL_RC} -ne 200 ]; then
+  if [[ ${CURL_RC} -ne 200 ]]; then
     echo
     echoerror "  failed deploying that api."
     cat ${CURL_OUT}
@@ -472,7 +472,7 @@ function create_new_product() {
    "quotaInterval": "1",
    "quotaTimeUnit": "minute"
   }'
-  if [ ${CURL_RC} -ne 201 ]; then
+  if [[ ${CURL_RC} -ne 201 ]]; then
     echo
     echo "  failed creating that product."
     cat ${CURL_OUT}
@@ -483,7 +483,7 @@ function create_new_product() {
 
   MYCURL -X GET ${mgmtserver}/v1/o/${org}/apiproducts/${productname}
 
-  if [ ${CURL_RC} -ne 200 ]; then
+  if [[ ${CURL_RC} -ne 200 ]]; then
     echo
     echo "  failed querying that product."
     cat ${CURL_OUT}
@@ -513,7 +513,7 @@ function create_new_developer() {
     "organizationName" : "'${org}'",
     "status" : "active"
   }' 
-  if [ ${CURL_RC} -ne 201 ]; then
+  if [[ ${CURL_RC} -ne 201 ]]; then
     echo
     echo "  failed creating a new developer."
     cat ${CURL_OUT}
@@ -575,7 +575,7 @@ payload+=$'}'
     ${mgmtserver}/v1/o/${org}/developers/${devname}/apps \
     -d "${payload}"
 
-  if [ ${CURL_RC} -ne 201 ]; then
+  if [[ ${CURL_RC} -ne 201 ]]; then
     echo
     echo "  failed creating a new app."
     cat ${CURL_OUT}
@@ -592,7 +592,7 @@ function retrieve_app_keys() {
   MYCURL -X GET \
     ${mgmtserver}/v1/o/${org}/developers/${devname}/apps/${appname} 
 
-  if [ ${CURL_RC} -ne 200 ]; then
+  if [[ ${CURL_RC} -ne 200 ]]; then
     echo
     echo "  failed retrieving the app details."
     cat ${CURL_OUT}
@@ -639,15 +639,15 @@ done
 
 
 echo
-if [ "X$mgmtserver" = "X" ]; then
+if [[ "X$mgmtserver" = "X" ]]; then
   mgmtserver="$defaultmgmtserver"
 fi 
 
 
-if [ ${netrccreds} -eq 1 ]; then
+if [[ ${netrccreds} -eq 1 ]]; then
   echo "using credentials from .netrc"
   credentials='-n'
-elif [ "X$credentials" = "X" ]; then
+elif [[ "X$credentials" = "X" ]]; then
     choose_credentials
 elif [[ $credentials == *":"* ]]; then
     ## credentials contains a colon; its a username:password
@@ -658,7 +658,7 @@ else
 fi
 
 echo
-if [ "X$org" = "X" ]; then
+if [[ "X$org" = "X" ]]; then
   choose_org
 else
   check_org 
@@ -670,7 +670,7 @@ else
 fi 
 
 echo
-if [ "X$env" = "X" ]; then
+if [[ "X$env" = "X" ]]; then
   choose_env
 fi
 
@@ -678,7 +678,7 @@ fi
 ## reset everything related to this api
 clear_env_state
 
-if [ $resetonly -eq 0 ] ; then
+if [[ $resetonly -eq 0 ]] ; then
 
   get_privatekey
   get_publickey
@@ -692,7 +692,7 @@ if [ $resetonly -eq 0 ] ; then
   echo
   echo inquire the vault $vaultname
   MYCURL $mgmtserver/v1/o/$org/e/$env/vaults/$vaultname
-  if [ ${CURL_RC} -eq 500 ]; then
+  if [[ ${CURL_RC} -eq 500 ]]; then
     echo the vault does not exist
     echo create the vault
     MYCURL -X POST -H content-type:application/json \
@@ -704,7 +704,7 @@ if [ $resetonly -eq 0 ] ; then
       echo
       exit
     fi
-  elif [ ${CURL_RC} -eq 404 ]; then
+  elif [[ ${CURL_RC} -eq 404 ]]; then
     echo "Something went wrong"
     echo
     exit 1
@@ -713,7 +713,7 @@ if [ $resetonly -eq 0 ] ; then
     vaultexists=1
   fi
 
-  if [ $vaultexists -ne 0 ]; then 
+  if [[ $vaultexists -ne 0 ]]; then 
     delete_vault_entry_ifexists "$consumerkey"
     delete_vault_entry_ifexists "${consumerkey}-password"
   fi
@@ -734,4 +734,4 @@ fi
 
 
 # cleanup
-[ -f "${CURL_OUT}" ] && rm ${CURL_OUT}
+[[ -f "${CURL_OUT}" ]] && rm ${CURL_OUT}

@@ -9,6 +9,11 @@ The API Proxy subdirectory, which is a sibling to this one, includes the pre-bui
 However, you may wish to modify this code for your own purposes. In that case, you will modify the Java code, re-build, then copy that JAR into the appropriate apiproxy/resources/java directory for the API Proxy.  
 
 
+## License
+
+This project and all the code contained within is licensed under the [Apache 2.0 Source license](LICENSE).
+
+
 ## Using the Jar
 
 You do not need to build the JAR in order to use it. 
