@@ -114,6 +114,10 @@ https://tools.ietf.org/html/rfc7518.
 </JavaCallout>
 ```
 
+Any of {algorithm, secret-key, and jwe} may be referenced as static strings,
+variables wrapped in curlies, or compound strings composed of 1 or more variables
+and static strings. For example, "ABC-{secret}" will resolve to "ABC-123" if the
+context variable "secret" resolves to "123".
 
 More Notes:
 --------
