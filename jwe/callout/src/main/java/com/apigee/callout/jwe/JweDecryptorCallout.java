@@ -247,13 +247,16 @@ public class JweDecryptorCallout implements Execution {
             msgCtxt.setVariable(varName("plaintext"), plaintext);
 
             String foundAlgorithm = jwe.getEncryptionMethodHeaderParameter();
-            String requiredAlgorithm = getAlgorithm(msgCtxt);
+            msgCtxt.setVariable(varName("algorithm"), foundAlgorithm);
+            if (!StringUtils.isEmpty(foundAlgorithm)) {
+                String requiredAlgorithm = getAlgorithm(msgCtxt);
 
-            if (! foundAlgorithm.equals(requiredAlgorithm)) {
-                msgCtxt.setVariable(varName("error"),
-                                    String.format("Algorithm mismatch: found [%s], expected [%s]",
-                                                  foundAlgorithm, requiredAlgorithm));
-                return ExecutionResult.ABORT;
+                if (! foundAlgorithm.equals(requiredAlgorithm)) {
+                    msgCtxt.setVariable(varName("error"),
+                                        String.format("Algorithm mismatch: found [%s], expected [%s]",
+                                                      foundAlgorithm, requiredAlgorithm));
+                    return ExecutionResult.ABORT;
+                }
             }
         }
         catch (Exception e) {
