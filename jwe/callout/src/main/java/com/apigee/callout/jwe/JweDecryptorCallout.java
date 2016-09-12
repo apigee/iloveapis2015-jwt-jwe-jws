@@ -24,6 +24,7 @@ import org.apache.commons.ssl.PKCS8Key;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang.text.StrSubstitutor;
 
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -34,9 +35,12 @@ import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
+import com.apigee.utils.TemplateString;
+
 
 @IOIntensive
 public class JweDecryptorCallout implements Execution {
+    private final static String _varPrefix = "jwe_";
 
     private Map<String,String> properties; // read-only
 
@@ -200,23 +204,31 @@ public class JweDecryptorCallout implements Execution {
         return pk;
     }
 
-    // If the value of a property value begins and ends with curlies,
-    // eg, {apiproxy.name}, then "resolve" the value by de-referencing
-    // the context variable whose name appears between the curlies.
+    // If the value of a property value contains open and close curlies, eg,
+    // {apiproxy.name} or ABC-{apikey}, then "resolve" the value by de-referencing
+    // the context variables whose names appear between curlies.
     private String resolvePropertyValue(String spec, MessageContext msgCtxt) {
-        if (spec.startsWith("{") && spec.endsWith("}")) {
-            String varname = spec.substring(1,spec.length() - 1);
-            String value = msgCtxt.getVariable(varname);
-            return value;
+        if (spec.indexOf('{') > -1 && spec.indexOf('}')>-1) {
+            // Replace ALL curly-braced items in the spec string with
+            // the value of the corresponding context variable.
+            TemplateString ts = new TemplateString(spec);
+            Map<String,String> valuesMap = new HashMap<String,String>();
+            for (String s : ts.variableNames) {
+                valuesMap.put(s, (String) msgCtxt.getVariable(s));
+            }
+            StrSubstitutor sub = new StrSubstitutor(valuesMap);
+            String resolvedString = sub.replace(ts.template);
+            return resolvedString;
         }
         return spec;
     }
 
+    private static final String varName(String s) { return _varPrefix + s; }
+
     public ExecutionResult execute(MessageContext msgCtxt, ExecutionContext exeCtxt)
     {
-        String varName;
-        String varPrefix = "jwe_";
         try {
+            msgCtxt.removeVariable(varName("error"));
             String jweText = getJweCompactSerialization(msgCtxt);
             String secretKey = getSecretKey(msgCtxt);
             String b64Key = Base64.encodeBase64String(secretKey.getBytes("UTF-8"));
@@ -232,14 +244,21 @@ public class JweDecryptorCallout implements Execution {
             // Get the message that was encrypted in the JWE. This step
             // performs the actual decryption steps.
             String plaintext = jwe.getPlaintextString();
-            msgCtxt.setVariable(varPrefix + "plaintext", plaintext);
+            msgCtxt.setVariable(varName("plaintext"), plaintext);
+
+            String foundAlgorithm = jwe.getEncryptionMethodHeaderParameter();
+            String requiredAlgorithm = getAlgorithm(msgCtxt);
+
+            if (! foundAlgorithm.equals(requiredAlgorithm)) {
+                msgCtxt.setVariable(varName("error"),
+                                    String.format("Algorithm mismatch: found [%s], expected [%s]",
+                                                  foundAlgorithm, requiredAlgorithm));
+                return ExecutionResult.ABORT;
+            }
         }
         catch (Exception e) {
-            e.printStackTrace();
-            varName = varPrefix + "error";
-            msgCtxt.setVariable(varName, "Exception " + e.toString());
-            varName = varPrefix + "stacktrace";
-            msgCtxt.setVariable(varName, ExceptionUtils.getStackTrace(e));
+            msgCtxt.setVariable(varName("error"), "Exception " + e.toString());
+            msgCtxt.setVariable(varName("stacktrace"), ExceptionUtils.getStackTrace(e));
             return ExecutionResult.ABORT;
         }
         return ExecutionResult.SUCCESS;

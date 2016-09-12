@@ -368,9 +368,9 @@ public class JwtCreatorCallout implements Execution {
         return pk;
     }
 
-    // If the value of a property value begins and ends with curlies,
-    // eg, {apiproxy.name}, then "resolve" the value by de-referencing
-    // the context variable whose name appears between the curlies.
+    // If the value of a property value contains open and close curlies, eg,
+    // {apiproxy.name} or ABC-{apikey}, then "resolve" the value by de-referencing
+    // the context variables whose names appear between curlies.
     private String resolvePropertyValue(String spec, MessageContext msgCtxt) {
         if (spec.indexOf('{') > -1 && spec.indexOf('}')>-1) {
             // Replace ALL curly-braced items in the spec string with
