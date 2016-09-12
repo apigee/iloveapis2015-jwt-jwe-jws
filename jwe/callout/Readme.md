@@ -119,6 +119,9 @@ variables wrapped in curlies, or compound strings composed of 1 or more variable
 and static strings. For example, "ABC-{secret}" will resolve to "ABC-123" if the
 context variable "secret" resolves to "123".
 
+For decryption, the JWE includes the algorithm that must be used for decryption.  If you specify an algorithm property, then the callout verifies that the algorithm included in the JWE matches the one provided in the property. If you do not specify an algorithm property, then the JWE Decryptor callout does not verify that the algorithm is any particular value. This is probably not what you want, but in some cases it might be.
+
+
 More Notes:
 --------
 
