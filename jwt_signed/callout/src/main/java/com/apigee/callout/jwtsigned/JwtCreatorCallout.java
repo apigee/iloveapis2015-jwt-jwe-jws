@@ -330,6 +330,10 @@ public class JwtCreatorCallout implements Execution {
                 privateKey.endsWith("-----END PRIVATE KEY-----")) {
                 privateKey = privateKey.substring(27, privateKey.length() - 25);
             }
+            else if (privateKey.startsWith("-----BEGIN RSA PRIVATE KEY-----") &&
+                privateKey.endsWith("-----END RSA PRIVATE KEY-----")) {
+                privateKey = privateKey.substring(31, privateKey.length() - 29);
+            }
 
             // clear any leading whitespace on each line
             privateKey = privateKey.replaceAll("([\\r|\\n] +)","\n");

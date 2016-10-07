@@ -61,6 +61,15 @@ public class TestJwtCreation {
               "pHbBk+cVJ5nJ8lRjpE0j9KU/30pYNOKWKChoEsnv2iMQkECf5hJU0e13bIUiROXn\n" +
               "6wIDAQAB\n" +
               "-----END PUBLIC KEY-----\n");
+        m.put("rsa3",
+              "-----BEGIN PUBLIC KEY-----\n" +
+              "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7Wb9p0wqUwq5ZIpUG0+MgKwidb0TXeEV\n" +
+              "i86bhhoaHwzuwZPdrZLanBCQCxp2gzp5WxW3huO91P89fXaX4IPqLWZn/s9aLxJk+ZiMfSrc49mJ\n" +
+              "H99pZ4/eHA9LyGNVvQ1Yj6WIrdQIMBypwyWTYqOBLsQp6Ouo7K0t5c0XhKJUDuebdRx9WM7PSXVX\n" +
+              "r+u8BwL3+BW03lHp4tFgZhYae16mMV3DNlgHuBAusB6tQZT4yrn/lPhueTf2ie7pz2OVdjT9C5fZ\n" +
+              "+vRA23tvanusyP5j9zMGKR5sMSnPijwOLiOBPuMWcsFiLeL+LY3uV0Ii5mtIbS78UUVmncrin/6u\n" +
+              "9Es1AwIDAQAB\n" +
+              "-----END PUBLIC KEY-----\n");
         publicKeyMap = java.util.Collections.unmodifiableMap(m);
 
         m = new HashMap<String,String>();
@@ -126,7 +135,37 @@ public class TestJwtCreation {
               "c8U8IFeovpiKV46il5mF4R9fqQxy+QUbFyjovv753C/qnllkZxu/eXZad2s15N5u\n" +
               "BFKnyL9NPjSDizDqyLocLYt5\n" +
               "-----END PRIVATE KEY-----\n");
-                      privateKeyMap = java.util.Collections.unmodifiableMap(m);
+
+        m.put("rsa3",
+              "-----BEGIN RSA PRIVATE KEY-----\n" +
+              "MIIEowIBAAKCAQEA7Wb9p0wqUwq5ZIpUG0+MgKwidb0TXeEVi86bhhoaHwzuwZPd\n" +
+              "rZLanBCQCxp2gzp5WxW3huO91P89fXaX4IPqLWZn/s9aLxJk+ZiMfSrc49mJH99p\n" +
+              "Z4/eHA9LyGNVvQ1Yj6WIrdQIMBypwyWTYqOBLsQp6Ouo7K0t5c0XhKJUDuebdRx9\n" +
+              "WM7PSXVXr+u8BwL3+BW03lHp4tFgZhYae16mMV3DNlgHuBAusB6tQZT4yrn/lPhu\n" +
+              "eTf2ie7pz2OVdjT9C5fZ+vRA23tvanusyP5j9zMGKR5sMSnPijwOLiOBPuMWcsFi\n" +
+              "LeL+LY3uV0Ii5mtIbS78UUVmncrin/6u9Es1AwIDAQABAoIBAQCwgm2/8KJbYdLb\n" +
+              "zPmh4LBvjwyEC9OVbmANtczulQOs6HmwVddxUYnWlX3zs3ZANb67GVd+JGAlOK0o\n" +
+              "Vn+vv4Tiwow56UN9UijfZyu1eKQJiNkqaHq/NDmJFVpcIHdD++NH0mTgEZEQ7I7P\n" +
+              "+GUv5q+K7PDYLDdJ2a0Rej6tL+Bdvym95munxONdtbb7WlIem74SzRYujKv8vlRL\n" +
+              "8CwEs9xuf+RUgBChDHf80iSDzmpL3/CM9FONdQ17ieXCSMlGxfHSBDNlkIe21ODL\n" +
+              "t/B5+KNCLmtzmcwQeQKIoyX9uMEMGfuZ/hirfkQ6qO7Ffq3fzFOMyz41XOfOaXcq\n" +
+              "UgBXOj/JAoGBAPhCmcsTb9Jx4lOOH6UTVYPiFSJ9/7CBm9XewwHEcCmiKMW5LkZe\n" +
+              "zO3WN3jwQrTr7eH6D/PH5KOIZ7+v9bV/vS/U+URo1bjP4ViibhdGMnzAJ8YPZ/3U\n" +
+              "7/Kk3m1uGAP56vAdFI9ioqcoanfQNrUf5lxLv+DgvQjBcUPzxX4YSbFXAoGBAPTN\n" +
+              "u2cNSMeAtUsVbaPr0DrShaemkJKs+4Ncb4kOcFkrDYez6mz+Y00TPfPkHJ5RSTn5\n" +
+              "2XdzxkWG5zkFf8Ad5XMh8MhNZSwKILPrFibiCTwAS9OIB5/dcneEGBHxcSv9Pq2D\n" +
+              "mYyUYEocqf0QRpg/5qwKElYViXViqpJtZz9CPbI1AoGAA6jHp4yjy1BOa7jekopU\n" +
+              "als8wINm720ZpO9hpHcGyDZRr4hpPDRNhPvxWWEBOrV3jisnbQp3PknWbabkUkaN\n" +
+              "vVTAT9fTvqOhyLKsOL+aIuiaLXswpzcqSkNP3AERbY2TfvKOyQZFK32XBCkXhVfx\n" +
+              "B08+hswJPUXMq5m+QXuOKoUCgYBoeViOHUQ/KDW2ynlVKLFgOTIjH1m5zyszn4JW\n" +
+              "KpxV4aLPlD/qrhIw9ZJOAL8Z7bTjkjZ13SnzyCPr2OXxVpDytrxsr2MLDXNxdVWp\n" +
+              "2HN6cOHrb7VZS4era+td1P2oeVaDdJNWRIhneJ4vSv/lv/ew2keDB4P3XdlPznLu\n" +
+              "s1VjNQKBgBZJxVm31P78875PIFcP8l5QXObxey6gF+1MtTblB54sXozItvgqtMHC\n" +
+              "grMhGMdyANdgOWaor/Ti+74UXCO3wNPhiKtuc8tMs/fEPVGLwK1FDYWm6MHRhftJ\n" +
+              "PBRaWgUQ9xa6BkPQOWzxZ/YWjlAV8182J6qji+0YoTWK5s7d6T2m\n" +
+              "-----END RSA PRIVATE KEY-----\n");
+
+        privateKeyMap = java.util.Collections.unmodifiableMap(m);
     }
 
     @BeforeMethod()
@@ -401,6 +440,57 @@ public class TestJwtCreation {
         properties.put("claim_sub", subject);
         properties.put("claim_box_sub_type", "enterprise");
         properties.put("public-key", publicKeyMap.get("rsa2"));
+        JwtParserCallout callout2 = new JwtParserCallout(properties);
+        result = callout2.execute(msgCtxt, exeCtxt);
+
+        String reason = msgCtxt.getVariable("jwt_reason");
+        Assert.assertEquals(reason, null, "reason");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        Assert.assertEquals(isValid, "true", "isValid");
+
+        String jwt_issuer = msgCtxt.getVariable("jwt_issuer");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        Assert.assertEquals(jwt_issuer, issuer, "Issuer");
+        Assert.assertEquals(isExpired, "false", "isExpired");
+    }
+
+    @Test()
+    public void CreateEdgeMicroJwt() throws Exception {
+        String subject = "urn:edge-micro-apigee-com";
+        String issuer = "http://apigee.com/edgemicro/";
+        String audience = "everybody";
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("private-key", privateKeyMap.get("rsa3"));
+        properties.put("subject", subject);
+        properties.put("issuer", issuer);
+        properties.put("audience", audience);
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_jti", java.util.UUID.randomUUID().toString());
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+
+        // now parse and verify the token. Check that all the claim_* claims are present.
+        properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("jwt", jwt);
+        properties.put("debug", "true");
+        properties.put("claim_aud", audience);
+        properties.put("claim_sub", subject);
+        properties.put("public-key", publicKeyMap.get("rsa3"));
         JwtParserCallout callout2 = new JwtParserCallout(properties);
         result = callout2.execute(msgCtxt, exeCtxt);
 
