@@ -143,7 +143,7 @@ public class JwtCreatorCallout implements Execution {
             // throw new IllegalStateException("subject is not specified or is empty.");
             return null; // subject is OPTIONAL
         }
-        subject = resolvePropertyValue(subject, msgCtxt);
+        subject = (String) resolvePropertyValue(subject, msgCtxt);
         if (subject == null || subject.equals("")) {
             //throw new IllegalStateException("subject is null or empty.");
             return null; // subject is OPTIONAL
@@ -156,7 +156,7 @@ public class JwtCreatorCallout implements Execution {
         if (key == null || key.equals("")) {
             throw new IllegalStateException("secret-key is not specified or is empty.");
         }
-        key = resolvePropertyValue(key, msgCtxt);
+        key = (String) resolvePropertyValue(key, msgCtxt);
         if (key == null || key.equals("")) {
             throw new IllegalStateException("secret-key is null or empty.");
         }
@@ -169,7 +169,7 @@ public class JwtCreatorCallout implements Execution {
             //throw new IllegalStateException("issuer is not specified or is empty.");
             return null; // "iss" is OPTIONAL per RFC-7519
         }
-        issuer = resolvePropertyValue(issuer, msgCtxt);
+        issuer = (String) resolvePropertyValue(issuer, msgCtxt);
         if (issuer == null || issuer.equals("")) {
             // throw new IllegalStateException("issuer is not specified or is empty.");
             return null; // "iss" is OPTIONAL per RFC-7519
@@ -182,7 +182,7 @@ public class JwtCreatorCallout implements Execution {
         if (algorithm == null || algorithm.equals("")) {
             throw new IllegalStateException("algorithm is not specified or is empty.");
         }
-        algorithm = resolvePropertyValue(algorithm, msgCtxt);
+        algorithm = (String) resolvePropertyValue(algorithm, msgCtxt);
         if (algorithm == null || algorithm.equals("")) {
             throw new IllegalStateException("issuer is not specified or is empty.");
         }
@@ -201,7 +201,7 @@ public class JwtCreatorCallout implements Execution {
 
         String[] audiences = StringUtils.split(audience,",");
         for(int i=0; i<audiences.length; i++) {
-            audiences[i] = resolvePropertyValue(audiences[i], msgCtxt);
+            audiences[i] = (String) resolvePropertyValue(audiences[i], msgCtxt);
         }
 
         return audiences;
@@ -217,7 +217,7 @@ public class JwtCreatorCallout implements Execution {
             // The value is not specified. Generate a UUID.
             return java.util.UUID.randomUUID().toString();
         }
-        jti = resolvePropertyValue(jti, msgCtxt);
+        jti = (String) resolvePropertyValue(jti, msgCtxt);
         if (jti == null || jti.equals("")) {
             // The variable resolves to nothing. Generate one.
             return java.util.UUID.randomUUID().toString();
@@ -243,7 +243,7 @@ public class JwtCreatorCallout implements Execution {
             // don't care. Use of a password on the private key is optional.
             return null;
         }
-        password = resolvePropertyValue(password, msgCtxt);
+        password = (String) resolvePropertyValue(password, msgCtxt);
         if (password == null || password.equals("")) { return null; }
         return password;
     }
@@ -254,7 +254,7 @@ public class JwtCreatorCallout implements Execution {
         if (expiry == null || expiry.equals("")) {
             return 60*60; // one hour
         }
-        expiry = resolvePropertyValue(expiry, msgCtxt);
+        expiry = (String) resolvePropertyValue(expiry, msgCtxt);
         if (expiry == null || expiry.equals("")) {
             throw new IllegalStateException("variable " + expiry + " resolves to nothing.");
         }
@@ -304,7 +304,7 @@ public class JwtCreatorCallout implements Execution {
             if (pemfile == null || pemfile.equals("")) {
                 throw new IllegalStateException("must specify pemfile or private-key when algorithm is RS*");
             }
-            pemfile = resolvePropertyValue(pemfile, msgCtxt);
+            pemfile = (String) resolvePropertyValue(pemfile, msgCtxt);
             if (pemfile == null || pemfile.equals("")) {
                 throw new IllegalStateException("pemfile resolves to nothing; invalid when algorithm is RS*");
             }
@@ -320,7 +320,7 @@ public class JwtCreatorCallout implements Execution {
             if (privateKey.equals("")) {
                 throw new IllegalStateException("private-key must be non-empty");
             }
-            privateKey = resolvePropertyValue(privateKey, msgCtxt);
+            privateKey = (String) resolvePropertyValue(privateKey, msgCtxt);
             if (privateKey==null || privateKey.equals("")) {
                 throw new IllegalStateException("private-key variable resolves to empty; invalid when algorithm is RS*");
             }
@@ -375,14 +375,27 @@ public class JwtCreatorCallout implements Execution {
     // If the value of a property value contains open and close curlies, eg,
     // {apiproxy.name} or ABC-{apikey}, then "resolve" the value by de-referencing
     // the context variables whose names appear between curlies.
-    private String resolvePropertyValue(String spec, MessageContext msgCtxt) {
-        if (spec.indexOf('{') > -1 && spec.indexOf('}')>-1) {
+    //
+    // This can return a String or an String[].
+    //
+    private Object resolvePropertyValue(String spec, MessageContext msgCtxt) {
+        int open = spec.indexOf('{'), close = spec.indexOf('}'), L = spec.length();
+        if (open == 0 && close == L-1) {
+            // if there is a single set of braces around the entire property,
+            // the value may resolve to a non-string, for example an array of strings.
+            if (spec.indexOf('{', 1) == -1) {
+                String v = spec.substring(1,L-1);
+                return msgCtxt.getVariable(v);
+            }
+        }
+
+        if (open > -1 && close >-1) {
             // Replace ALL curly-braced items in the spec string with
             // the value of the corresponding context variable.
             TemplateString ts = new TemplateString(spec);
             Map<String,String> valuesMap = new HashMap<String,String>();
             for (String s : ts.variableNames) {
-                valuesMap.put(s, (String) msgCtxt.getVariable(s));
+                valuesMap.put(s, msgCtxt.getVariable(s).toString());
             }
             StrSubstitutor sub = new StrSubstitutor(valuesMap);
             String resolvedString = sub.replace(ts.template);
@@ -433,14 +446,22 @@ public class JwtCreatorCallout implements Execution {
                         if (claimName.equals("aud") && providedValue.indexOf(",")!=-1) {
                             audiences = StringUtils.split(providedValue,",");
                             for(int i=0; i<audiences.length; i++) {
-                                audiences[i] = resolvePropertyValue(audiences[i], msgCtxt);
+                                audiences[i] = (String) resolvePropertyValue(audiences[i], msgCtxt);
                             }
                             claims.setAudience(java.util.Arrays.asList(audiences));
                         }
                         else {
-                            providedValue = resolvePropertyValue(providedValue, msgCtxt);
-                            //claims.setCustomClaim(claimName, providedValue);
-                            claims.setClaim(claimName, providedValue);
+                            Object resolvedValue = resolvePropertyValue(providedValue, msgCtxt);
+                            if (resolvedValue instanceof String[]) {
+                                claims.setClaim(claimName, resolvedValue);
+                            }
+                            else if (resolvedValue != null){
+                                //claims.setCustomClaim(claimName, providedValue);
+                                claims.setClaim(claimName, resolvedValue.toString());
+                            }
+                            else {
+                                claims.setClaim(claimName, null);
+                            }
                         }
                         msgCtxt.setVariable(varName("provided_")+claimName, providedValue);
                     }
@@ -481,7 +502,7 @@ public class JwtCreatorCallout implements Execution {
         }
         catch (Exception e) {
             // unhandled exceptions
-            if (debug) { e.printStackTrace(); }
+            if (debug) { e.printStackTrace(); /* to MP system.log */ }
             String error = e.toString();
             msgCtxt.setVariable(varName("error"), error);
             int ch = error.indexOf(':');

@@ -34,7 +34,7 @@ It's three parts, each separated by a dot.  The indivdual parts are each base64-
 
 The JWT body, decoded, might look like this:
 
-```
+```json
 {
   "sub": "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F",
   "aud": "https://api.example.com/oauth2/token",
@@ -412,7 +412,44 @@ and exp.
 Beyond times, you may wish to verify other arbitrary claims on the
 JWT. At this time the only supported check is for string equivalence. So
 you may verify the issuer, the audience, or the value of any custom
-custom claim (either public/registered, or private).
+custom claim (either public/registered, or private). If the claim in the JWT is an array,
+the check verifies that the value provided is present in the array.  For example,
+consider this JWT:
+
+```json
+{
+  "sub": "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F",
+  "aud": "https://api.example.com/oauth2/token",
+  "iss": "422720CE-6690-463E-9C5A-275423594FE7",
+  "exp": 1471902991,
+  "iat": 1471902961,
+  "jti": "2e8a36bc-5c14-4105-837f-3245abc03027",
+  "products" : [ "A", "B", "C"]
+}
+```
+
+Then, you could verify the presence of ONE of the values of the products array, with
+a configuration like this:
+
+
+```xml
+  <JavaCallout name='JavaCallout-JWT-Parse-RS256-2'>
+    <DisplayName>JavaCallout-JWT-Parse-RS256-3</DisplayName>
+    <Properties>
+      <Property name="algorithm">RS256</Property>
+      <Property name="jwt">{request.formparam.jwt}</Property>
+      <Property name="timeAllowance">30000</Property>
+      <Property name="public-key">...</Property>
+      
+      <Property name="claim_products">A</Property>
+
+    </Properties>
+
+    <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
+    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  </JavaCallout>
+```
+
 
 Regarding audience - the spec states that the audience is an array of
 strings. The parser class validates that the audience value you pass
@@ -420,6 +457,10 @@ here (as a string) is present as one of the elements in that array.
 Currently there is no way to verify that the JWT is directed to more
 than one audience. To do so, you could invoke the Callout twice, with different
 configurations.
+
+Alteratively, AFTER invoking the JwtParserCallout, compare the context variable 'jwt_claim_aud' to the
+result of array.join('|').  In other words, if you want to verify A, B, and C, then compare jwt_claim_aud to 'A|B|C' .  The ordering in the JWT matters. To disregard ordering, you'd need to use a JavaScript to parse the jwt_claim_aud and check for each expected element.
+
 
 
 **Parse a JWT, and Verify specific claims**

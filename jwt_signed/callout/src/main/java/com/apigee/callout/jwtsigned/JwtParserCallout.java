@@ -565,7 +565,7 @@ public class JwtParserCallout implements Execution {
         }
         catch (Exception e) {
             // unhandled exceptions
-            if (debug) { e.printStackTrace(); }
+            if (debug) { e.printStackTrace(); /* to MP system.log */ }
             String error = e.toString();
             msgCtxt.setVariable(varName("error"), error);
             int ch = error.indexOf(':');
@@ -577,7 +577,6 @@ public class JwtParserCallout implements Execution {
             }
             msgCtxt.setVariable(varName("isValid"), "false");
 
-            //System.out.println("exception: " + e.toString());
             msgCtxt.setVariable(varName("stacktrace"), ExceptionUtils.getStackTrace(e));
             return ExecutionResult.ABORT;
         }

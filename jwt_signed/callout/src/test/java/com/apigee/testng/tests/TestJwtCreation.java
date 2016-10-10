@@ -509,4 +509,69 @@ public class TestJwtCreation {
         Assert.assertEquals(isExpired, "false", "isExpired");
     }
 
+
+    @Test()
+    public void CreateJwtWithArrayClaim() throws Exception {
+        String subject = "urn:edge-micro-apigee-com";
+        String issuer = "http://apigee.com/edgemicro/";
+        String audience = "everybody";
+        String[] apiProducts = { "product1", "product2" };
+
+        msgCtxt.setVariable("api_products", apiProducts);
+        msgCtxt.setVariable("my_issuer", issuer);
+        msgCtxt.setVariable("my_subject", subject);
+
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("private-key", privateKeyMap.get("rsa3"));
+        properties.put("subject", "{my_subject}");
+        properties.put("issuer", "{my_issuer}");
+        properties.put("audience", audience);
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_jti", java.util.UUID.randomUUID().toString());
+        properties.put("claim_api_products", "{api_products}"); // note: array
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+        System.out.println("claims: " + msgCtxt.getVariable("jwt_claims"));
+
+
+        // now parse and verify the token. Check that all the claim_* claims are present.
+        properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("jwt", jwt);
+        properties.put("debug", "true");
+        properties.put("claim_aud", audience);
+        properties.put("claim_sub", subject);
+        properties.put("claim_api_products", "product1"); // can verify only one item in an array claim
+        properties.put("public-key", publicKeyMap.get("rsa3"));
+        JwtParserCallout callout2 = new JwtParserCallout(properties);
+        result = callout2.execute(msgCtxt, exeCtxt);
+
+        String reason = msgCtxt.getVariable("jwt_reason");
+        Assert.assertEquals(reason, null, "reason");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        Assert.assertEquals(isValid, "true", "isValid");
+
+        String jwt_issuer = msgCtxt.getVariable("jwt_issuer");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        Assert.assertEquals(jwt_issuer, issuer, "Issuer");
+        Assert.assertEquals(isExpired, "false", "isExpired");
+
+        String apiProductsOut = msgCtxt.getVariable("jwt_claim_api_products_provided");
+        Assert.assertEquals(apiProductsOut, "product1|product2", "api_products");
+    }
+
 }
