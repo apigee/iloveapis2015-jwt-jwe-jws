@@ -404,6 +404,14 @@ public class JwtCreatorCallout implements Execution {
         return spec;
     }
 
+    private String[] nativeToJavaArray(org.mozilla.javascript.NativeArray a) {
+        String [] result = new String[(int) a.getLength()];
+        for (Object o : a.getIds()) {
+            int index = (Integer) o;
+            result[index] = a.get(index, null).toString();
+        }
+        return result;
+    }
 
     public ExecutionResult execute(MessageContext msgCtxt, ExecutionContext exeCtxt)
     {
@@ -454,6 +462,10 @@ public class JwtCreatorCallout implements Execution {
                             Object resolvedValue = resolvePropertyValue(providedValue, msgCtxt);
                             if (resolvedValue instanceof String[]) {
                                 claims.setClaim(claimName, resolvedValue);
+                            }
+                            else if (resolvedValue instanceof org.mozilla.javascript.NativeArray) {
+                                // an array set in a JavaScript callout
+                                claims.setClaim(claimName, nativeToJavaArray((org.mozilla.javascript.NativeArray)resolvedValue));
                             }
                             else if (resolvedValue != null){
                                 //claims.setCustomClaim(claimName, providedValue);

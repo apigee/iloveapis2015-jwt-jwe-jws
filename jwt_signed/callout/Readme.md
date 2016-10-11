@@ -292,6 +292,15 @@ the Properties elements, like this:
   </JavaCallout>
 ```
 
+If you would like to embed an array claim in the JWT, then you should use a variable reference, like so:
+
+```xml
+      <Property name="claim_api_products">{api_products_list}</Property>
+```
+
+And the context variable api_products_list should resolve to a String[].  
+
+
 
 **Parsing and Verifying a JWT - HS256**
 
