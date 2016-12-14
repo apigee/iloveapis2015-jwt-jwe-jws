@@ -227,7 +227,7 @@ The resulting JWT is signed with RSA, using the designated private-key.
 
 **Generate a JWT using RS256 - specify PEM file as resource in JAR**
 
-You can also specify the PEM as a named file resource that is bundled in the jar itself. To do this, you need to recompile the jar with your desired pemfile contained within it. The class looks for the file in the jarfile under the /resources directory. The configuration looks like this:
+You can also specify the PEM as a named file resource that is bundled in the jar itself. To do this, you need to recompile the jar with your desired pemfile(s) contained within it. The class looks for the file in the jarfile under the /resources directory. Follow the example of the existing pem files.  (Note: you will want to remove the existing PEM files from the JAR, as they are useful only for the examples given, and they should not be used in your own production deployment of the JWT policy)  The configuration when using pem files bundled this way looks like this:
 
 ```xml
   <JavaCallout name='JavaCallout-JWT-Create'>
@@ -252,10 +252,11 @@ You can also specify the PEM as a named file resource that is bundled in the jar
   </JavaCallout>
 ```
 
-The pemfile need not be encrypted. If it is, obviously you need to
-specify the password .  The file must be in PEM format, not DER
-format. The class looks for the file in the jarfile under the /resources
-directory.
+The pemfile need not be encrypted. If it is, obviously you need to specify the
+password in the configuration of the policy. The PEM file(s) must be in PEM PKCS8
+format, not DER format. (You can convert keys between various formats using the
+openssl command line tool).  The class looks for the file in the jarfile under the
+/resources directory.
 
 
 **Generating a JWT with custom claims**
