@@ -41,8 +41,8 @@ The JWT body, decoded, might look like this:
   "iss": "api-key-goes-here-78B13CD0-CEFD-4F6A-BB76",
   "exp": 1471902991,
   "iat": 1471902961,
-  "jti": "2e8a36bc-5c14-4105-837f-3245abc03027"
-  "scope": "https://www.example.com/accounts.readonly",  
+  "jti": "2e8a36bc-5c14-4105-837f-3245abc03027",
+  "scope": "https://www.example.com/accounts.readonly"
 }
 ```
 
