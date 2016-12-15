@@ -78,7 +78,7 @@ public class PublicKeySource {
                 key = PublicKeySource.publicKeyStringToPublicKey(publicKeyString);
                 break;
         }
-        return key;
+        return key; // maybe null
     }
 
     private static PublicKey pemFileStringToPublicKey(String s)
@@ -96,6 +96,7 @@ public class PublicKeySource {
 
     private static PublicKey certStringToPublicKey(String s)
         throws InvalidKeySpecException, CertificateException, UnsupportedEncodingException {
+        if (s==null) return null;
         s = s.trim();
 
         if (s.startsWith("-----BEGIN CERTIFICATE-----") &&
@@ -118,6 +119,7 @@ public class PublicKeySource {
 
     private static PublicKey publicKeyStringToPublicKey(String s)
         throws InvalidKeySpecException, NoSuchAlgorithmException {
+        if (s==null) return null;
         s = s.trim();
         if (s.startsWith("-----BEGIN RSA PUBLIC KEY-----") &&
             s.endsWith("-----END RSA PUBLIC KEY-----")) {

@@ -148,7 +148,7 @@ public class TestBasicJwtParse {
         // now parse and verify
         Map properties = new HashMap();
         properties.put("algorithm", "HS256");
-        properties.put("debug", "true");
+        //properties.put("debug", "true"); // causes exception to be logged to stdout
         properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
         JwtParserCallout callout = new JwtParserCallout(properties);
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
@@ -167,6 +167,51 @@ public class TestBasicJwtParse {
         String expectedReason = "must specify pemfile or public-key or certificate when algorithm is RS*";
         Map properties = new HashMap();
         properties.put("algorithm", "RS256");
+        //properties.put("debug", "true"); // causes exception to be logged to stdout
+        properties.put("jwt", jwtMap.get("ms1"));
+
+        JwtParserCallout callout = new JwtParserCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // retrieve output
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String reason = msgCtxt.getVariable("jwt_reason");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.ABORT);
+        Assert.assertEquals(reason, expectedReason);
+    }
+
+    @Test()
+    public void test2_Rs256JwtNonExistentPemfile() {
+        String nonExistentPemFile = "This-pemfile-does-not-exist.pem";
+        String expectedReason = "resource \"/resources/" + nonExistentPemFile + "\" not found";
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        //properties.put("debug", "true"); // causes exception to be logged to stdout
+        properties.put("pemfile", nonExistentPemFile);
+        properties.put("jwt", jwtMap.get("ms1"));
+
+        JwtParserCallout callout = new JwtParserCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // retrieve output
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String reason = msgCtxt.getVariable("jwt_reason");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.ABORT);
+        Assert.assertEquals(reason, expectedReason);
+    }
+
+    @Test()
+    public void test2_Rs256JwtPemExistsButIsEmpty() {
+        String emptyPemFile = "for-testing-only.pem";
+        String expectedReason = "there was no public key specified.";
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        //properties.put("debug", "true"); // causes exception to be logged to stdout
+        properties.put("pemfile", emptyPemFile);
         properties.put("jwt", jwtMap.get("ms1"));
 
         JwtParserCallout callout = new JwtParserCallout(properties);

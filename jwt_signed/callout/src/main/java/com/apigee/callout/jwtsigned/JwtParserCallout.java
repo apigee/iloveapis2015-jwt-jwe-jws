@@ -79,7 +79,11 @@ public class JwtParserCallout implements Execution {
             .maximumSize(MAX_CACHE_ENTRIES)
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build(new CacheLoader<String, JWSVerifier>() {
-                    public JWSVerifier load(String key) throws UnsupportedEncodingException {
+                    public JWSVerifier load(String key)
+                        throws UnsupportedEncodingException, IllegalArgumentException {
+                        if (key == null) {
+                            throw new IllegalArgumentException("the key is null");
+                        }
                         byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
                         // NB: this will throw if the string is not at least 16 chars long
                         return new MACVerifier(keyBytes);
@@ -94,8 +98,11 @@ public class JwtParserCallout implements Execution {
             .build(new CacheLoader<PublicKeySource, JWSVerifier>() {
                     public JWSVerifier load(PublicKeySource source)
                         throws NoSuchAlgorithmException, InvalidKeySpecException,
-                               CertificateException, UnsupportedEncodingException {
+                               IllegalArgumentException, CertificateException, UnsupportedEncodingException {
                         RSAPublicKey publicKey = (RSAPublicKey) source.getPublicKey();
+                        if (publicKey == null) {
+                            throw new IllegalArgumentException("there was no public key specified.");
+                        }
                         return new RSASSAVerifier(publicKey);
                     }
                 }
@@ -125,11 +132,11 @@ public class JwtParserCallout implements Execution {
     private String getJwt(MessageContext msgCtxt) throws Exception {
         String jwt = (String) this.properties.get("jwt");
         if (jwt == null || jwt.equals("")) {
-            throw new IllegalStateException("jwt is not specified or is empty.");
+            throw new IllegalArgumentException("jwt is not specified or is empty.");
         }
         jwt = resolvePropertyValue(jwt, msgCtxt);
         if (jwt == null || jwt.equals("")) {
-            throw new IllegalStateException("jwt is null or empty.");
+            throw new IllegalArgumentException("jwt is null or empty.");
         }
 
         // strip the Bearer prefix if necessary.
@@ -568,7 +575,7 @@ public class JwtParserCallout implements Execution {
             if (debug) { e.printStackTrace(); /* to MP system.log */ }
             String error = e.toString();
             msgCtxt.setVariable(varName("error"), error);
-            int ch = error.indexOf(':');
+            int ch = error.lastIndexOf(':');
             if (ch >= 0) {
                 msgCtxt.setVariable(varName("reason"), error.substring(ch+2));
             }
