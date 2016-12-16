@@ -172,7 +172,7 @@
 
         <Step><Name>JS-ExtractGoogleCerts</Name></Step>
 
-        <!-- this step determines which cert to use during the verification -->
+        <!-- this step determines which cert to use during the verification. -->
         <Step><Name>JS-Extract-JWT-kid-for-Google</Name></Step>
         <Step>
           <Name>RF-BadJwt</Name>

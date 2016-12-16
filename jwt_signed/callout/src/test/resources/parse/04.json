@@ -1,0 +1,23 @@
+{
+    "description": "Verification of RS256 signed JWT - disable expiry check 2",
+    "inputProperties": {
+        "algorithm": "RS256",
+        "timeAllowance": "-1",
+        "pemfile": "public-key.pem",
+        "jwt": "file://jwt3.txt",
+        "subject": "jwt_signed",
+        "issuer": "http://dinochiesa.net",
+        "debug": "true",
+        "claim_motto" : "Iloveapis"
+    },
+    "expected": {
+        "isValid": "true",
+        "timeCheckDisabled": "true",
+        "isActuallyExpired": "true",
+        "hasExpiry": "true",
+        "verified": "true",
+        "claim_motto_provided" : "Iloveapis",
+        "reason": null,
+        "result": "SUCCESS"
+    }
+}

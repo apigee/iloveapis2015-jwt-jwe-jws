@@ -185,7 +185,7 @@ public class TestBasicJwtParse {
     @Test()
     public void test2_Rs256JwtNonExistentPemfile() {
         String nonExistentPemFile = "This-pemfile-does-not-exist.pem";
-        String expectedReason = "resource \"/resources/" + nonExistentPemFile + "\" not found";
+        String expectedReason = "resource \"/" + nonExistentPemFile + "\" not found";
         Map properties = new HashMap();
         properties.put("algorithm", "RS256");
         //properties.put("debug", "true"); // causes exception to be logged to stdout
@@ -207,7 +207,7 @@ public class TestBasicJwtParse {
     @Test()
     public void test2_Rs256JwtPemExistsButIsEmpty() {
         String emptyPemFile = "for-testing-only.pem";
-        String expectedReason = "there was no public key specified.";
+        String expectedReason = "an invalid public key was provided";
         Map properties = new HashMap();
         properties.put("algorithm", "RS256");
         //properties.put("debug", "true"); // causes exception to be logged to stdout

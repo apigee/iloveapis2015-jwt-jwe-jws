@@ -1,3 +1,12 @@
+# Readme
+
+You should not keep these resources in the JAR if you use it in
+production.
+
+These resources are for testing and demonstration only.
+
+
+
 The password for the public-private-keypair1.pem is deecee123
 
 The public-key.pem just contains the extracted public key in PKCS#8 format. 
@@ -7,6 +16,7 @@ It is a 2048 bit keypair generated via:
 
 The public key was extracted via: 
   openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+
 
 
 The openid-connect-example-public.pem is from 

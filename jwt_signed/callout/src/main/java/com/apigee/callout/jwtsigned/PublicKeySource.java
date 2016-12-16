@@ -26,9 +26,18 @@ public class PublicKeySource {
     public String modulus;
     public String exponent;
     public String certificateString;
-    public String pemFileString;
+    public String pemFileName;
 
     private PublicKeySource() {}
+
+    public String toString() {
+        if (sourceType == SourceType.SourcePemFile) {
+            return String.format("PublicKeySource: %s (%s)",
+                                 sourceType.toString(), pemFileName);
+        }
+        else
+            return String.format("PublicKeySource: %s", sourceType.toString());
+    }
 
     public static PublicKeySource fromString(String s) {
         PublicKeySource source = new PublicKeySource();
@@ -44,10 +53,11 @@ public class PublicKeySource {
         return source;
     }
 
-    public static PublicKeySource fromPemFileString(String s) {
+    public static PublicKeySource fromPemFileString(String filename, String contents) {
         PublicKeySource source = new PublicKeySource();
         source.sourceType = SourceType.SourcePemFile;
-        source.pemFileString = s;
+        source.publicKeyString = contents;
+        source.pemFileName = filename;
         return source;
     }
 
@@ -86,7 +96,6 @@ public class PublicKeySource {
                CertificateException,
                UnsupportedEncodingException,
                NoSuchAlgorithmException {
-
         PublicKey key = publicKeyStringToPublicKey(s);
         if (key==null) {
             key = certStringToPublicKey(s);
@@ -118,29 +127,36 @@ public class PublicKeySource {
     }
 
     private static PublicKey publicKeyStringToPublicKey(String s)
-        throws InvalidKeySpecException, NoSuchAlgorithmException {
+        throws IllegalArgumentException, NoSuchAlgorithmException {
         if (s==null) return null;
-        s = s.trim();
-        if (s.startsWith("-----BEGIN RSA PUBLIC KEY-----") &&
-            s.endsWith("-----END RSA PUBLIC KEY-----")) {
-            // figure PKCS#1
-            s = s.substring(30, s.length() - 28);
-            // add the boilerplate to convert to pkcs#8
-            s = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A" + s;
-        }
-        else if (s.startsWith("-----BEGIN PUBLIC KEY-----") &&
-                 s.endsWith("-----END PUBLIC KEY-----")) {
-            // figure PKCS#8
-            s = s.substring(26, s.length() - 24);
-        }
-        // else, try parsing it as a "bare" base64 encoded PEM string
+        try {
+            s = s.trim();
+            if (s.startsWith("-----BEGIN RSA PUBLIC KEY-----") &&
+                s.endsWith("-----END RSA PUBLIC KEY-----")) {
+                // figure PKCS#1
+                s = s.substring(30, s.length() - 28);
+                // add the boilerplate to convert to pkcs#8
+                s = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A" + s;
+            }
+            else if (s.startsWith("-----BEGIN PUBLIC KEY-----") &&
+                     s.endsWith("-----END PUBLIC KEY-----")) {
+                // figure PKCS#8
+                s = s.substring(26, s.length() - 24);
+            }
+            // else, try parsing it as a "bare" base64 encoded PEM string
 
-        s = s.replaceAll("[\\r|\\n| ]","");
-        byte[] keyBytes = Base64.decodeBase64(s);
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
-        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-        PublicKey key = keyFactory.generatePublic(spec);
-        return key;
+            s = s.replaceAll("[\\r|\\n| ]","");
+            byte[] keyBytes = Base64.decodeBase64(s);
+            X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PublicKey key = keyFactory.generatePublic(spec);
+            return key;
+        }
+        catch (java.security.spec.InvalidKeySpecException ikse) {
+            IllegalArgumentException exc1 =
+                new IllegalArgumentException("an invalid public key was provided", ikse);
+            throw exc1;
+        }
     }
 
     private static String unUrlSafe(String s) {

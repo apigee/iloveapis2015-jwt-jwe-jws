@@ -109,21 +109,15 @@ public class JwtParserCallout implements Execution {
                 );
     }
 
-    private static InputStream getResourceAsStream(String resourceName)
-      throws IOException {
+    private static InputStream getResourceAsStream(String resourceName) throws IOException {
         // forcibly prepend a slash
         if (!resourceName.startsWith("/")) {
             resourceName = "/" + resourceName;
         }
-        if (!resourceName.startsWith("/resources")) {
-            resourceName = "/resources" + resourceName;
-        }
         InputStream in = JwtParserCallout.class.getResourceAsStream(resourceName);
-
         if (in == null) {
             throw new IOException("resource \"" + resourceName + "\" not found");
         }
-
         return in;
     }
 
@@ -274,7 +268,7 @@ public class JwtParserCallout implements Execution {
         in.close();
         publicKeyString = new String(keyBytes, "UTF-8");
 
-        return PublicKeySource.fromPemFileString(publicKeyString);
+        return PublicKeySource.fromPemFileString(pemfile,publicKeyString);
     }
 
     private JWSVerifier getMacVerifier(MessageContext msgCtxt) throws Exception {
@@ -523,7 +517,6 @@ public class JwtParserCallout implements Execution {
                                                 valid = false;
                                     }
                                     else {
-                                        //System.out.printf("key(%s) type(%s)\n", key, providedValue.getClass().getCanonicalName());
                                         String type = providedValue.getClass().getCanonicalName();
                                         if (type.equals("java.lang.String")) {
                                             // simple string match

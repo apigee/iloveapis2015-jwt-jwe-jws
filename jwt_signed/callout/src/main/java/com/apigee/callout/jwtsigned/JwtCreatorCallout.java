@@ -117,21 +117,15 @@ public class JwtCreatorCallout implements Execution {
         public String password;
     }
 
-    private static InputStream getResourceAsStream(String resourceName)
-      throws IOException {
+    private static InputStream getResourceAsStream(String resourceName) throws IOException {
         // forcibly prepend a slash
         if (!resourceName.startsWith("/")) {
             resourceName = "/" + resourceName;
         }
-        if (!resourceName.startsWith("/resources")) {
-            resourceName = "/resources" + resourceName;
-        }
         InputStream in = JwtCreatorCallout.class.getResourceAsStream(resourceName);
-
         if (in == null) {
             throw new IOException("resource \"" + resourceName + "\" not found");
         }
-
         return in;
     }
 
@@ -291,12 +285,7 @@ public class JwtCreatorCallout implements Execution {
     }
 
 
-    private byte[] getPrivateKeyBytes(MessageContext msgCtxt)
-        throws IOException
-               // GeneralSecurityException,
-               // NoSuchAlgorithmException,
-               // InvalidKeySpecException
-    {
+    private byte[] getPrivateKeyBytes(MessageContext msgCtxt) throws IOException {
         byte[] keyBytes = null;
         String privateKey = (String) this.properties.get("private-key");
         if (privateKey==null) {
@@ -342,6 +331,7 @@ public class JwtCreatorCallout implements Execution {
         }
         return keyBytes;
     }
+
 
     private PrivateKey generatePrivateKey(PrivateKeyInfo info)
         throws InvalidKeySpecException, GeneralSecurityException,NoSuchAlgorithmException
