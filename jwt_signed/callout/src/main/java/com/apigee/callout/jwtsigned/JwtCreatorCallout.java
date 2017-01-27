@@ -189,10 +189,11 @@ public class JwtCreatorCallout implements Execution {
     private String[] getAudience(MessageContext msgCtxt) throws Exception {
         String audience = (String) this.properties.get("audience");
         if (audience == null || audience.equals("")) {
-            // don't care. Audience is optional, per JWT Spec sec 4.1.3
+            // Audience is optional, per JWT Spec sec 4.1.3
             return null;
         }
 
+        // Audience is an array, or a simple string. We always return array
         String[] audiences = StringUtils.split(audience,",");
         for(int i=0; i<audiences.length; i++) {
             audiences[i] = (String) resolvePropertyValue(audiences[i], msgCtxt);
@@ -203,7 +204,7 @@ public class JwtCreatorCallout implements Execution {
 
     private String getJwtId(MessageContext msgCtxt) throws Exception {
         if (!this.properties.containsKey("id")) {
-            // don't care. ID is optional, per JWT Spec sec 4.1.7
+            // ID is optional, per JWT Spec sec 4.1.7
             return null;
         }
         String jti = (String) this.properties.get("id");
@@ -219,17 +220,14 @@ public class JwtCreatorCallout implements Execution {
         return jti;
     }
 
-    // private String getPemfile(MessageContext msgCtxt) throws Exception {
-    //     String pemfile = (String) this.properties.get("pemfile");
-    //     if (pemfile == null || pemfile.equals("")) {
-    //         throw new IllegalStateException("must specify pemfile when algorithm is RS*");
-    //     }
-    //     pemfile = resolvePropertyValue(pemfile, msgCtxt);
-    //     if (pemfile == null || pemfile.equals("")) {
-    //         throw new IllegalStateException("must specify pemfile when algorithm is RS*");
-    //     }
-    //     return pemfile;
-    // }
+    private String getKeyId(MessageContext msgCtxt) throws Exception {
+        if (!this.properties.containsKey("kid")) return null;
+        String keyid = (String) this.properties.get("kid");
+        if (keyid == null || keyid.equals("")) return null;
+        keyid = (String) resolvePropertyValue(keyid, msgCtxt);
+        if (keyid == null || keyid.equals("")) return null;
+        return keyid;
+    }
 
     private String getPrivateKeyPassword(MessageContext msgCtxt) {
         String password = (String) this.properties.get("private-key-password");
@@ -414,6 +412,7 @@ public class JwtCreatorCallout implements Execution {
             String[] AUDIENCE = getAudience(msgCtxt);
             String SUBJECT = getSubject(msgCtxt);
             String JTI = getJwtId(msgCtxt);
+            String KEYID = getKeyId(msgCtxt);
             JWSSigner signer;
             String[] audiences = null;
             Date now = new Date();
@@ -493,7 +492,9 @@ public class JwtCreatorCallout implements Execution {
             // JWSHeader.setType() --> "Cannot find symbol"
             // h.setType("JWT"); // this field is optional, not necessary
 
-            JWSHeader h = new JWSHeader.Builder(jwsAlg).type(TYP_JWT).build();
+            JWSHeader.Builder builder = new JWSHeader.Builder(jwsAlg).type(TYP_JWT);
+            if (KEYID != null) builder.keyID(KEYID);
+            JWSHeader h = builder.build();
             SignedJWT signedJWT = new SignedJWT(h, claims);
             signedJWT.sign(signer);
 

@@ -333,11 +333,13 @@ public class JwtParserCallout implements Execution {
             ReadOnlyJWTClaimsSet claims = null;
             msgCtxt.setVariable(varName("isSigned"), "true");
 
-            // diagnostics: emit the jwt and header
+            // emit the jwt and header, and potentially the kid
             msgCtxt.setVariable(varName("jwt"), jwt);
             JWSHeader jwsh = signedJWT.getHeader();
             net.minidev.json.JSONObject json = jwsh.toJSONObject();
             msgCtxt.setVariable(varName("jwtheader"), json.toString());
+            String kid = (String) json.get("kid");
+            if (kid != null) msgCtxt.setVariable(varName("kid"), kid);
 
             // 2. check that the provided algorithm matches what is required
             String requiredAlgorithm = getAlgorithm(msgCtxt);

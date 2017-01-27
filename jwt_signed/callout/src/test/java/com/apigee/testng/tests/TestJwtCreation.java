@@ -51,15 +51,16 @@ public class TestJwtCreation {
               "ATxhWpB0sA7tnIBDUX/XX4jn63RfmxmVTvol3QYMDGbyz4MB3LWTtojVK2QUaUib\n" +
               "qQIDAQAB\n" +
               "-----END PUBLIC KEY-----\n");
+        // this one will use literal \n rather than actual newlines
         m.put("rsa2",
-              "-----BEGIN PUBLIC KEY-----\n" +
-              "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1Cu87vr/HH8LTsafFczZ\n" +
-              "YSF8Qee6cLOd2NQmEcTLQWnAKlebBLY58c63ig3QYWocravtkqULKfImjOg7xA5E\n" +
-              "npeiwlVyhfKwooFq5u40k2ob0Mq3LI+/ZCKGvraJ53D1PyLhAt/ZwFqwpJ8Ja111\n" +
-              "GnVtUf7rr6+wChXx7XlEDmNpIyn3eepVJcjE2Hpb6WCP7/mPgpRsDjYE5Yw2PxUt\n" +
-              "N2P26R8tVTsaIrex74yON7ERvB6Hud4YF+XQCypgQFcVhN5DG5WYX22snr1bt3XC\n" +
-              "pHbBk+cVJ5nJ8lRjpE0j9KU/30pYNOKWKChoEsnv2iMQkECf5hJU0e13bIUiROXn\n" +
-              "6wIDAQAB\n" +
+              "-----BEGIN PUBLIC KEY-----\\n" +
+              "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1Cu87vr/HH8LTsafFczZ\\n" +
+              "YSF8Qee6cLOd2NQmEcTLQWnAKlebBLY58c63ig3QYWocravtkqULKfImjOg7xA5E\\n" +
+              "npeiwlVyhfKwooFq5u40k2ob0Mq3LI+/ZCKGvraJ53D1PyLhAt/ZwFqwpJ8Ja111\\n" +
+              "GnVtUf7rr6+wChXx7XlEDmNpIyn3eepVJcjE2Hpb6WCP7/mPgpRsDjYE5Yw2PxUt\\n" +
+              "N2P26R8tVTsaIrex74yON7ERvB6Hud4YF+XQCypgQFcVhN5DG5WYX22snr1bt3XC\\n" +
+              "pHbBk+cVJ5nJ8lRjpE0j9KU/30pYNOKWKChoEsnv2iMQkECf5hJU0e13bIUiROXn\\n" +
+              "6wIDAQAB\\n" +
               "-----END PUBLIC KEY-----\n");
         m.put("rsa3",
               "-----BEGIN PUBLIC KEY-----\n" +
@@ -456,6 +457,66 @@ public class TestJwtCreation {
         String isExpired = msgCtxt.getVariable("jwt_isExpired");
         Assert.assertEquals(jwt_issuer, issuer, "Issuer");
         Assert.assertEquals(isExpired, "false", "isExpired");
+    }
+
+    public void CreateJwtWithKid() throws Exception {
+        String subject = "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F";
+        String issuer = "api-key-goes-here-78B13CD0-CEFD-4F6A-BB76";
+        String audience = "urn://example.com";
+        String kid = java.util.UUID.randomUUID().toString().replace("-","");
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("private-key", privateKeyMap.get("rsa2"));
+        properties.put("private-key-password", "Secret123");
+        properties.put("subject", subject);
+        properties.put("issuer", issuer);
+        properties.put("kid", kid);
+        properties.put("audience", audience);
+        properties.put("expiresIn", "30"); // seconds
+        properties.put("claim_box_sub_type", "enterprise");
+        properties.put("claim_jti", java.util.UUID.randomUUID().toString());
+
+        tryDeserializeKey(privateKeyMap.get("rsa2"), "Secret123");
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+
+        // now parse and verify the token. Check that all the claim_* claims are present.
+        properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("jwt", jwt);
+        properties.put("debug", "true");
+        properties.put("claim_aud", audience);
+        properties.put("claim_sub", subject);
+        properties.put("claim_box_sub_type", "enterprise");
+        properties.put("public-key", publicKeyMap.get("rsa2"));
+        JwtParserCallout callout2 = new JwtParserCallout(properties);
+        result = callout2.execute(msgCtxt, exeCtxt);
+
+        String reason = msgCtxt.getVariable("jwt_reason");
+        Assert.assertEquals(reason, null, "reason");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        Assert.assertEquals(isValid, "true", "isValid");
+
+        String jwt_issuer = msgCtxt.getVariable("jwt_issuer");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        Assert.assertEquals(jwt_issuer, issuer, "Issuer");
+        Assert.assertEquals(isExpired, "false", "isExpired");
+
+        String jwt_kid = msgCtxt.getVariable("jwt_kid");
+        Assert.assertEquals(jwt_kid, kid, "jwt_kid");
     }
 
     @Test()

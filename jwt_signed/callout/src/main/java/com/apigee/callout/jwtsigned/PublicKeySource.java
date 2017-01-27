@@ -116,6 +116,7 @@ public class PublicKeySource {
         }
         // else, assume it is a bare base-64 encoded string
 
+        s = s.replaceAll("\\\\n","");
         s = s.replaceAll("[\\r|\\n| ]","");
         // base64-decode it, and  produce a public key from the result
         byte[] certBytes = Base64.decodeBase64(s);
@@ -145,7 +146,9 @@ public class PublicKeySource {
             }
             // else, try parsing it as a "bare" base64 encoded PEM string
 
+            s = s.replaceAll("\\\\n","");
             s = s.replaceAll("[\\r|\\n| ]","");
+
             byte[] keyBytes = Base64.decodeBase64(s);
             X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -169,8 +172,13 @@ public class PublicKeySource {
         throws NoSuchAlgorithmException,
                InvalidKeySpecException {
 
-        modulus_b64 = unUrlSafe(modulus_b64).replaceAll("[\\r|\\n| ]","");
-        exponent_b64 = unUrlSafe(exponent_b64).replaceAll("[\\r|\\n| ]","");
+        modulus_b64 = unUrlSafe(modulus_b64)
+            .replaceAll("\\\\n","")
+            .replaceAll("[\\r|\\n| ]","");
+
+        exponent_b64 = unUrlSafe(exponent_b64)
+            .replaceAll("\\\\n","")
+            .replaceAll("[\\r|\\n| ]","");
 
         byte[] decodedModulus = Base64.decodeBase64(modulus_b64);
         byte[] decodedExponent = Base64.decodeBase64(exponent_b64);
