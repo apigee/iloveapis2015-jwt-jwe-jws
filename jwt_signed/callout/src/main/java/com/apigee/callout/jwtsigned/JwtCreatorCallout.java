@@ -484,14 +484,12 @@ public class JwtCreatorCallout implements Execution {
                 jwsAlg = JWSAlgorithm.RS256;
             }
             else {
+                msgCtxt.setVariable(varName("alg-missing"), ALG);
                 throw new IllegalStateException("unsupported algorithm: " + ALG);
             }
+            msgCtxt.setVariable(varName("alg"), ALG);
 
             // 4. Apply the signature
-            //JWSHeader h = new JWSHeader(jwsAlg);
-            // JWSHeader.setType() --> "Cannot find symbol"
-            // h.setType("JWT"); // this field is optional, not necessary
-
             JWSHeader.Builder builder = new JWSHeader.Builder(jwsAlg).type(TYP_JWT);
             if (KEYID != null) builder.keyID(KEYID);
             JWSHeader h = builder.build();
@@ -505,7 +503,7 @@ public class JwtCreatorCallout implements Execution {
         }
         catch (Exception e) {
             // unhandled exceptions
-            if (debug) { e.printStackTrace(); /* to MP system.log */ }
+            //if (debug) { e.printStackTrace(); /* to MP system.log */ }
             String error = e.toString();
             msgCtxt.setVariable(varName("error"), error);
             int ch = error.indexOf(':');
