@@ -58,8 +58,7 @@ To use it:
    apiproxy/resources/policies directory. The configuration should look like
    this:
     ```xml
-    <JavaCallout name="JavaJwtHandler" enabled='true'
-                 continueOnError='false' async='false'>
+    <JavaCallout name="JavaJwtHandler" >
       <DisplayName>Java JWT Creator</DisplayName>
       <Properties>...</Properties>
       <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
@@ -121,7 +120,7 @@ form of properties on the policy.  Some examples follow.
 
 **Generate a JWT using HS256**
 ```xml
-  <JavaCallout name='JavaCallout-JWT-Create' enabled='true'>
+  <JavaCallout name='JavaCallout-JWT-Create'>
     <DisplayName>JavaCallout-JWT-Create</DisplayName>
     <Properties>
       <Property name="algorithm">HS256</Property>
@@ -190,8 +189,9 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
       -----END PRIVATE KEY-----
       </Property>
 
-      <!-- this value should not be hardcoded. Put it in the vault! -->
-      <Property name="private-key-password">deecee123</Property>
+      <!-- The password value for the private key should not be hardcoded.
+        Put it in the Encrypted KVM, and reference a variable here. -->
+      <Property name="private-key-password">{private.privkey_password}</Property>
 
       <!-- standard claims -->
       <Property name="subject">{apiproxy.name}</Property>
@@ -647,7 +647,7 @@ When verifying a JWT, you may see one of the following errors:
 | the token is expired | the expiry (exp) claim on the token is in the past. This means the issuer intended that the token should not be used past that time. | 
 | there is a mismatch in a claim | One of the claims to be verified did not match what was found in the token. |
 | audience violation | None of the audience values on token token match the audience given in the policy configuration |
-| Algorithm mismtatch | the token is signed with an algorithm that does not match what is provided in the policy configuration |
+| Algorithm mismatch | the token is signed with an algorithm that does not match what is provided in the policy configuration |
 
 
 
@@ -676,7 +676,7 @@ these instructions.
 
 ## License
 
-This project and all the code contained within is licensed under the [Apache 2.0 Source license](LICENSE).
+This project and all the code contained within is Copyright 2017 Google Inc, and is licensed under the [Apache 2.0 Source license](LICENSE).
 
 
 ## Limitations
