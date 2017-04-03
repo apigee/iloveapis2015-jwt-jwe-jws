@@ -24,8 +24,8 @@ This is an open-source project of the Apigee Corporation. It is not covered by A
 
 ## License
 
-This material is copyright 2015,2016 Apigee Corporation. 
-and is licensed under the Apache 2.0 license. See the [LICENSE](LICENSE) file. 
+This material is Copyright 2015, 2016 Apigee Corporation, and Copyright 2017 Google Inc.  
+It is licensed under the Apache 2.0 license. See the [LICENSE](LICENSE) file. 
 
 ## About Building
 

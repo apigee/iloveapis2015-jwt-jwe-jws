@@ -275,16 +275,16 @@ the Properties elements, like this:
       <Property name="private-key-password">deecee123</Property>
 
       <!-- standard claims to embed -->
-      <Property name="subject">{apiproxy.name}</Property>
-      <Property name="issuer">http://dinochiesa.net</Property>
+      <Property name="subject">{user_name}</Property>
+      <Property name="issuer">http://apigee.net/{apiproxy.name}</Property>
       <Property name="audience">Optional-String-or-URI</Property>
       <Property name="expiresIn">86400</Property> <!-- in seconds -->
       <Property name="id"/> 
 
       <!-- custom claims to embed in the JWT. -->
       <!-- Property names must begin with claim_ . -->
-      <Property name="claim_shoesize">9</Property>
-      <Property name="claim_gender">M</Property>
+      <Property name="claim_shoesize">{user_shoesize}</Property>
+      <Property name="claim_gender">{user_gender}</Property>
 
     </Properties>
 
@@ -293,6 +293,8 @@ the Properties elements, like this:
   </JavaCallout>
 ```
 
+The value of either standard or custom claims can be fixed strings or references to context variables - strings wrapped in curly braces.
+
 If you would like to embed an array claim in the JWT, then you should use a variable reference, like so:
 
 ```xml
@@ -300,7 +302,6 @@ If you would like to embed an array claim in the JWT, then you should use a vari
 ```
 
 And the context variable api_products_list should resolve to a String[].  
-
 
 
 **Parsing and Verifying a JWT - HS256**
@@ -487,7 +488,7 @@ Do this by specifying Property elements with name attributes that begin with cla
       <!-- name of var that holds the jwt -->
       <Property name="jwt">{request.formparam.jwt}</Property>
 
-      <!-- name of the pemfile. This must be a resource in the JAR! 
+      <!-- name of the pemfile. This must be a resource in the JAR!  -->
       <Property name="pemfile">rsa-public.pem</Property>
 
       <!-- specific claims to verify, and their required values. -->
