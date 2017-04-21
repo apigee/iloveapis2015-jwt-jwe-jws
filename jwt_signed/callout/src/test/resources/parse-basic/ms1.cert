@@ -1,13 +1,4 @@
-<JavaCallout name='JWT-Parse-Verify-RS256-ms'>
-  <Properties>
-    <Property name="algorithm">RS256</Property>
-    <Property name="jwt">{request.formparam.jwt}</Property>
-
-    <!-- public-key used only for algorithm = RS256 -->
-    <Property name="certificate">{ms.certificate}</Property>
-
-<!--
-    - - - - - BEGIN CERTIFICATE - - - - -
+-----BEGIN CERTIFICATE-----
 MIIC4jCCAcqgAwIBAgIQQNXrmzhLN4VGlUXDYCRT3zANBgkqhkiG9w0BAQsFADAt
 MSswKQYDVQQDEyJhY2NvdW50cy5hY2Nlc3Njb250cm9sLndpbmRvd3MubmV0MB4X
 DTE0MTAyODAwMDAwMFoXDTE2MTAyNzAwMDAwMFowLTErMCkGA1UEAxMiYWNjb3Vu
@@ -24,17 +15,4 @@ P5LNgAj8QLCypxsWrTAmq2HSpkeSk4JBtsYxX6uhbGM/K1sEktKybVTHu22/7TmR
 qWTmOUy9wQvMjJb2IXdMGLG3hVntN/WWcs5w8vbt1i8Kk6o19W2MjZ95JaECKjBD
 YRlhG1KmSBtrsKsCBQoBzwH/rXfksTO9JoUYLXiW0IppB7DhNH4PJ5hZI91R8rR0
 H3/bKkLSuDaKLWSqMhozdhXsIIKvJQ==
-    - - - - - END CERTIFICATE - - - - -
--->
-
-
-    <!-- claims to verify -->
-    <Property name="claim_iss">https://sts.windows.net/fa2613dd-1c7b-469b-8f92-88cd26856240/</Property>
-    <Property name="claim_ver">1.0</Property>
-    <Property name="claim_idp">live.com</Property>
-
-  </Properties>
-
-  <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.6.jar</ResourceURL>
-</JavaCallout>
+-----END CERTIFICATE-----

@@ -28,8 +28,8 @@ import com.apigee.callout.jwtsigned.JwtParserCallout;
 import com.apigee.callout.jwtsigned.JwtCreatorCallout;
 
 public class TestParseExtended {
-    private static String testDataDir = "src/test/resources/parse";
-    private static File testdir = new File(testDataDir);
+    private static String testDataDirPath = "src/test/resources/parse-extended";
+    private static File testDataDir = new File(testDataDirPath);
 
     MessageContext msgCtxt;
     ExecutionContext exeCtxt;
@@ -171,8 +171,8 @@ public class TestParseExtended {
         om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         // read in all the *.json files in the test-data directory
-        //System.out.println("dir name: " + testdir.getAbsolutePath());
-        File[] files = testdir.listFiles();
+        //System.out.println("dir name: " + testDataDir.getAbsolutePath());
+        File[] files = testDataDir.listFiles();
         if (files != null && files.length > 0) {
             int c = 0;
             ArrayList<TestCase> list = new ArrayList<TestCase>();
@@ -203,7 +203,7 @@ public class TestParseExtended {
             String value = tc.getInputProperties().get(propName);
             if ((value != null) && value.startsWith("file://")) {
                 String filename = value.substring(7);
-                File file = new File(testdir, filename);
+                File file = new File(testDataDir, filename);
                 String fileContents = FileUtils.readFileToString(file);
                 tc.getInputProperties().put(propName, fileContents);
             }

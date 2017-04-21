@@ -562,7 +562,21 @@ public class JwtParserCallout implements Execution {
                 }
             }
 
-            // 9. finally, set the valid context variable
+            // 10. set context variables for custom claims if they are strings.
+            if (valid) {
+                Map<String,Object> customClaims = claims.getCustomClaims();
+                if (customClaims.size() > 0) {
+                    for (Map.Entry<String, Object> entry : customClaims.entrySet()) {
+                        String key = entry.getKey();
+                        Object value = entry.getValue();
+                        if (value instanceof String) {
+                            msgCtxt.setVariable(varName("claim_" + key), (String) value);
+                        }
+                    }
+                }
+            }
+
+            // 11. finally, set the valid context variable
             msgCtxt.setVariable(varName("isValid"), valid + "");
         }
         catch (Exception e) {
