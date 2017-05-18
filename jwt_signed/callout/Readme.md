@@ -193,6 +193,10 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
         Put it in the Encrypted KVM, and reference a variable here. -->
       <Property name="private-key-password">{private.privkey_password}</Property>
 
+      <!-- this value goes into the JWT header to identify the
+        key with which the JWT is signed. To support key rotation. -->
+      <Property name="kid">{key_id}</Property>
+
       <!-- standard claims -->
       <Property name="subject">{apiproxy.name}</Property>
       <Property name="issuer">http://dinochiesa.net</Property>
