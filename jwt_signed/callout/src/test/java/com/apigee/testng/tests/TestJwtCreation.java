@@ -3,6 +3,7 @@ package com.apigee.testng.tests;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -311,68 +312,78 @@ public class TestJwtCreation {
         String issuer = "urn:78B13CD0-CEFD-4F6A-BB76-AF236D876239";
         String audience = "everyone,anyone";
         String subject = "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F";
-        Map properties = new HashMap();
-        properties.put("algorithm", "HS256");
-        properties.put("debug", "true");
-        properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
-        properties.put("subject", subject);
-        properties.put("issuer", issuer);
-        properties.put("audience", audience);
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
 
-        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+                    Map properties = new HashMap();
+                    properties.put("algorithm", "HS256");
+                    properties.put("debug", "true");
+                    properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
+                    properties.put("subject", subject);
+                    properties.put("issuer", issuer);
+                    properties.put("audience", audience);
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
 
-        // retrieve output
-        String jwt = msgCtxt.getVariable("jwt_jwt");
-        System.out.println("jwt: " + jwt);
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+                    JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        // now parse and verify, audience = anyone
-        properties = new HashMap();
-        properties.put("algorithm", "HS256");
-        properties.put("jwt", jwt);
-        properties.put("debug", "true");
-        properties.put("claim_aud", "anyone");
-        properties.put("claim_sub", subject);
-        properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
-        JwtParserCallout callout2 = new JwtParserCallout(properties);
-        result = callout2.execute(msgCtxt, exeCtxt);
+                    // retrieve output
+                    String jwt = msgCtxt.getVariable("jwt_jwt");
+                    System.out.println("jwt: " + jwt);
+                    // check result and output
+                    Assert.assertEquals(result, ExecutionResult.SUCCESS);
 
-        String jwt_issuer = msgCtxt.getVariable("jwt_issuer");
-        String isValid = msgCtxt.getVariable("jwt_isValid");
-        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+                    // now parse and verify, audience = anyone
+                    properties = new HashMap();
+                    properties.put("algorithm", "HS256");
+                    properties.put("jwt", jwt);
+                    properties.put("debug", "true");
+                    properties.put("claim_aud", "anyone");
+                    properties.put("claim_sub", subject);
+                    properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
+                    JwtParserCallout callout2 = new JwtParserCallout(properties);
+                    result = callout2.execute(msgCtxt, exeCtxt);
 
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(jwt_issuer, issuer, "Issuer");
-        Assert.assertEquals(isValid, "true", "isValid");
-        Assert.assertEquals(isExpired, "false", "isExpired");
+                    String jwt_issuer = msgCtxt.getVariable("jwt_issuer");
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+                    String isExpired = msgCtxt.getVariable("jwt_isExpired");
 
-        // now verify audience "everyone"
-        properties.put("claim_aud", "everyone");
-        properties.put("claim_sub", subject);
-        callout2 = new JwtParserCallout(properties);
-        result = callout2.execute(msgCtxt, exeCtxt);
-        isValid = msgCtxt.getVariable("jwt_isValid");
-        isExpired = msgCtxt.getVariable("jwt_isExpired");
+                    Assert.assertEquals(result, ExecutionResult.SUCCESS);
+                    Assert.assertEquals(jwt_issuer, issuer, "Issuer");
+                    Assert.assertEquals(isValid, "true", "isValid");
+                    Assert.assertEquals(isExpired, "false", "isExpired");
 
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid, "true", "isValid");
-        Assert.assertEquals(isExpired, "false", "isExpired");
+                    // now verify audience "everyone"
+                    properties.put("claim_aud", "everyone");
+                    properties.put("claim_sub", subject);
+                    callout2 = new JwtParserCallout(properties);
+                    result = callout2.execute(msgCtxt, exeCtxt);
+                    isValid = msgCtxt.getVariable("jwt_isValid");
+                    isExpired = msgCtxt.getVariable("jwt_isExpired");
 
-        // now try verify audience "someone", should return "not valid"
-        properties.put("claim_aud", "someone");
-        properties.put("claim_sub", subject);
-        callout2 = new JwtParserCallout(properties);
-        result = callout2.execute(msgCtxt, exeCtxt);
-        isValid = msgCtxt.getVariable("jwt_isValid");
-        isExpired = msgCtxt.getVariable("jwt_isExpired");
-        String reason = msgCtxt.getVariable("jwt_reason");
+                    Assert.assertEquals(result, ExecutionResult.SUCCESS);
+                    Assert.assertEquals(isValid, "true", "isValid");
+                    Assert.assertEquals(isExpired, "false", "isExpired");
 
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid, "false", "isValid");
-        Assert.assertEquals(isExpired, "false", "isExpired");
-        Assert.assertEquals(reason, "audience violation", "audience");
+                    // now try verify audience "someone", should return "not valid"
+                    properties.put("claim_aud", "someone");
+                    properties.put("claim_sub", subject);
+                    callout2 = new JwtParserCallout(properties);
+                    result = callout2.execute(msgCtxt, exeCtxt);
+                    isValid = msgCtxt.getVariable("jwt_isValid");
+                    isExpired = msgCtxt.getVariable("jwt_isExpired");
+                    String reason = msgCtxt.getVariable("jwt_reason");
+
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(isValid, "false", "isValid");
+                    Assert.assertEquals(isExpired, "false", "isExpired");
+                    Assert.assertEquals(reason, "audience violation", "audience");
+                    return null; // to satisfy .map()
+                });
     }
 
 

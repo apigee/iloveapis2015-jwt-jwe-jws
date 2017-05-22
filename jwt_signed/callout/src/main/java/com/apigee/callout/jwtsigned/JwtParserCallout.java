@@ -592,7 +592,9 @@ public class JwtParserCallout implements Execution {
 
             // 11. finally, set the valid context variable
             msgCtxt.setVariable(varName("isValid"), valid + "");
-            result = ExecutionResult.SUCCESS;
+            if (valid || continueOnError) {
+                result = ExecutionResult.SUCCESS;
+            }
         }
         catch (Exception e) {
             // unhandled exceptions

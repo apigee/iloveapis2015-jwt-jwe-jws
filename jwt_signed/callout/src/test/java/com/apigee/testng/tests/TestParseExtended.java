@@ -138,8 +138,11 @@ public class TestParseExtended {
 
         // check result and output
         ExecutionResult expectedResult = getExpectedExecutionResult(tc);
-        Assert.assertEquals(result, expectedResult);
         System.out.printf("\n** Test case : %s\n", tc.getTestName());
+        if (expectedResult != result) {
+            System.out.printf("   Unexpected result: %s\n", result);
+        }
+        Assert.assertEquals(result, expectedResult);
 
         // retrieve output
         Map<String,String> expected = tc.getExpected();
@@ -151,11 +154,7 @@ public class TestParseExtended {
                 Assert.assertEquals(actualValue, expectedValue, key);
             }
         }
-        System.out.printf("\n\n");
-        // String isValid = msgCtxt.getVariable("jwt_isValid");
-        // String reason = msgCtxt.getVariable("jwt_reason");
-        // Assert.assertEquals(reason, expected.get("reason"));
-        // Assert.assertEquals(isValid, expected.get("isValid"));
+        System.out.printf("\n");
     }
 
     @DataProvider(name = "batch1")

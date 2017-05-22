@@ -1,15 +1,16 @@
 {
-  "description" : "Verification of RS256 signed JWT",
+  "description" : "Verification of RS256 signed JWT - continueOnError",
 
   "inputProperties" : {
     "algorithm" : "RS256",
     "debug" : "true",
     "jwt" : "file://jwt1.txt",
+    "continueOnError" : "true",
     "certificate" : "file://cert1.txt"
   },
 
   "expected" : {
-    "result" : "ABORT",
+    "result" : "SUCCESS",
     "reason" : "the token is expired",
     "isValid" : "false"
   }
