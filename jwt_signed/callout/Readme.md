@@ -62,7 +62,7 @@ To use it:
       <DisplayName>Java JWT Creator</DisplayName>
       <Properties>...</Properties>
       <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-      <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+      <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
     </JavaCallout>
    ```
 
@@ -131,10 +131,11 @@ form of properties on the policy.  Some examples follow.
       <Property name="issuer">http://dinochiesa.net</Property>
       <Property name="audience">{desired_jwt_audience}</Property>
       <Property name="expiresIn">86400</Property> <!-- in seconds -->
+      <Property name="continueOnError">false</Property>
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -165,6 +166,12 @@ id are all optional claims. If you include them, they'll be inserted as
 claims into the generated JWT. If you don't include them, the generated
 JWT won't include those claims. In either case, the JWT is valid. 
 
+The continueOnError property is optional. If present, and the value is
+"true", then the policy will not return a Fault when there is a policy
+error for any reason.  This is mostly useful when parsing and verifying
+a JWT. Using this property, you can instruct the policy to not cause the
+flow to enter fault status, but only set appropriate context variables,
+if the JWT is expired, if the required claims are not present, or if the signature does not verify.
 
 **Generate a JWT using RS256**
 
@@ -211,7 +218,7 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -252,7 +259,7 @@ You can also specify the PEM as a named file resource that is bundled in the jar
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -293,7 +300,7 @@ the Properties elements, like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -326,7 +333,7 @@ For parsing and verifying a JWT, you need to specify a different Java class. Con
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -404,10 +411,12 @@ To parse and verify a RS256 JWT, then you need to use a configuration like this:
       <Property name="claim_iss">http://dinochiesa.net</Property>
       <Property name="claim_shoesize">8.5</Property>
 
+      <Property name="continueOnError">false</Property>
+      
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -461,7 +470,7 @@ a configuration like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -476,6 +485,7 @@ configurations.
 Alteratively, AFTER invoking the JwtParserCallout, compare the context variable 'jwt_claim_aud' to the
 result of array.join('|').  In other words, if you want to verify A, B, and C, then compare jwt_claim_aud to 'A|B|C' .  The ordering in the JWT matters. To disregard ordering, you'd need to use a JavaScript to parse the jwt_claim_aud and check for each expected element.
 
+As described previously, you can use the continueOnError property to instruct the policy to return Success, and not enter a fault, if the JWT verification does not succeed for any reason - times, signature, claims, well-formedness, etc.
 
 
 **Parse a JWT, and Verify specific claims**
@@ -504,7 +514,7 @@ Do this by specifying Property elements with name attributes that begin with cla
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -544,7 +554,7 @@ To do this, you need to recompile the jar with your desired pemfile contained wi
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -573,7 +583,7 @@ You can also specify a serialized X509 certificate which contains the public key
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -606,7 +616,7 @@ those values, using the modulus and exponent properties:
   </Properties>
 
   <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
 </JavaCallout>
 ```
 

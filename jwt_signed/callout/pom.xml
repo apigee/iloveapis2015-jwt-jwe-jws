@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.apigee.callouts</groupId>
   <artifactId>apigee-edge-callout-jwt-signed</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.8</version>
   <name>JwtSignedEdgeCallout</name>
   <url>http://maven.apache.org</url>
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>1.7</java.version>
+    <java.version>1.8</java.version>
     <apiproxy.java.rsrc.dir>../apiproxy/resources/java</apiproxy.java.rsrc.dir>
     <testng.version>6.8.7</testng.version> <!-- current: 6.9.4 -->
     <jmockit.version>1.7</jmockit.version>

@@ -3,6 +3,7 @@ package com.apigee.testng.tests;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -105,108 +106,159 @@ public class TestBasicJwtParse {
 
     @Test()
     public void test1_BadJwt() {
-        String expectedReason = "the JWT did not parse.";
-        Map properties = new HashMap();
-        properties.put("jwt", "This is an invalid JWT, will not parse...");
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
 
-        JwtParserCallout callout = new JwtParserCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+                    String expectedReason = "the JWT did not parse.";
+                    Map properties = new HashMap();
+                    properties.put("jwt", "This is an invalid JWT, will not parse...");
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
+                    JwtParserCallout callout = new JwtParserCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        // retrieve output
-        String isValid = msgCtxt.getVariable("jwt_isValid");
-        String reason = msgCtxt.getVariable("jwt_reason");
+                    // retrieve output
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+                    String reason = msgCtxt.getVariable("jwt_reason");
 
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid, "false");
-        Assert.assertEquals(reason, expectedReason);
-        //Assert.assertNotNull(error);
+                    // check result and output
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(isValid, "false");
+                    Assert.assertEquals(reason, expectedReason);
+                    return null;
+                });
     }
-
 
     @Test()
     public void MissingJwt() {
-        String expectedReason = "jwt is not specified or is empty.";
-        // now parse and verify
-        Map properties = new HashMap();
-        properties.put("algorithm", "HS256");
-        //properties.put("debug", "true"); // causes exception to be logged to stdout
-        properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
-        JwtParserCallout callout = new JwtParserCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
 
-        String isValid = msgCtxt.getVariable("jwt_isValid");
-        String reason = msgCtxt.getVariable("jwt_reason");
+                    String expectedReason = "jwt is not specified or is empty.";
+                    // now parse and verify
+                    Map properties = new HashMap();
+                    properties.put("algorithm", "HS256");
+                    //properties.put("debug", "true"); // causes exception to be logged to stdout
+                    properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
+                    JwtParserCallout callout = new JwtParserCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        Assert.assertEquals(result, ExecutionResult.ABORT);
-        Assert.assertEquals(isValid, "false", "isValid");
-        Assert.assertEquals(reason, expectedReason, "reason");
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+                    String reason = msgCtxt.getVariable("jwt_reason");
+
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(isValid, "false", "isValid");
+                    Assert.assertEquals(reason, expectedReason, "reason");
+                    return null; // to satisfy .map()
+                });
     }
+
 
 
     @Test()
-    public void test2_Rs256JwtMissingPemfile() {
+    public void test2_Rs256JwtMissingPemfileProperty() {
         String expectedReason = "must specify pemfile or public-key or certificate when algorithm is RS*";
-        Map properties = new HashMap();
-        properties.put("algorithm", "RS256");
-        //properties.put("debug", "true"); // causes exception to be logged to stdout
-        properties.put("jwt", jwtMap.get("ms1"));
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
+                    Map properties = new HashMap();
+                    properties.put("algorithm", "RS256");
+                    //properties.put("debug", "true"); // causes exception to be logged to stdout
+                    properties.put("jwt", jwtMap.get("ms1"));
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
 
-        JwtParserCallout callout = new JwtParserCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+                    JwtParserCallout callout = new JwtParserCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        // retrieve output
-        String isValid = msgCtxt.getVariable("jwt_isValid");
-        String reason = msgCtxt.getVariable("jwt_reason");
+                    // retrieve output
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+                    String reason = msgCtxt.getVariable("jwt_reason");
 
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.ABORT);
-        Assert.assertEquals(reason, expectedReason);
+                    // check result and output
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(reason, expectedReason);
+                    Assert.assertEquals(isValid, "false", "isValid");
+                    return null; // to satisfy .map()
+                });
     }
+
 
     @Test()
     public void test2_Rs256JwtNonExistentPemfile() {
         String nonExistentPemFile = "This-pemfile-does-not-exist.pem";
         String expectedReason = "resource \"/" + nonExistentPemFile + "\" not found";
-        Map properties = new HashMap();
-        properties.put("algorithm", "RS256");
-        //properties.put("debug", "true"); // causes exception to be logged to stdout
-        properties.put("pemfile", nonExistentPemFile);
-        properties.put("jwt", jwtMap.get("ms1"));
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
+                    Map properties = new HashMap();
+                    properties.put("algorithm", "RS256");
+                    //properties.put("debug", "true"); // causes exception to be logged to stdout
+                    properties.put("pemfile", nonExistentPemFile);
+                    properties.put("jwt", jwtMap.get("ms1"));
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
 
-        JwtParserCallout callout = new JwtParserCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+                    JwtParserCallout callout = new JwtParserCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        // retrieve output
-        String isValid = msgCtxt.getVariable("jwt_isValid");
-        String reason = msgCtxt.getVariable("jwt_reason");
+                    // retrieve output
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+                    String reason = msgCtxt.getVariable("jwt_reason");
 
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.ABORT);
-        Assert.assertEquals(reason, expectedReason);
+                    // check result and output
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(reason, expectedReason);
+                    Assert.assertEquals(isValid, "false");
+                    return null; // to satisfy .map()
+                });
     }
 
     @Test()
     public void test2_Rs256JwtPemExistsButIsEmpty() {
         String emptyPemFile = "for-testing-only.pem";
-        String expectedReason = "an invalid public key was provided";
-        Map properties = new HashMap();
-        properties.put("algorithm", "RS256");
-        //properties.put("debug", "true"); // causes exception to be logged to stdout
-        properties.put("pemfile", emptyPemFile);
-        properties.put("jwt", jwtMap.get("ms1"));
+        String expectedReason = "must specify pemfile or public-key or certificate when algorithm is RS*";
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
 
-        JwtParserCallout callout = new JwtParserCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+                    Map properties = new HashMap();
+                    properties.put("algorithm", "RS256");
+                    //properties.put("debug", "true"); // causes exception to be logged to stdout
+                    properties.put("pemfile", emptyPemFile);
+                    properties.put("jwt", jwtMap.get("ms1"));
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
 
-        // retrieve output
-        String isValid = msgCtxt.getVariable("jwt_isValid");
-        String reason = msgCtxt.getVariable("jwt_reason");
+                    JwtParserCallout callout = new JwtParserCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.ABORT);
-        Assert.assertEquals(reason, expectedReason);
+                    // retrieve output
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+                    String reason = msgCtxt.getVariable("jwt_reason");
+
+                    // check result and output
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(reason, expectedReason);
+                    Assert.assertEquals(isValid, "false");
+                    return null; // to satisfy .map()
+                });
     }
+
 
     @Test()
     public void test3_ExpiredJwt() {
@@ -238,44 +290,65 @@ public class TestBasicJwtParse {
     @Test()
     public void test4_MismatchedAlgorithm1() {
         String expectedReason = "Algorithm mismatch. provided=RS256, required=HS256";
-        Map properties = new HashMap();
-        properties.put("algorithm", "HS256");
-        properties.put("jwt", jwtMap.get("ms1"));
-        properties.put("secret-key", "123456");
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
 
-        JwtParserCallout callout = new JwtParserCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+                    Map properties = new HashMap();
+                    properties.put("algorithm", "HS256");
+                    properties.put("jwt", jwtMap.get("ms1"));
+                    properties.put("secret-key", "123456");
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
 
-        // retrieve output
-        String reason = msgCtxt.getVariable("jwt_reason");
-        String isValid = msgCtxt.getVariable("jwt_isValid");
+                    JwtParserCallout callout = new JwtParserCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(reason, expectedReason);
-        Assert.assertEquals(isValid, "false");
+                    // retrieve output
+                    String reason = msgCtxt.getVariable("jwt_reason");
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+
+                    // check result and output
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(reason, expectedReason);
+                    Assert.assertEquals(isValid, "false");
+                    return null; // to satisfy .map()
+                });
     }
 
     @Test()
     public void test4_MismatchedAlgorithm2() {
         String expectedReason = "Algorithm mismatch. provided=HS256, required=RS256";
-        Map properties = new HashMap();
-        properties.put("algorithm", "RS256");
-        properties.put("jwt", jwtMap.get("sample1"));
-        properties.put("certificate", certMap.get("ms1"));
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
 
-        JwtParserCallout callout = new JwtParserCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+                    Map properties = new HashMap();
+                    properties.put("algorithm", "RS256");
+                    properties.put("jwt", jwtMap.get("sample1"));
+                    properties.put("certificate", certMap.get("ms1"));
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
 
-        // retrieve output
-        String isValid = msgCtxt.getVariable("jwt_isValid");
-        String reason = msgCtxt.getVariable("jwt_reason");
+                    JwtParserCallout callout = new JwtParserCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid, "false");
-        Assert.assertEquals(reason, expectedReason);
+                    // retrieve output
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+                    String reason = msgCtxt.getVariable("jwt_reason");
+
+                    // check result and output
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(isValid, "false");
+                    Assert.assertEquals(reason, expectedReason);
+                    return null; // to satisfy .map()
+                });
     }
+
 
 
     @Test()
@@ -381,7 +454,7 @@ public class TestBasicJwtParse {
 
         // check result and output
         Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid,"true",);
+        Assert.assertEquals(isValid,"true");
         Assert.assertEquals(reason, null);
         Assert.assertEquals(hasExpiry,"false");
     }
@@ -415,56 +488,78 @@ public class TestBasicJwtParse {
     @Test()
     public void test6_UnsignedJwt() {
         String expectedReason = "the JWT did not parse.";
-        Map properties = new HashMap();
-        properties.put("algorithm", "none");
-        properties.put("debug", "true");
-        properties.put("jwt", jwtMap.get("unsigned1"));
-        properties.put("claim_username", "john.doe");
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
 
-        JwtParserCallout callout = new JwtParserCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+                    Map properties = new HashMap();
+                    properties.put("algorithm", "none");
+                    properties.put("debug", "true");
+                    properties.put("jwt", jwtMap.get("unsigned1"));
+                    properties.put("claim_username", "john.doe");
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
 
-        // retrieve output
-        String isValid = msgCtxt.getVariable("jwt_isValid");
-        String reason = msgCtxt.getVariable("jwt_reason");
+                    JwtParserCallout callout = new JwtParserCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid,"false");
-        Assert.assertEquals(reason, expectedReason);
+                    // retrieve output
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+                    String reason = msgCtxt.getVariable("jwt_reason");
+
+                    // check result and output
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(isValid,"false");
+                    Assert.assertEquals(reason, expectedReason);
+                    return null; // to satisfy .map()
+                });
     }
+
 
 
     @Test()
     public void test7_BadHmacKey() {
         String expectedReason = "the signature could not be verified";
-        Map properties = new HashMap();
-        properties.put("algorithm", "HS256");
-        properties.put("debug", "true");
-        properties.put("jwt", jwtMap.get("sample1"));
+        Arrays.stream(new String[] { null, "true", "false" } )
+            .map((String continueOnErrorString) -> {
+                    ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
 
-        // The nimbus library requires the secret-key to be at least 256
-        // bits in length.  This translates to 32 x 8-bit characters.
-        //                            ----------1---------2---------3--
-        //                            012345678901234567890123456789012
-        properties.put("secret-key", "IncorrectSecretKey-01929292929292");
-        properties.put("claim_sub", "1234567890");
-        properties.put("claim_name", "John Doe");
+                    Map properties = new HashMap();
+                    properties.put("algorithm", "HS256");
+                    properties.put("debug", "true");
+                    properties.put("jwt", jwtMap.get("sample1"));
 
-        JwtParserCallout callout = new JwtParserCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+                    // The nimbus library requires the secret-key to be at least 256
+                    // bits in length.  This translates to 32 x 8-bit characters.
+                    //                            ----------1---------2---------3--
+                    //                            012345678901234567890123456789012
+                    properties.put("secret-key", "IncorrectSecretKey-01929292929292");
+                    properties.put("claim_sub", "1234567890");
+                    properties.put("claim_name", "John Doe");
+                    if (continueOnErrorString!=null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
 
-        // retrieve output
-        String isValid = msgCtxt.getVariable("jwt_isValid");
-        String verified = msgCtxt.getVariable("jwt_verified");
-        String reason = msgCtxt.getVariable("jwt_reason");
+                    JwtParserCallout callout = new JwtParserCallout(properties);
+                    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
 
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-        Assert.assertEquals(isValid,"false");
-        Assert.assertEquals(verified,"false");
-        Assert.assertEquals(reason, expectedReason);
+                    // retrieve output
+                    String isValid = msgCtxt.getVariable("jwt_isValid");
+                    String verified = msgCtxt.getVariable("jwt_verified");
+                    String reason = msgCtxt.getVariable("jwt_reason");
+
+                    // check result and output
+                    Assert.assertEquals(result, expectedResult);
+                    Assert.assertEquals(isValid,"false");
+                    Assert.assertEquals(verified,"false");
+                    Assert.assertEquals(reason, expectedReason);
+                    return null; // to satisfy .map()
+                });
     }
+
 
     @Test()
     public void test8_ExpiredJwtDisabledTimeCheck() {

@@ -121,7 +121,18 @@ public class JwtParserCallout implements Execution {
         return in;
     }
 
-    private static final String varName(String s) { return _varPrefix + s; }
+    private static final String varName(String s) {
+        return _varPrefix + s;
+    }
+
+    private boolean getContinueOnError(MessageContext msgCtxt) {
+        String continueOnError = properties.get("continueOnError");
+        if (StringUtils.isBlank(continueOnError)) {
+            return false;
+        }
+        continueOnError = resolvePropertyValue(continueOnError, msgCtxt);
+        return Boolean.parseBoolean(continueOnError);
+    }
 
     private String getJwt(MessageContext msgCtxt) throws Exception {
         String jwt = (String) this.properties.get("jwt");
@@ -316,9 +327,12 @@ public class JwtParserCallout implements Execution {
         // - the signature. It must verify.
         // - the times. Must not be expired, also respect "notbefore".
         // - the enforced claims. They all must match.
+        ExecutionResult result = ExecutionResult.ABORT;
         String wantDebug = this.properties.get("debug");
         boolean debug = (wantDebug != null) && Boolean.parseBoolean(wantDebug);
+        boolean continueOnError = false;
         try {
+            continueOnError = getContinueOnError(msgCtxt);
             // 1. read the JWT
             String jwt = getJwt(msgCtxt); // a dot-separated JWT
             SignedJWT signedJWT = null;
@@ -328,7 +342,7 @@ public class JwtParserCallout implements Execution {
             catch ( java.text.ParseException pe1) {
                 msgCtxt.setVariable(varName("isValid"),"false");
                 msgCtxt.setVariable(varName("reason"), "the JWT did not parse.");
-                return ExecutionResult.SUCCESS;
+                return (continueOnError) ? ExecutionResult.SUCCESS : ExecutionResult.ABORT;
             }
             ReadOnlyJWTClaimsSet claims = null;
             msgCtxt.setVariable(varName("isSigned"), "true");
@@ -353,7 +367,7 @@ public class JwtParserCallout implements Execution {
                 msgCtxt.setVariable(varName("reason"),
                                     String.format("Algorithm mismatch. provided=%s, required=%s",
                                                   providedAlgorithm, requiredAlgorithm));
-                return ExecutionResult.SUCCESS;
+                return (continueOnError) ? ExecutionResult.SUCCESS : ExecutionResult.ABORT;
             }
 
             // 3. set up the signature verifier according to the required algorithm and its inputs
@@ -365,7 +379,7 @@ public class JwtParserCallout implements Execution {
                 msgCtxt.setVariable(varName("verified"), "false");
                 msgCtxt.setVariable(varName("isValid"), "false");
                 msgCtxt.setVariable(varName("reason"), "the signature could not be verified");
-                return ExecutionResult.SUCCESS;
+                return (continueOnError) ? ExecutionResult.SUCCESS : ExecutionResult.ABORT;
             }
             else {
                 msgCtxt.setVariable(varName("verified"), "true");
@@ -391,11 +405,11 @@ public class JwtParserCallout implements Execution {
                     msgCtxt.setVariable(varName("audience"), StringUtils.join(audiences, ","));
                 }
                 else {
-                    msgCtxt.setVariable(varName("audience"), "-not-set-");
+                    msgCtxt.removeVariable(varName("audience"));
                 }
             }
             else {
-                msgCtxt.setVariable(varName("audience"), "-not-set-");
+                msgCtxt.removeVariable(varName("audience"));
             }
 
             // 6c. issuer
@@ -578,6 +592,7 @@ public class JwtParserCallout implements Execution {
 
             // 11. finally, set the valid context variable
             msgCtxt.setVariable(varName("isValid"), valid + "");
+            result = ExecutionResult.SUCCESS;
         }
         catch (Exception e) {
             // unhandled exceptions
@@ -594,8 +609,10 @@ public class JwtParserCallout implements Execution {
             msgCtxt.setVariable(varName("isValid"), "false");
 
             msgCtxt.setVariable(varName("stacktrace"), ExceptionUtils.getStackTrace(e));
-            return ExecutionResult.ABORT;
+            if (continueOnError) {
+                result = ExecutionResult.SUCCESS;
+            }
         }
-        return ExecutionResult.SUCCESS;
+        return result;
     }
 }
