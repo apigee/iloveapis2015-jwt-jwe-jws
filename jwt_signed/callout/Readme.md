@@ -401,7 +401,7 @@ For parsing without verifying a JWT, you can specify wantVerify = false.
 ```
 
 This will simply parse the JWT and set the appropriate context variables from the payload, without verifying the signature.
-
+wantVerify defaults to true. 
 
 **Parsing and Verifying a JWT - RS256**
 
