@@ -62,7 +62,7 @@ To use it:
       <DisplayName>Java JWT Creator</DisplayName>
       <Properties>...</Properties>
       <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-      <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+      <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
     </JavaCallout>
    ```
 
@@ -135,7 +135,7 @@ form of properties on the policy.  Some examples follow.
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -218,7 +218,7 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -259,7 +259,7 @@ You can also specify the PEM as a named file resource that is bundled in the jar
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -300,7 +300,7 @@ the Properties elements, like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -333,7 +333,7 @@ For parsing and verifying a JWT, you need to specify a different Java class. Con
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -382,6 +382,27 @@ In all other cases, the callout will return SUCCESS, even if the signature does 
 It is possible for a JWT to be signed and verified but not valid, according to the configured claims you are enforcing. If the JWT signature is not verifiable, then the JWT will also be not valid (jwt_isValid = false).
 
 
+**Parsing without Verifying - HS256**
+
+For parsing without verifying a JWT, you can specify wantVerify = false. 
+
+```xml
+  <JavaCallout name='JavaCallout-JWT-Parse'>
+    <DisplayName>JavaCallout-JWT-Parse</DisplayName>
+    <Properties>
+      <Property name="algorithm">HS256</Property>
+      <Property name="wantVerify">false</Property>
+      <Property name="jwt">{request.formparam.jwt}</Property>
+    </Properties>
+
+    <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
+  </JavaCallout>
+```
+
+This will simply parse the JWT and set the appropriate context variables from the payload, without verifying the signature.
+
+
 **Parsing and Verifying a JWT - RS256**
 
 To parse and verify a RS256 JWT, then you need to use a configuration like this:
@@ -416,7 +437,7 @@ To parse and verify a RS256 JWT, then you need to use a configuration like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -470,7 +491,7 @@ a configuration like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -514,7 +535,7 @@ Do this by specifying Property elements with name attributes that begin with cla
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -554,7 +575,7 @@ To do this, you need to recompile the jar with your desired pemfile contained wi
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -583,7 +604,7 @@ You can also specify a serialized X509 certificate which contains the public key
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -616,7 +637,7 @@ those values, using the modulus and exponent properties:
   </Properties>
 
   <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.8.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
 </JavaCallout>
 ```
 
