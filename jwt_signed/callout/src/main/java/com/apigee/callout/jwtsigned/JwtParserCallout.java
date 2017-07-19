@@ -351,7 +351,7 @@ public class JwtParserCallout implements Execution {
                 signedJWT = SignedJWT.parse(jwt);
             }
             catch ( java.text.ParseException pe1) {
-                msgCtxt.setVariable(varName("isValid"),"false");
+                msgCtxt.setVariable(varName("isValid"), "false");
                 msgCtxt.setVariable(varName("reason"), "the JWT did not parse.");
                 return (continueOnError) ? ExecutionResult.SUCCESS : ExecutionResult.ABORT;
             }
@@ -432,27 +432,27 @@ public class JwtParserCallout implements Execution {
             msgCtxt.setVariable(varName("issuer"), issuer);
 
             Date now = new Date();
-            recordTimeVariable(msgCtxt,now,"now");
+            recordTimeVariable(msgCtxt, now, "now");
 
             // 5d. issued-at
             long ms, secsRemaining;
             Date t1 = claims.getIssueTime();
             if (t1 != null) {
-                recordTimeVariable(msgCtxt,t1,"issueTime");
+                recordTimeVariable(msgCtxt, t1, "issueTime");
                 ms = now.getTime() - t1.getTime();
                 valid = (ms >= 0);
             }
 
             // 5e. expiration
             long timeAllowance = getTimeAllowance(msgCtxt);
-            msgCtxt.setVariable(varName("timeAllowance"), Long.toString(timeAllowance,10));
+            msgCtxt.setVariable(varName("timeAllowance"), Long.toString(timeAllowance, 10));
             if (timeAllowance < 0L) {
                 msgCtxt.setVariable(varName("timeCheckDisabled"), "true");
             }
             Date t2 = claims.getExpirationTime();
             if (t2 != null) {
                 msgCtxt.setVariable(varName("hasExpiry"), "true");
-                recordTimeVariable(msgCtxt,t2,"expirationTime");
+                recordTimeVariable(msgCtxt, t2, "expirationTime");
 
                 // 5f. elaborated values for expiry
                 ms = t2.getTime() - now.getTime(); // positive means still valid
@@ -600,7 +600,6 @@ public class JwtParserCallout implements Execution {
                     }
                 }
             }
-
 
             // 9. finally, set the valid context variable
             msgCtxt.setVariable(varName("isValid"), (valid && verified) + "");

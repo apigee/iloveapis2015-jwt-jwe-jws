@@ -331,7 +331,7 @@ public class JwtCreatorCallout implements Execution {
     }
 
 
-    private PrivateKey generatePrivateKey(PrivateKeyInfo info)
+    private static PrivateKey generatePrivateKey(PrivateKeyInfo info)
         throws InvalidKeySpecException, GeneralSecurityException,NoSuchAlgorithmException
     {
         // If the provided data is encrypted, we need a password to decrypt
