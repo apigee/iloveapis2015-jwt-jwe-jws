@@ -704,7 +704,7 @@ these instructions.
    copy target/jwt-signed-edge-callout.jar to your apiproxy/resources/java directory. 
    Also copy from the target/lib directory, these depedencies:  
      json-smart-1.3.jar
-     nimbus-jose-jwt-3.1.2.jar
+     nimbus-jose-jwt-3.10.jar
      guava-18.0.jar
 
 
