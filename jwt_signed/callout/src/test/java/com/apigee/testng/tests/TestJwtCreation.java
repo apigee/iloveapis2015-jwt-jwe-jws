@@ -310,12 +310,13 @@ public class TestJwtCreation {
     @Test()
     public void BasicCreateAndParseMultiAudience() {
         String issuer = "urn:78B13CD0-CEFD-4F6A-BB76-AF236D876239";
-        String audience = "everyone,anyone";
         String subject = "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F";
-        Arrays.stream(new String[] { null, "true", "false" } )
-            .map((String continueOnErrorString) -> {
+        msgCtxt.setVariable("audienceVar", new String[] {"everyone","anyone"});
+        Arrays.stream(new String[] { "audience","claim_aud"}).forEach(audienceProperty -> {
+            Arrays.stream(new String[]{"everyone,anyone", "{audienceVar}"}).forEach(audience -> {
+                Arrays.stream(new String[]{null, "true", "false"}).forEach((String continueOnErrorString) -> {
                     ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
-                        ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
+                            ExecutionResult.SUCCESS : ExecutionResult.ABORT;
 
                     Map properties = new HashMap();
                     properties.put("algorithm", "HS256");
@@ -323,8 +324,8 @@ public class TestJwtCreation {
                     properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
                     properties.put("subject", subject);
                     properties.put("issuer", issuer);
-                    properties.put("audience", audience);
-                    if (continueOnErrorString!=null) {
+                    properties.put(audienceProperty, audience);
+                    if (continueOnErrorString != null) {
                         properties.put("continueOnError", continueOnErrorString);
                     }
 
@@ -345,6 +346,9 @@ public class TestJwtCreation {
                     properties.put("claim_aud", "anyone");
                     properties.put("claim_sub", subject);
                     properties.put("secret-key", "ABCDEFGH12345678_ABCDEFGH12345678");
+                    if (continueOnErrorString != null) {
+                        properties.put("continueOnError", continueOnErrorString);
+                    }
                     JwtParserCallout callout2 = new JwtParserCallout(properties);
                     result = callout2.execute(msgCtxt, exeCtxt);
 
@@ -382,12 +386,12 @@ public class TestJwtCreation {
                     Assert.assertEquals(isValid, "false", "isValid");
                     Assert.assertEquals(isExpired, "false", "isExpired");
                     Assert.assertEquals(reason, "audience violation", "audience");
-                    return null; // to satisfy .map()
                 });
+            });
+        });
     }
 
-
-    private void tryDeserializeKey(String key, String password)
+     private void tryDeserializeKey(String key, String password)
         throws InvalidKeySpecException, GeneralSecurityException, NoSuchAlgorithmException
     {
         byte[] keybytes = key.getBytes(StandardCharsets.UTF_8);
