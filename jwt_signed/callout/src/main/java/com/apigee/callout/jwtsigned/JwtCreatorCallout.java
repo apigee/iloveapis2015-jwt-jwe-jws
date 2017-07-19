@@ -193,13 +193,20 @@ public class JwtCreatorCallout implements Execution {
             return null;
         }
 
-        // Audience is an array, or a simple string. We always return array
-        String[] audiences = StringUtils.split(audience,",");
-        for(int i=0; i<audiences.length; i++) {
-            audiences[i] = (String) resolvePropertyValue(audiences[i], msgCtxt);
+        Object resolvedValue = resolvePropertyValue(audience, msgCtxt);
+        if (resolvedValue instanceof String[]) {
+            // we might already have an array from a property
+            return (String[])resolvedValue;
+        } else if (resolvedValue instanceof org.mozilla.javascript.NativeArray) {
+            return nativeToJavaArray((org.mozilla.javascript.NativeArray)resolvedValue);
+        } else {
+            // Audience is an array, or a simple string. We always return array
+            String[] audiences = StringUtils.split(resolvedValue.toString(), ",");
+            for (int i = 0; i < audiences.length; i++) {
+                audiences[i] = (String) resolvePropertyValue(audiences[i], msgCtxt);
+            }
+            return audiences;
         }
-
-        return audiences;
     }
 
     private String getJwtId(MessageContext msgCtxt) throws Exception {
@@ -439,22 +446,19 @@ public class JwtCreatorCallout implements Execution {
                     if (parts.length == 2 && parts[0].equals("claim") &&
                         providedValue != null) {
                         String claimName =  parts[1];
+                        Object resolvedValue = resolvePropertyValue(providedValue, msgCtxt);
                         // special case aud, which can be an array
-                        if (claimName.equals("aud") && providedValue.indexOf(",")!=-1) {
+                        if (claimName.equals("aud") && resolvedValue instanceof String) {
                             audiences = StringUtils.split(providedValue,",");
-                            for(int i=0; i<audiences.length; i++) {
-                                audiences[i] = (String) resolvePropertyValue(audiences[i], msgCtxt);
-                            }
                             claims.setAudience(java.util.Arrays.asList(audiences));
                         }
                         else {
-                            Object resolvedValue = resolvePropertyValue(providedValue, msgCtxt);
                             if (resolvedValue instanceof String[]) {
-                                claims.setClaim(claimName, resolvedValue);
+                                claims.setClaim(claimName, java.util.Arrays.asList((String[])resolvedValue));
                             }
                             else if (resolvedValue instanceof org.mozilla.javascript.NativeArray) {
                                 // an array set in a JavaScript callout
-                                claims.setClaim(claimName, nativeToJavaArray((org.mozilla.javascript.NativeArray)resolvedValue));
+                                claims.setClaim(claimName, java.util.Arrays.asList(nativeToJavaArray((org.mozilla.javascript.NativeArray)resolvedValue)));
                             }
                             else if (resolvedValue != null){
                                 //claims.setCustomClaim(claimName, providedValue);
