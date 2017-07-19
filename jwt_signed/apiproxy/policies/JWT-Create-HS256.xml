@@ -18,5 +18,5 @@
   </Properties>
 
   <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.9.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
