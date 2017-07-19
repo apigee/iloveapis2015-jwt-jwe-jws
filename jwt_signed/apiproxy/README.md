@@ -204,7 +204,7 @@ For example, this is how to configure the JWT creation with algorithm=HS256, whi
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -212,6 +212,10 @@ All properties accept a string as a value. If enclosed in curlies, the
 string is treated as a variable name, which is dereferenced to obtain the
 value.
 
+The audience can be a comma-separated (And optionally space-delimited)
+string, in which case it is treated as a list of audiences which will be
+embedded into the JWT. It is not supported to include an audience string that
+itself contains a comma.
 
 
 To configure JWT creation with private key signing using an RSA key: 
@@ -239,7 +243,7 @@ To configure JWT creation with private key signing using an RSA key:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -285,7 +289,7 @@ configuration, using the private-key Property, like this:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -311,7 +315,7 @@ To configure JWT parsing with HS256:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -362,7 +366,7 @@ the policy to get that behavior. Like so:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -392,7 +396,7 @@ To configure JWT parsing with RS256:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -443,7 +447,7 @@ public-key property, like so:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -491,7 +495,7 @@ certificate.
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -515,7 +519,7 @@ or, like so:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -542,7 +546,7 @@ those values:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://jwt-signed-edge-callout.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.10.jar</ResourceURL>
 </JavaCallout>
 ```
 
