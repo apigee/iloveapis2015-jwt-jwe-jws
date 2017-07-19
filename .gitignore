@@ -4,6 +4,11 @@
 */Icon
 Icon
 
+**/#*.*#
+**/*.*~
+**/#*#
+**/*~
+
 **/target/
 **/node_modules/
 **/*.jar
