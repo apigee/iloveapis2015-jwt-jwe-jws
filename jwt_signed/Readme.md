@@ -11,7 +11,8 @@ The API Proxy subdirectory here includes the pre-built JAR file. Therefore you d
 
 ## SPECIAL NOTE
 
-Due to some changes in the provisioning of Apigee Edge SaaS organizations, this callout may not successfully run in newly-provisioned organizations. There are new security restrictions for Java callouts that may prevent the JAR from running properly.  Apigee is working on a built-in policy for JWT to avoid that problem. 
+Due to some changes in the provisioning of Apigee Edge SaaS organizations, this callout may not successfully run in newly-provisioned organizations. There are new security restrictions for Java callouts that may prevent the JAR from running properly.
+Native JWT support is on Apigee's product roadmap. This statement is not a commitment; product plans are subject to change without notice.
 
 
 ## Support
