@@ -431,24 +431,33 @@ public class JwtParserCallout implements Execution {
             String issuer = claims.getIssuer();
             msgCtxt.setVariable(varName("issuer"), issuer);
 
-            Date now = new Date();
-            recordTimeVariable(msgCtxt, now, "now");
-
             // 5d. issued-at
-            long ms, secsRemaining;
-            Date t1 = claims.getIssueTime();
-            if (t1 != null) {
-                recordTimeVariable(msgCtxt, t1, "issueTime");
-                ms = now.getTime() - t1.getTime();
-                valid = (ms >= 0);
+            Date now = new Date();
+            if (this.properties.containsKey("currentTime")) {
+                now = new Date(Long.parseLong(this.properties.get("currentTime"),10));
             }
-
-            // 5e. expiration
+            recordTimeVariable(msgCtxt, now, "now");
+            
             long timeAllowance = getTimeAllowance(msgCtxt);
             msgCtxt.setVariable(varName("timeAllowance"), Long.toString(timeAllowance, 10));
             if (timeAllowance < 0L) {
                 msgCtxt.setVariable(varName("timeCheckDisabled"), "true");
             }
+
+            long ms, secsRemaining;
+            Date t1 = claims.getIssueTime();
+            if (t1 != null) {
+                recordTimeVariable(msgCtxt, t1, "issueTime");
+                ms = now.getTime() - t1.getTime();
+                if (timeAllowance >= 0L) {
+                    valid = (ms + timeAllowance >= 0L);
+                    if (!valid) {
+                        msgCtxt.setVariable(varName("reason"), "issuedAt is in the future");
+                    }
+                }
+            }
+
+            // 5e. expiration
             Date t2 = claims.getExpirationTime();
             if (t2 != null) {
                 msgCtxt.setVariable(varName("hasExpiry"), "true");

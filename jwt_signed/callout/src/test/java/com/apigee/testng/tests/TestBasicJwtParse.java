@@ -722,4 +722,94 @@ public class TestBasicJwtParse {
             Assert.assertEquals(isValid,"false");
         }
     }
+
+
+    @Test()
+    public void test10_NotValidYetJWT() {
+
+        String[] cases = new String[] { null, "true", "false" };
+        for(String continueOnErrorString : cases) {
+            ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
+                    ExecutionResult.SUCCESS : ExecutionResult.ABORT ;
+
+            Map properties = new HashMap();
+            properties.put("algorithm", "RS256");
+            properties.put("jwt", jwtMap.get("ms1"));
+            properties.put("currentTime", "1452661530000");
+            properties.put("certificate", certMap.get("ms1"));
+            if (continueOnErrorString!=null) {
+                properties.put("continueOnError", continueOnErrorString);
+            }
+
+            JwtParserCallout callout = new JwtParserCallout(properties);
+            ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+            // retrieve output
+            String isValid = msgCtxt.getVariable("jwt_isValid");
+            String reason = msgCtxt.getVariable("jwt_reason");
+            String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
+            String isExpired = msgCtxt.getVariable("jwt_isExpired");
+            String isActuallyExpired = msgCtxt.getVariable("jwt_isActuallyExpired");
+
+            // check result and output
+            Assert.assertEquals(result, expectedResult);
+            Assert.assertEquals(isValid, "false");
+            Assert.assertEquals(hasExpiry, "true");
+            Assert.assertEquals(isActuallyExpired, "false");
+            Assert.assertEquals(isExpired, "false");
+            Assert.assertEquals(reason, "issuedAt is in the future");
+        }
+    }
+
+    @Test()
+    public void test10_NotValidYetJWTButWithinTimeAllowance() {
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("jwt", jwtMap.get("ms1"));
+        properties.put("currentTime", "1452661530000");
+        properties.put("timeAllowance", "10000");
+        properties.put("certificate", certMap.get("ms1"));
+
+        JwtParserCallout callout = new JwtParserCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // retrieve output
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        String isActuallyExpired = msgCtxt.getVariable("jwt_isActuallyExpired");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        Assert.assertEquals(isValid, "true");
+        Assert.assertEquals(hasExpiry, "true");
+        Assert.assertEquals(isActuallyExpired, "false");
+        Assert.assertEquals(isExpired, "false");
+    }
+
+    @Test()
+    public void test10_NotValidYetJWTButTimeCheckDisabled() {
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("jwt", jwtMap.get("ms1"));
+        properties.put("currentTime", "1452661530000");
+        properties.put("timeAllowance", "-1");
+        properties.put("certificate", certMap.get("ms1"));
+
+        JwtParserCallout callout = new JwtParserCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // retrieve output
+        String isValid = msgCtxt.getVariable("jwt_isValid");
+        String hasExpiry = msgCtxt.getVariable("jwt_hasExpiry");
+        String isExpired = msgCtxt.getVariable("jwt_isExpired");
+        String isActuallyExpired = msgCtxt.getVariable("jwt_isActuallyExpired");
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+        Assert.assertEquals(isValid, "true");
+        Assert.assertEquals(hasExpiry, "true");
+        Assert.assertEquals(isActuallyExpired, "false");
+        Assert.assertEquals(isExpired, "false");
+    }    
 }
