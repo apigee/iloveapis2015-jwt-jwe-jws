@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.apigee.callouts</groupId>
   <artifactId>apigee-edge-callout-jwt-signed</artifactId>
-  <version>1.0.10</version>
+  <version>1.0.11</version>
   <name>JwtSignedEdgeCallout</name>
   <url>http://maven.apache.org</url>
   <packaging>jar</packaging>
@@ -22,14 +22,6 @@
   </properties>
 
   <dependencies>
-
-    <!-- the following are included in Apigee Edge -->
-    <dependency>
-        <groupId>commons-lang</groupId>
-        <artifactId>commons-lang</artifactId>
-        <version>2.6</version>
-      <scope>compile</scope>
-    </dependency>
 
     <dependency>
         <groupId>commons-codec</groupId>

@@ -1,38 +1,38 @@
 package com.apigee.testng.tests;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import org.testng.Assert;
-import org.testng.annotations.Test;
-import org.testng.annotations.BeforeSuite;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.BeforeMethod;
-
-import mockit.Mock;
-import mockit.MockUp;
-
-import com.apigee.flow.execution.ExecutionContext;
-import com.apigee.flow.message.MessageContext;
-import com.apigee.flow.execution.ExecutionResult;
-
 import com.apigee.callout.jwtsigned.JwtCreatorCallout;
 import com.apigee.callout.jwtsigned.JwtParserCallout;
-
-
+import com.apigee.flow.execution.ExecutionContext;
+import com.apigee.flow.execution.ExecutionResult;
+import com.apigee.flow.message.MessageContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
-import org.apache.commons.ssl.PKCS8Key;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.PrivateKey;
-import java.security.NoSuchAlgorithmException;
 import java.security.GeneralSecurityException;
-import java.security.spec.InvalidKeySpecException;
 import java.security.KeyFactory;
-
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TimeZone;
+import mockit.Mock;
+import mockit.MockUp;
+import org.apache.commons.lang3.time.DateParser;
+import org.apache.commons.lang3.time.FastDateFormat;
+import org.apache.commons.ssl.PKCS8Key;
+import org.testng.Assert;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeSuite;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 
 public class TestJwtCreation {
+    private final static ObjectMapper om = new ObjectMapper();
 
     MessageContext msgCtxt;
     ExecutionContext exeCtxt;
@@ -418,7 +418,7 @@ public class TestJwtCreation {
         return;
     }
 
-    @Test()
+    @Test
     public void CreateBoxJwt() throws Exception {
         String subject = "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F";
         String issuer = "api-key-goes-here-78B13CD0-CEFD-4F6A-BB76";
@@ -474,6 +474,7 @@ public class TestJwtCreation {
         Assert.assertEquals(isExpired, "false", "isExpired");
     }
 
+    @Test
     public void CreateJwtWithKid() throws Exception {
         String subject = "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F";
         String issuer = "api-key-goes-here-78B13CD0-CEFD-4F6A-BB76";
@@ -534,7 +535,7 @@ public class TestJwtCreation {
         Assert.assertEquals(jwt_kid, kid, "jwt_kid");
     }
 
-    @Test()
+    @Test
     public void CreateEdgeMicroJwt() throws Exception {
         String subject = "urn:edge-micro-apigee-com";
         String issuer = "http://apigee.com/edgemicro/";
@@ -586,7 +587,7 @@ public class TestJwtCreation {
     }
 
 
-    @Test()
+    @Test
     public void CreateJwtWithArrayClaim() throws Exception {
         String subject = "urn:edge-micro-apigee-com";
         String issuer = "http://apigee.com/edgemicro/";
@@ -648,6 +649,141 @@ public class TestJwtCreation {
 
         String apiProductsOut = msgCtxt.getVariable("jwt_claim_api_products_provided");
         Assert.assertEquals(apiProductsOut, "product1|product2", "api_products");
+    }
+
+    @Test
+    public void CreateJwt_DefaultNotBeforeTime() throws Exception {
+        Date now = new Date();
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("private-key", privateKeyMap.get("rsa3"));
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_testname", "CreateJwt_DefaultNotBeforeTime");
+        properties.put("claim_jti", java.util.UUID.randomUUID().toString());
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+        String jwtClaims = msgCtxt.getVariable("jwt_claims");
+        Assert.assertNotNull(jwtClaims, "jwt_claims");
+        System.out.println("claims: " + jwtClaims);
+
+        JsonNode claimsNode = om.readTree(jwtClaims);
+        String nbfAsText = claimsNode.get("nbf").asText();
+        Assert.assertNotNull(nbfAsText, "nbf");
+        String iatAsText = claimsNode.get("iat").asText();
+        Assert.assertEquals(iatAsText, nbfAsText, "nbf and iat");
+        int nbfSeconds = Integer.parseInt(nbfAsText);
+        int secondsNow = (int) (now.getTime()/1000);
+        int delta = Math.abs(secondsNow - nbfSeconds);
+        Assert.assertTrue(delta<=1, "nbf");
+    }
+
+    @Test
+    public void CreateJwt_ExplicitNotBeforeTime() throws Exception {
+        String notBeforeString = "2017-08-14T11:00:21.269-0700";
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("not-before", notBeforeString);
+        properties.put("private-key", privateKeyMap.get("rsa3"));
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_testname", "CreateJwt_ExplicitNotBeforeTime");
+        properties.put("claim_jti", java.util.UUID.randomUUID().toString());
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+        String jwtClaims = msgCtxt.getVariable("jwt_claims");
+        Assert.assertNotNull(jwtClaims, "jwt_claims");
+        System.out.println("claims: " + jwtClaims);
+
+        JsonNode claimsNode = om.readTree(jwtClaims);
+        String nbfAsText = claimsNode.get("nbf").asText();
+        Assert.assertNotNull(nbfAsText, "nbf");
+
+        DateParser dp = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZ", TimeZone.getTimeZone("UTC"));
+        Date notBefore = dp.parse(notBeforeString);
+        int secondsNbfExpected = (int) (notBefore.getTime()/1000);
+        int secondsNbfActual = Integer.parseInt(nbfAsText);
+        Assert.assertEquals( secondsNbfActual, secondsNbfExpected, "nbf");
+    }
+
+    @Test
+    public void CreateJwt_ExplicitNotBeforeTime2() throws Exception {
+        String notBeforeString = "1508536333";
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("not-before", notBeforeString);
+        properties.put("private-key", privateKeyMap.get("rsa3"));
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_testname", "CreateJwt_ExplicitNotBeforeTime2");
+        properties.put("claim_jti", java.util.UUID.randomUUID().toString());
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+        String jwtClaims = msgCtxt.getVariable("jwt_claims");
+        Assert.assertNotNull(jwtClaims, "jwt_claims");
+        System.out.println("claims: " + jwtClaims);
+
+        JsonNode claimsNode = om.readTree(jwtClaims);
+        JsonNode nbfNode = claimsNode.get("nbf");
+        Assert.assertNotNull(nbfNode, "nbfNode");
+        String nbfAsText = nbfNode.asText();
+        Assert.assertNotNull(nbfAsText, "nbf");
+        Assert.assertEquals( nbfAsText, notBeforeString, "notBeforeString");
+    }
+
+    @Test
+    public void CreateJwt_ExcludeNotBeforeTime() throws Exception {
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("not-before", "false");
+        properties.put("private-key", privateKeyMap.get("rsa3"));
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_testname", "CreateJwt_ExcludeNotBeforeTime");
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        Assert.assertNotNull(jwt, "jwt");
+        System.out.println("jwt: " + jwt);
+        String jwtClaims = msgCtxt.getVariable("jwt_claims");
+        Assert.assertNotNull(jwtClaims, "jwt_claims");
+        System.out.println("claims: " + jwtClaims);
+
+        JsonNode claimsNode = om.readTree(jwtClaims);
+        Object nbf = claimsNode.get("nbf");
+        Assert.assertNull(nbf, "nbf");
+
+        Object iat = claimsNode.get("iat");
+        Assert.assertNotNull(iat, "iat");
     }
 
 }

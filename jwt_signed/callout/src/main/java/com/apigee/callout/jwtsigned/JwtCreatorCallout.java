@@ -5,51 +5,50 @@ import com.apigee.flow.execution.ExecutionResult;
 import com.apigee.flow.execution.IOIntensive;
 import com.apigee.flow.execution.spi.Execution;
 import com.apigee.flow.message.MessageContext;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-
-import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSAlgorithm;
+import com.apigee.utils.TemplateString;
+import com.google.common.base.Predicate;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.Maps;
 import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.ssl.PKCS8Key;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.lang.text.StrSubstitutor;
-
-import java.security.PrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.KeyFactory;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import java.security.interfaces.RSAPrivateKey;
 import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
-
-// Google's Guava collections tools
-import com.google.common.collect.Collections2;
-import com.google.common.collect.Maps;
-import com.google.common.base.Predicate;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.CacheLoader;
-import java.util.concurrent.TimeUnit;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.text.ParseException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
-
-import com.apigee.utils.TemplateString;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.lang3.time.DateParser;
+import org.apache.commons.lang3.time.FastDateFormat;
+import org.apache.commons.ssl.PKCS8Key;
 
 @IOIntensive
 public class JwtCreatorCallout implements Execution {
@@ -58,6 +57,23 @@ public class JwtCreatorCallout implements Execution {
     private LoadingCache<PrivateKeyInfo, JWSSigner> rsaKeyCache;
     private Map<String,String> properties; // read-only
     private final static JOSEObjectType TYP_JWT = new JOSEObjectType("JWT");
+    private final static int DEFAULT_EXPIRY_IN_SECONDS = 60*60; // one hour
+    private static final String dateStringPatternString = "[1-2][0-9]{9}";
+    private final static Pattern secondsSinceEpochPattern = Pattern.compile(dateStringPatternString);
+
+
+    private static final FastDateFormat fdf = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZ", TimeZone.getTimeZone("UTC")); // 2017-08-14T11:00:21.269-0700
+    private static final DateParser DATE_FORMAT_RFC_3339 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ssXXX"); // 2017-08-14T11:00:21-07:00
+    private static final DateParser DATE_FORMAT_RFC_1123 = FastDateFormat.getInstance("EEE, dd MMM yyyy HH:mm:ss zzz"); // Mon, 14 Aug 2017 11:00:21 PDT
+    private static final DateParser DATE_FORMAT_RFC_850 = FastDateFormat.getInstance("EEEE, dd-MMM-yy HH:mm:ss zzz"); // Monday, 14-Aug-17 11:00:21 PDT
+    private static final DateParser DATE_FORMAT_ANSI_C = FastDateFormat.getInstance("EEE MMM d HH:mm:ss yyyy"); // Mon Aug 14 11:00:21 2017
+    private static final DateParser allowableInputFormats[] = {
+        DATE_FORMAT_RFC_3339,
+        DATE_FORMAT_RFC_1123,
+        DATE_FORMAT_RFC_850,
+        DATE_FORMAT_ANSI_C,
+        (DateParser)fdf
+    };
 
     public JwtCreatorCallout (Map properties) {
         // convert the untyped Map to a generic map
@@ -133,12 +149,12 @@ public class JwtCreatorCallout implements Execution {
 
     private String getSubject(MessageContext msgCtxt) throws Exception {
         String subject = (String) this.properties.get("subject");
-        if (subject == null || subject.equals("")) {
+        if (StringUtils.isBlank(subject)) {
             // throw new IllegalStateException("subject is not specified or is empty.");
             return null; // subject is OPTIONAL
         }
         subject = (String) resolvePropertyValue(subject, msgCtxt);
-        if (subject == null || subject.equals("")) {
+        if (StringUtils.isBlank(subject)) {
             //throw new IllegalStateException("subject is null or empty.");
             return null; // subject is OPTIONAL
         }
@@ -147,11 +163,11 @@ public class JwtCreatorCallout implements Execution {
 
     private String getSecretKey(MessageContext msgCtxt) throws Exception {
         String key = (String) this.properties.get("secret-key");
-        if (key == null || key.equals("")) {
+        if (StringUtils.isBlank(key)) {
             throw new IllegalStateException("secret-key is not specified or is empty.");
         }
         key = (String) resolvePropertyValue(key, msgCtxt);
-        if (key == null || key.equals("")) {
+        if (StringUtils.isBlank(key)) {
             throw new IllegalStateException("secret-key is null or empty.");
         }
         return key;
@@ -159,12 +175,12 @@ public class JwtCreatorCallout implements Execution {
 
     private String getIssuer(MessageContext msgCtxt) throws Exception {
         String issuer = (String) this.properties.get("issuer");
-        if (issuer == null || issuer.equals("")) {
+        if (StringUtils.isBlank(issuer)) {
             //throw new IllegalStateException("issuer is not specified or is empty.");
             return null; // "iss" is OPTIONAL per RFC-7519
         }
         issuer = (String) resolvePropertyValue(issuer, msgCtxt);
-        if (issuer == null || issuer.equals("")) {
+        if (StringUtils.isBlank(issuer)) {
             // throw new IllegalStateException("issuer is not specified or is empty.");
             return null; // "iss" is OPTIONAL per RFC-7519
         }
@@ -173,12 +189,12 @@ public class JwtCreatorCallout implements Execution {
 
     private String getAlgorithm(MessageContext msgCtxt) throws Exception {
         String algorithm = ((String) this.properties.get("algorithm")).trim();
-        if (algorithm == null || algorithm.equals("")) {
+        if (StringUtils.isBlank(algorithm)) {
             throw new IllegalStateException("algorithm is not specified or is empty.");
         }
         algorithm = (String) resolvePropertyValue(algorithm, msgCtxt);
-        if (algorithm == null || algorithm.equals("")) {
-            throw new IllegalStateException("issuer is not specified or is empty.");
+        if (StringUtils.isBlank(algorithm)) {
+            throw new IllegalStateException("algorithm is not specified or is empty.");
         }
         if (!(algorithm.equals("HS256") || algorithm.equals("RS256"))) {
             throw new IllegalStateException("unsupported algorithm: '" + algorithm+"'");
@@ -188,7 +204,7 @@ public class JwtCreatorCallout implements Execution {
 
     private String[] getAudience(MessageContext msgCtxt) throws Exception {
         String audience = (String) this.properties.get("audience");
-        if (audience == null || audience.equals("")) {
+        if (StringUtils.isBlank(audience)) {
             // Audience is optional, per JWT Spec sec 4.1.3
             return null;
         }
@@ -215,12 +231,12 @@ public class JwtCreatorCallout implements Execution {
             return null;
         }
         String jti = (String) this.properties.get("id");
-        if (jti == null || jti.equals("")) {
+        if (StringUtils.isBlank(jti)) {
             // The value is not specified. Generate a UUID.
             return java.util.UUID.randomUUID().toString();
         }
         jti = (String) resolvePropertyValue(jti, msgCtxt);
-        if (jti == null || jti.equals("")) {
+        if (StringUtils.isBlank(jti)) {
             // The variable resolves to nothing. Generate one.
             return java.util.UUID.randomUUID().toString();
         }
@@ -230,31 +246,30 @@ public class JwtCreatorCallout implements Execution {
     private String getKeyId(MessageContext msgCtxt) throws Exception {
         if (!this.properties.containsKey("kid")) return null;
         String keyid = (String) this.properties.get("kid");
-        if (keyid == null || keyid.equals("")) return null;
+        if (StringUtils.isBlank(keyid)) return null;
         keyid = (String) resolvePropertyValue(keyid, msgCtxt);
-        if (keyid == null || keyid.equals("")) return null;
+        if (StringUtils.isBlank(keyid)) return null;
         return keyid;
     }
 
     private String getPrivateKeyPassword(MessageContext msgCtxt) {
         String password = (String) this.properties.get("private-key-password");
-        if (password == null || password.equals("")) {
+        if (StringUtils.isBlank(password)) {
             // don't care. Use of a password on the private key is optional.
             return null;
         }
         password = (String) resolvePropertyValue(password, msgCtxt);
-        if (password == null || password.equals("")) { return null; }
+        if (StringUtils.isBlank(password)) { return null; }
         return password;
     }
 
-
     private int getExpiresIn(MessageContext msgCtxt) throws IllegalStateException {
         String expiry = (String) this.properties.get("expiresIn");
-        if (expiry == null || expiry.equals("")) {
-            return 60*60; // one hour
+        if (StringUtils.isBlank(expiry)) {
+            return DEFAULT_EXPIRY_IN_SECONDS;
         }
         expiry = (String) resolvePropertyValue(expiry, msgCtxt);
-        if (expiry == null || expiry.equals("")) {
+        if (StringUtils.isBlank(expiry)) {
             throw new IllegalStateException("variable " + expiry + " resolves to nothing.");
         }
         int expiresIn = Integer.parseInt(expiry);
@@ -269,6 +284,32 @@ public class JwtCreatorCallout implements Execution {
         cal.add(Calendar.SECOND, secondsToAdd);
         Date then = cal.getTime();
         return then;
+    }
+
+    private String getNotBefore(MessageContext msgCtxt) throws Exception {
+        String value = (String) this.properties.get("not-before");
+        if (StringUtils.isBlank(value)) { return null; }
+        value = (String) resolvePropertyValue(value, msgCtxt);
+        if (StringUtils.isBlank(value)) { return null; }
+        value = value.trim();
+        if (value.toLowerCase().equals("false") || value.equals("0")) return "false";
+        return value; // unparsed date string
+    }
+
+    private static Date parseDate(String dateString) {
+        if (dateString == null) return null;
+        Matcher m = secondsSinceEpochPattern.matcher(dateString);
+        if (m.matches()) {
+            return new Date(Long.parseLong(dateString) * 1000);
+        }
+        for (DateParser format : allowableInputFormats){
+            try {
+                return format.parse(dateString);
+            }
+            catch (ParseException ex) {
+            }
+        }
+        return null;
     }
 
     // Return all properties that begin with claim_
@@ -295,11 +336,11 @@ public class JwtCreatorCallout implements Execution {
         String privateKey = (String) this.properties.get("private-key");
         if (privateKey==null) {
             String pemfile = (String) this.properties.get("pemfile");
-            if (pemfile == null || pemfile.equals("")) {
+            if (StringUtils.isBlank(pemfile)) {
                 throw new IllegalStateException("must specify pemfile or private-key when algorithm is RS*");
             }
             pemfile = (String) resolvePropertyValue(pemfile, msgCtxt);
-            if (pemfile == null || pemfile.equals("")) {
+            if (StringUtils.isBlank(pemfile)) {
                 throw new IllegalStateException("pemfile resolves to nothing; invalid when algorithm is RS*");
             }
 
@@ -315,7 +356,7 @@ public class JwtCreatorCallout implements Execution {
                 throw new IllegalStateException("private-key must be non-empty");
             }
             privateKey = (String) resolvePropertyValue(privateKey, msgCtxt);
-            if (privateKey==null || privateKey.equals("")) {
+            if (StringUtils.isBlank(privateKey)) {
                 throw new IllegalStateException("private-key variable resolves to empty; invalid when algorithm is RS*");
             }
             privateKey = privateKey.trim();
@@ -420,6 +461,7 @@ public class JwtCreatorCallout implements Execution {
             String SUBJECT = getSubject(msgCtxt);
             String JTI = getJwtId(msgCtxt);
             String KEYID = getKeyId(msgCtxt);
+            String NOTBEFORE = getNotBefore(msgCtxt);
             JWSSigner signer;
             String[] audiences = null;
             Date now = new Date();
@@ -431,8 +473,17 @@ public class JwtCreatorCallout implements Execution {
             if (AUDIENCE != null) claims.setAudience(java.util.Arrays.asList(AUDIENCE));
             if (JTI != null) claims.setJWTID(JTI);
             claims.setIssueTime(now);
+
+            if (StringUtils.isBlank(NOTBEFORE)) {
+                claims.setNotBeforeTime(now);
+            }
+            else if (!NOTBEFORE.equals("false")) {
+                Date nbf = parseDate(NOTBEFORE);
+                if (nbf != null) claims.setNotBeforeTime(nbf);
+            }
+
             Date expiry = getExpiryDate(now,msgCtxt);
-            if (expiry != null) { claims.setExpirationTime(expiry); }
+            if (expiry != null) claims.setExpirationTime(expiry);
 
             // 2. add all the provided custom claims to the set
             Map<String,String> customClaims = customClaimsProperties(msgCtxt);

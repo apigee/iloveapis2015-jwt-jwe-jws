@@ -6,16 +6,16 @@ import com.apigee.flow.execution.IOIntensive;
 import com.apigee.flow.execution.spi.Execution;
 import com.apigee.flow.message.MessageContext;
 
-import org.apache.commons.lang.time.DurationFormatUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import org.apache.commons.lang3.time.FastDateFormat;
 
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.PlainJWT;
@@ -141,6 +141,15 @@ public class JwtParserCallout implements Execution {
         }
         wantVerify = resolvePropertyValue(wantVerify, msgCtxt);
         return Boolean.parseBoolean(wantVerify);
+    }
+
+    private boolean getIgnoreIssuedAt(MessageContext msgCtxt) {
+        String value = properties.get("ignore-issued-at");
+        if (StringUtils.isBlank(value)) {
+            return false;
+        }
+        value = resolvePropertyValue(value, msgCtxt);
+        return Boolean.parseBoolean(value);
     }
 
     private String getJwt(MessageContext msgCtxt) throws Exception {
@@ -434,21 +443,25 @@ public class JwtParserCallout implements Execution {
             Date now = new Date();
             recordTimeVariable(msgCtxt, now, "now");
 
-            // 5d. issued-at
-            long ms, secsRemaining;
-            Date t1 = claims.getIssueTime();
-            if (t1 != null) {
-                recordTimeVariable(msgCtxt, t1, "issueTime");
-                ms = now.getTime() - t1.getTime();
-                valid = (ms >= 0);
-            }
-
-            // 5e. expiration
             long timeAllowance = getTimeAllowance(msgCtxt);
             msgCtxt.setVariable(varName("timeAllowance"), Long.toString(timeAllowance, 10));
             if (timeAllowance < 0L) {
                 msgCtxt.setVariable(varName("timeCheckDisabled"), "true");
             }
+
+            // 5d. issued-at
+            long ms, secsRemaining;
+            boolean ignoreIssuedAt = getIgnoreIssuedAt(msgCtxt);
+            if (!ignoreIssuedAt) {
+                Date t1 = claims.getIssueTime();
+                if (t1 != null) {
+                    recordTimeVariable(msgCtxt, t1, "issueTime");
+                    ms = now.getTime() - t1.getTime(); // positive means issued in the past
+                    valid = (timeAllowance >= 0L) ? (ms + timeAllowance >= 0) : (ms >= 0);
+                }
+            }
+
+            // 5e. expiration
             Date t2 = claims.getExpirationTime();
             if (t2 != null) {
                 msgCtxt.setVariable(varName("hasExpiry"), "true");
