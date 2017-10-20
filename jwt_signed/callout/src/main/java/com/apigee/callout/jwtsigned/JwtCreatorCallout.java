@@ -431,6 +431,7 @@ public class JwtCreatorCallout implements Execution {
             if (AUDIENCE != null) claims.setAudience(java.util.Arrays.asList(AUDIENCE));
             if (JTI != null) claims.setJWTID(JTI);
             claims.setIssueTime(now);
+            claims.setNotBeforeTime(now);
             Date expiry = getExpiryDate(now,msgCtxt);
             if (expiry != null) { claims.setExpirationTime(expiry); }
 
