@@ -286,15 +286,13 @@ public class JwtCreatorCallout implements Execution {
         return then;
     }
 
-    private Date getNotBefore(MessageContext msgCtxt) throws Exception {
+    private Date getNotBefore(MessageContext msgCtxt, Date now) throws Exception {
         String key = "not-before";
-        if (!this.properties.containsKey(key)) {
-            return null;
-        }
+        if (!this.properties.containsKey(key)) return null;
         String value = (String) this.properties.get(key);
-        if (StringUtils.isBlank(value)) { return new Date(); }
+        if (StringUtils.isBlank(value)) return now;
         value = (String) resolvePropertyValue(value, msgCtxt);
-        if (StringUtils.isBlank(value)) { return new Date(); }
+        if (StringUtils.isBlank(value)) return now;
         return parseDate(value.trim()); // unparsed date string
     }
 
@@ -456,6 +454,7 @@ public class JwtCreatorCallout implements Execution {
         String wantDebug = this.properties.get("debug");
         boolean debug = (wantDebug != null) && Boolean.parseBoolean(wantDebug);
         try {
+            Date now = new Date();
             JWSAlgorithm jwsAlg;
             String ISSUER = getIssuer(msgCtxt);
             String ALG = getAlgorithm(msgCtxt);
@@ -463,10 +462,9 @@ public class JwtCreatorCallout implements Execution {
             String SUBJECT = getSubject(msgCtxt);
             String JTI = getJwtId(msgCtxt);
             String KEYID = getKeyId(msgCtxt);
-            Date NOTBEFORE = getNotBefore(msgCtxt);
+            Date NOTBEFORE = getNotBefore(msgCtxt, now);
             JWSSigner signer;
             String[] audiences = null;
-            Date now = new Date();
 
             // 1. Prepare JWT with the set of standard claims
             JWTClaimsSet claims = new JWTClaimsSet();
