@@ -286,14 +286,16 @@ public class JwtCreatorCallout implements Execution {
         return then;
     }
 
-    private String getNotBefore(MessageContext msgCtxt) throws Exception {
-        String value = (String) this.properties.get("not-before");
-        if (StringUtils.isBlank(value)) { return null; }
+    private Date getNotBefore(MessageContext msgCtxt) throws Exception {
+        String key = "not-before";
+        if (!this.properties.containsKey(key)) {
+            return null;
+        }
+        String value = (String) this.properties.get(key);
+        if (StringUtils.isBlank(value)) { return new Date(); }
         value = (String) resolvePropertyValue(value, msgCtxt);
-        if (StringUtils.isBlank(value)) { return null; }
-        value = value.trim();
-        if (value.toLowerCase().equals("false") || value.equals("0")) return "false";
-        return value; // unparsed date string
+        if (StringUtils.isBlank(value)) { return new Date(); }
+        return parseDate(value.trim()); // unparsed date string
     }
 
     private static Date parseDate(String dateString) {
@@ -461,7 +463,7 @@ public class JwtCreatorCallout implements Execution {
             String SUBJECT = getSubject(msgCtxt);
             String JTI = getJwtId(msgCtxt);
             String KEYID = getKeyId(msgCtxt);
-            String NOTBEFORE = getNotBefore(msgCtxt);
+            Date NOTBEFORE = getNotBefore(msgCtxt);
             JWSSigner signer;
             String[] audiences = null;
             Date now = new Date();
@@ -474,12 +476,8 @@ public class JwtCreatorCallout implements Execution {
             if (JTI != null) claims.setJWTID(JTI);
             claims.setIssueTime(now);
 
-            if (StringUtils.isBlank(NOTBEFORE)) {
-                claims.setNotBeforeTime(now);
-            }
-            else if (!NOTBEFORE.equals("false")) {
-                Date nbf = parseDate(NOTBEFORE);
-                if (nbf != null) claims.setNotBeforeTime(nbf);
+            if (NOTBEFORE != null) {
+                claims.setNotBeforeTime(NOTBEFORE);
             }
 
             Date expiry = getExpiryDate(now,msgCtxt);

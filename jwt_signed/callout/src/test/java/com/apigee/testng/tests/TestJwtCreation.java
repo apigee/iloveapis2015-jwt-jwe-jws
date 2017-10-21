@@ -652,14 +652,14 @@ public class TestJwtCreation {
     }
 
     @Test
-    public void CreateJwt_DefaultNotBeforeTime() throws Exception {
+    public void CreateJwt_DefaultNotBefore_None() throws Exception {
         Date now = new Date();
         Map properties = new HashMap();
         properties.put("algorithm", "RS256");
         properties.put("debug", "true");
         properties.put("private-key", privateKeyMap.get("rsa3"));
         properties.put("expiresIn", "300"); // seconds
-        properties.put("claim_testname", "CreateJwt_DefaultNotBeforeTime");
+        properties.put("claim_testname", "CreateJwt_DefaultNotBefore_None");
         properties.put("claim_jti", java.util.UUID.randomUUID().toString());
 
         JwtCreatorCallout callout = new JwtCreatorCallout(properties);
@@ -676,8 +676,45 @@ public class TestJwtCreation {
         System.out.println("claims: " + jwtClaims);
 
         JsonNode claimsNode = om.readTree(jwtClaims);
-        String nbfAsText = claimsNode.get("nbf").asText();
-        Assert.assertNotNull(nbfAsText, "nbf");
+        JsonNode nbf = claimsNode.get("nbf");
+        Assert.assertNull(nbf, "nbf");
+        // String iatAsText = claimsNode.get("iat").asText();
+        // Assert.assertEquals(iatAsText, nbfAsText, "nbf and iat");
+        // int nbfSeconds = Integer.parseInt(nbfAsText);
+        // int secondsNow = (int) (now.getTime()/1000);
+        // int delta = Math.abs(secondsNow - nbfSeconds);
+        // Assert.assertTrue(delta<=1, "nbf");
+    }
+
+    @Test
+    public void CreateJwt_DefaultNotBefore_Empty() throws Exception {
+        Date now = new Date();
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("not-before", "");
+        properties.put("private-key", privateKeyMap.get("rsa3"));
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_testname", "CreateJwt_DefaultNotBefore_Empty");
+        properties.put("claim_jti", java.util.UUID.randomUUID().toString());
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+        String jwtClaims = msgCtxt.getVariable("jwt_claims");
+        Assert.assertNotNull(jwtClaims, "jwt_claims");
+        System.out.println("claims: " + jwtClaims);
+
+        JsonNode claimsNode = om.readTree(jwtClaims);
+        JsonNode nbf = claimsNode.get("nbf");
+        Assert.assertNotNull(nbf, "nbf");
+        String nbfAsText = nbf.asText();
         String iatAsText = claimsNode.get("iat").asText();
         Assert.assertEquals(iatAsText, nbfAsText, "nbf and iat");
         int nbfSeconds = Integer.parseInt(nbfAsText);
@@ -755,35 +792,5 @@ public class TestJwtCreation {
         Assert.assertEquals( nbfAsText, notBeforeString, "notBeforeString");
     }
 
-    @Test
-    public void CreateJwt_ExcludeNotBeforeTime() throws Exception {
-        Map properties = new HashMap();
-        properties.put("algorithm", "RS256");
-        properties.put("not-before", "false");
-        properties.put("private-key", privateKeyMap.get("rsa3"));
-        properties.put("expiresIn", "300"); // seconds
-        properties.put("claim_testname", "CreateJwt_ExcludeNotBeforeTime");
-
-        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
-        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
-
-        // check result and output
-        Assert.assertEquals(result, ExecutionResult.SUCCESS);
-
-        // retrieve and check output
-        String jwt = msgCtxt.getVariable("jwt_jwt");
-        Assert.assertNotNull(jwt, "jwt");
-        System.out.println("jwt: " + jwt);
-        String jwtClaims = msgCtxt.getVariable("jwt_claims");
-        Assert.assertNotNull(jwtClaims, "jwt_claims");
-        System.out.println("claims: " + jwtClaims);
-
-        JsonNode claimsNode = om.readTree(jwtClaims);
-        Object nbf = claimsNode.get("nbf");
-        Assert.assertNull(nbf, "nbf");
-
-        Object iat = claimsNode.get("iat");
-        Assert.assertNotNull(iat, "iat");
-    }
 
 }
