@@ -22,10 +22,12 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.interfaces.RSAPrivateKey;
@@ -49,6 +51,13 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateParser;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.commons.ssl.PKCS8Key;
+import org.bouncycastle.openssl.PEMDecryptorProvider;
+import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
+import org.bouncycastle.openssl.PEMException;
 
 @IOIntensive
 public class JwtCreatorCallout implements Execution {
@@ -74,6 +83,10 @@ public class JwtCreatorCallout implements Execution {
         DATE_FORMAT_ANSI_C,
         (DateParser)fdf
     };
+
+    static {
+        java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+    }
 
     public JwtCreatorCallout (Map properties) {
         // convert the untyped Map to a generic map
@@ -107,7 +120,7 @@ public class JwtCreatorCallout implements Execution {
             .maximumSize(1048000)
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build(new CacheLoader<PrivateKeyInfo, JWSSigner>() {
-                    public JWSSigner load(PrivateKeyInfo info) throws InvalidKeySpecException, GeneralSecurityException {
+                    public JWSSigner load(PrivateKeyInfo info) throws InvalidKeySpecException, GeneralSecurityException, IOException {
                         RSAPrivateKey privateKey = (RSAPrivateKey) generatePrivateKey(info);
                         return new RSASSASigner(privateKey);
                     }
@@ -361,25 +374,41 @@ public class JwtCreatorCallout implements Execution {
             }
             privateKey = privateKey.trim();
 
-            if (privateKey.startsWith("-----BEGIN PRIVATE KEY-----") &&
-                privateKey.endsWith("-----END PRIVATE KEY-----")) {
-                privateKey = privateKey.substring(27, privateKey.length() - 25);
-            }
-            else if (privateKey.startsWith("-----BEGIN RSA PRIVATE KEY-----") &&
-                privateKey.endsWith("-----END RSA PRIVATE KEY-----")) {
-                privateKey = privateKey.substring(31, privateKey.length() - 29);
-            }
-
             // clear any leading whitespace on each line
             privateKey = privateKey.replaceAll("([\\r|\\n] +)","\n");
-            keyBytes = Base64.decodeBase64(privateKey);
-            //keyBytes = privateKey.getBytes(StandardCharsets.UTF_8);
+
+            //keyBytes = Base64.decodeBase64(privateKey);
+            keyBytes = privateKey.getBytes(StandardCharsets.UTF_8);
         }
         return keyBytes;
     }
 
-
     private static PrivateKey generatePrivateKey(PrivateKeyInfo info)
+        throws InvalidKeySpecException, GeneralSecurityException, NoSuchAlgorithmException, IOException, PEMException
+    {
+        JcaPEMKeyConverter   converter = new JcaPEMKeyConverter().setProvider("BC");
+        PEMParser pr = new PEMParser(new StringReader(new String(info.keyBytes, StandardCharsets.UTF_8)));
+        Object o = pr.readObject();
+
+        if (o == null || !((o instanceof PEMKeyPair) || (o instanceof PEMEncryptedKeyPair))) {
+            throw new IllegalStateException("Didn't find OpenSSL key");
+        }
+        KeyPair kp;
+        if (o instanceof PEMEncryptedKeyPair) {
+            PEMDecryptorProvider decProv = new JcePEMDecryptorProviderBuilder().setProvider("BC")
+                .build(info.password.toCharArray());
+            kp = converter.getKeyPair(((PEMEncryptedKeyPair)o).decryptKeyPair(decProv));
+        }
+        else {
+            kp = converter.getKeyPair((PEMKeyPair)o);
+        }
+
+        PrivateKey privKey = kp.getPrivate();
+        return privKey;
+    }
+
+
+    private static PrivateKey old_generatePrivateKey(PrivateKeyInfo info)
         throws InvalidKeySpecException, GeneralSecurityException,NoSuchAlgorithmException
     {
         // If the provided data is encrypted, we need a password to decrypt

@@ -31,7 +31,7 @@ This is an open-source project of the Apigee Corporation. It is not covered by A
 
 Several notes:
 
-* use a tool like [apigeetool](https://github.com/apigee/apigeetool-node) or [pushapi](https://github.com/carloseberhardt/apiploy) to deploy the proxy
+* use a tool like [importAndDeploy.js](https://github.com/DinoChiesa/apigee-edge-js/blob/master/examples/importAndDeploy.js), [apigeetool](https://github.com/apigee/apigeetool-node) or [pushapi](https://github.com/carloseberhardt/apiploy) to deploy the proxy
 
 * the apiproxy must include the JAR, and all of its dependencies. See the [resources/java](resources/java) directory for those dependencies. Include them all in the proxy you deploy.
 
@@ -204,7 +204,7 @@ For example, this is how to configure the JWT creation with algorithm=HS256, whi
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -243,13 +243,12 @@ To configure JWT creation with private key signing using an RSA key:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 
 The pemfile need not be encrypted. If it is, obviously you need to
-specify the password . Despite the name of the property, the file can
-be in DER format or PEM format. The class looks for the file in the
+specify the password . It should be in PEM format. The class looks for the file in the
 jarfile under the /resources directory.
 
 You can also specify the PEM-encoded private key directly in the XML
@@ -289,8 +288,13 @@ configuration, using the private-key Property, like this:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
+```
+
+You can generate a suitable DES3-encrypted public/private key pair with the command-line openssl tool, like this:
+```
+ openssl genrsa -des3 -out private-encrypted.pem 2048
 ```
 
 If you specify both pemfile and private-key, the latter will be used.
@@ -315,7 +319,7 @@ To configure JWT parsing with HS256:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -366,7 +370,7 @@ the policy to get that behavior. Like so:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -396,7 +400,7 @@ To configure JWT parsing with RS256:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -447,7 +451,7 @@ public-key property, like so:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -495,7 +499,7 @@ certificate.
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -519,7 +523,7 @@ or, like so:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -546,7 +550,7 @@ those values:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 

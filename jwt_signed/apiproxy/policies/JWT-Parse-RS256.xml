@@ -13,5 +13,5 @@
   </Properties>
 
   <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.11.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>

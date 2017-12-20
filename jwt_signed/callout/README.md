@@ -63,7 +63,7 @@ To use it:
       <DisplayName>Java JWT Creator</DisplayName>
       <Properties>...</Properties>
       <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-      <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+      <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
     </JavaCallout>
    ```
 
@@ -136,7 +136,7 @@ form of properties on the policy.  Some examples follow.
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -162,7 +162,7 @@ There is no way to explicitly set the "issued at" (iat) time.  The iat
 time automatically gets the value accurately indicating when the JWT is
 generated.
 
-In v1.0.13 of the callout, you can set a not-before (nbf) time, to the same time the JWT was
+Starting in v1.0.13 of the callout, you can set a not-before (nbf) time, to the same time the JWT was
 issued, by including this property:
 
 ```
@@ -247,7 +247,7 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -288,15 +288,23 @@ You can also specify the PEM as a named file resource that is bundled in the jar
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
 The pemfile need not be encrypted. If it is, obviously you need to specify the
-password in the configuration of the policy. The PEM file(s) must be in PEM PKCS8
-format, not DER format. (You can convert keys between various formats using the
-openssl command line tool).  The class looks for the file in the jarfile under the
-/resources directory.
+password in the configuration of the policy. You can generate encrypted keypairs using the command-line openssl tool, like this:
+
+```
+openssl genrsa -des3 -out private-encrypted.pem 2048
+```
+
+This callout has been tested with Triple-DES (des3) and with AES256-CBC (-aes256) encrypted PEM files.
+
+The PEM file(s) must be in PEM PKCS8 format, not DER format. (You can
+convert keys between various formats using the openssl command line
+tool).  The class looks for the file in the jarfile under the /resources
+directory.
 
 
 **Generating a JWT with custom claims**
@@ -329,7 +337,7 @@ the Properties elements, like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -362,7 +370,7 @@ For parsing and verifying a JWT, you need to specify a different Java class. Con
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -435,7 +443,7 @@ For parsing without verifying a JWT, you can specify wantVerify = false.
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -476,7 +484,7 @@ To parse and verify a RS256 JWT, then you need to use a configuration like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -530,7 +538,7 @@ a configuration like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -574,7 +582,7 @@ Do this by specifying Property elements with name attributes that begin with cla
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -614,7 +622,7 @@ To do this, you need to recompile the jar with your desired pemfile contained wi
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -643,7 +651,7 @@ You can also specify a serialized X509 certificate which contains the public key
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -676,7 +684,7 @@ those values, using the modulus and exponent properties:
   </Properties>
 
   <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.13.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
 ```
 

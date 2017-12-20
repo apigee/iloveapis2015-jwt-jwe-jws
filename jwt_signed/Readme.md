@@ -1,7 +1,7 @@
 # JWT (signed)
 
-This directory contains Java source code for a callout which verifies signed JWT, 
-as well as an example API proxy, which shows how to use the callout. 
+This directory contains Java source code for a callout which verifies signed JWT,
+as well as an example API proxy, which shows how to use the callout.
 
 - [Java source](callout) - Java code, as well as instructions for how to build the Java code.
 - [apiproxy](apiproxy) - an example API Proxy for Apigee Edge that shows how to use the resulting Java callout

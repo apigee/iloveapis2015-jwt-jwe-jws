@@ -5,39 +5,39 @@
 
     <!-- private-key and private-key-password used only for algorithm = RS256 -->
     <Property name="private-key">
-    -----BEGIN RSA PRIVATE KEY-----
-    Proc-Type: 4,ENCRYPTED
-    DEK-Info: DES-EDE3-CBC,049E6103F40FBE84
+      -----BEGIN RSA PRIVATE KEY-----
+      Proc-Type: 4,ENCRYPTED
+      DEK-Info: DES-EDE3-CBC,171EA6A387A34BF7
 
-    EZVWs5v4FoRrFdK+YbpjCmW0KoHUmBAW7XLvS+vK3BdSM2Yx/hPhDO9URCVl9Oar
-    ApEZC1CxzsyRfvKDtiKWfQKdYKLccl8pA4Jj0sCxVgL4MBFDNDDEau4vRfXBv2EF
-    eGVZiG0/oaGbOUI9bgPKXmDsZQ3LHM9JONTOxaBapc06Gxcj0btkkzwB/dZQVRvb
-    XQFMzySgly1OOcnVkl8CDfKI4TwOERlhXjnnjN8vsDrpZXuSqniR9ARJEK41ZDAV
-    JpkvWnvEYl3oMozgF6NHCFXahefbP8lysMSknhtQwiJUaDZSkoBMMdMfQyfPpPME
-    tgJ4nkPBbSmwpWlTMPSgfth1kAkFvtmYCdV1UVglS+CE1/VDeuTeqkj5f7X/MvEx
-    FuWAkbZ3Gmqy04MvTOL8iy9A1wQo9E9U/6CgPqILcn49ZIOWilW6OzoGKK0F95KO
-    mx5r7MOkq21ltzCTmjt200YM/D5fq78ST7UzqetTFqNbgfraZxawcZf9L0xL2cwa
-    U9MJtPqCRLk4066+I2RkOZ8Zz1bro1nfCS99fayZ1AY/Ohw7+neviyuXIFSMTxsL
-    eiyPVBi6rrWjXIFITafK1oIoELimMbUHS9UOgJt7wkbKVYazcC9sQ4B1am1UQRe1
-    XQWtsYVySiId9iHA2UG+yc/l8GDmsKWAzlhFv5NyuCMAdfXbM1ERFaghPFx3RcZW
-    qtSkso/kFWrH6369ADN8fUAh6GOLrVAC06W6STzLEhoxNDyyS6RW9s/i9qhJWIX9
-    sMuDK2Zg+TRJ+nZbdljhglVLzMLPv3MCxhlji7H4y8YIVD738rpJLOY3LBqh9ilo
-    1HHGlMNkfBDkaSIwT2cBHdC38USyV2fgqlcukzj3a3NvUdmvARtnfEL6gLeSXmHJ
-    HNC6HqihWnBuizX9I9MwYaz9GQw7HN7oZJLBbBatsbxcP9ll/27VZY8BJwwLtuSy
-    /JJRB1ALjBFVKeBo5nHSc7cKld0glnWt+E5yfgQcI/2kpgfqJRb0yAPcMjOQyLJ9
-    xWKl7qDENSKSdy3VMKvj2xxqmkk7eTLbIFRfjioLLCnkfQsCPVdQMrG0Kt67W/F2
-    rZlGqeJtTDIefiQCwSR18t/8SUTqm4SRKDvBFRKhpn6JOl561vp5j3PoD52+ZFCX
-    160sbfqsKqJ/TqqP0BWdSOyYNSmlUQAn3JYZlj3dYM4dTQTADpCWo3ZmDAiFho/y
-    dCwtNpnjWoICcDfyr34G01xCVeyEjkozePLMZ7chOmX87KfVEujgul1qAHHgMAid
-    4l+btMOR8D0od2ZF+DdYllyDSU1fp1EQXXrbkYaFccgYVs8MtBQvCcJtSnayf3L+
-    jUxp3vjF9HE3wVDVTFeCUJGacGIMuoD0RlsT2VFMOjOf4p0F7adPse7aLBhyoLMI
-    N7GMYGDSG6jbWP18bNDWwFDrtPsvSXIZnirZeQNR7P8stVcxrWaphiPXivsHwJE2
-    z9SnpM5YjEoVI/1Cr8XY4QySFR1S72gkOO2WRi6m0kc98F/C3iwCMJ/RXvKfBVrj
-    7ZOF1UXVaoldDs+izZo5biVF/NNIBtg2FkZd4hh/cFlF1PV+M5+5mA==
-    -----END RSA PRIVATE KEY-----
+      eoZdqVDEdtqvtlWWCYYNy3gGnK3bs5/y7nqw97Jf1NF0E2m8UzpinkR0w0HL5c7p
+      NvzJzHGtlntD9qd7E6hIdUsy96884rLXHmdehGDnPfPl223ofo6qq36pcaVyw6Nu
+      ImhLij4DtVoUTtiRqnhSje1MbM9nBOOGdNbgzi1QF7xvwoVq18g4QjyHF7SxV0hr
+      VLRjnIDqVig+HJgvp27nRc6mV+W4gVLKnuJaeBJpAW9harMzDA/kk8F0rbhHyLhJ
+      qfV9qx2uacXly8LgkVI/3wNgohelJ+YxSw+z27NzovgjJnhEnwXG5ZTZ502Ow/F8
+      GKsSPVw8g3UixI2g8L69nt1jAaE5sFCpzJkL1RO5+tqZ598SKOjnZpRqbMm+iPjm
+      DLjeSU1PKKeDx9E8J8QD1YFFJDlLQP2Lbsq8tx8xNwPOAwEixZqumftwoSFe2R0z
+      PtvlMpPvX08SvXz/OaysA3a+/sq6IizSZoKgq6S6dTrLx3GEPI4f1tWvirVbD87B
+      ImWNynNP2k6uG+Y1rpcdirKItp4iwLckMACuOAF5efB4rxDtce/h5dlqWY+JQ/UQ
+      IPsCxJjP4SiK+u4YZENhS9wZUhA1GRTFP84Q36tuTIb3Bdv5u01P6HxycbFyF0NU
+      Fx40Y4zcMMjGav8TR9vPlqgLqTYIpjPeydPqYZob5llBRMdCKVRtZfWSVKgjtemj
+      UjudYfgMovyvpzLiNVwFTUtuHQyqeZ92lQ9k5uRSMWhGKJxrEcYMl/laGiXIguwy
+      u/FSmzUco0wTSOKjJTXVHPD0fZYctd7l114uqGH0zO6SZjIiBWiDOW/q7Onpn4A+
+      Elt1u/bVb8wZBr8chFGaMUfd6TW2LieOa23W2X1KxXZhynT2s7PZn3IIu2TJtM8r
+      3ylQvZaHZRoDjexCZY7Ry1/J60hxDkSP1KZLpEekYwYTfJPHh0OWaHtWTAkOqOT9
+      4WFAAnUqXpH+HOsiht7IFibepIghnMg6FOTZVgIgP5lAdHGDjbzCS7VuvGYQ/O6b
+      exVCmUB4MV6qcHtiwsDV6QWukBRfdY8OZniMaSVpV/X14QKj3PmXIpxyrGXKOK4m
+      OZedGRkLaTz9quF0+Vf1JSog6upw4qLpnge0HJz5x1XMcnpvlw0PjXnrNIo/Rj7O
+      WMsfFACnvaQyJXTk3Ul/MKUhuwRGtgD3htAIqpX91hMf+89JeE4ThaAcLfL2Mbit
+      sU3JLxEmNTIz6+GjQgeU/fZU2xg8gBnyCIh2CfpyhiyjfyWol+76TBqgFpz+QNGf
+      UYB9J4xbsVDc8XFhUBd0mY1pWASqREuU+qeDbx8DSqvun7YbP4Px5HzK+h+o1gV6
+      Ge4GFh3FIpwwKdZRxTpvKkE/0A3O1HOAUppvrERjWhdZcpDCRYP7R90k+B3FIVCT
+      ddUnryiJ/SmEEApn5swcJueLZgkBJluW1dg2RHYQcKu64wrKq66PmwaVOFo/T7bD
+      O8OPnhSgbxM+UdZPwmr7aKeoLPg9YvT2PJbKumQ68BDgrTWav/eUAElY3bNL+pf7
+      W6dD5I+Izacqn03jJgbDnIpdtFW3zsC1MYesfavVtRmdKlyV1fZBPDl5+F/kSCv1
+      -----END RSA PRIVATE KEY-----
     </Property>
-    <!-- should store this secret in vault -->
-    <Property name="private-key-password">deecee123</Property>
+
+    <Property name="private-key-password">Apigee-IloveAPIs</Property>
 
     <!-- standard claims -->
     <Property name="subject">{apiproxy.name}</Property>
@@ -53,5 +53,5 @@
   </Properties>
 
   <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.11.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>

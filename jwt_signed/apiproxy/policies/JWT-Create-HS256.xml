@@ -1,4 +1,3 @@
-
 <JavaCallout name='JWT-Create-HS256' >
   <DisplayName>JWT-Create-HS256</DisplayName>
   <Properties>
@@ -18,5 +17,5 @@
   </Properties>
 
   <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.11.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
 </JavaCallout>
