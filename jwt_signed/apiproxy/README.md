@@ -204,7 +204,7 @@ For example, this is how to configure the JWT creation with algorithm=HS256, whi
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -243,7 +243,7 @@ To configure JWT creation with private key signing using an RSA key:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -288,7 +288,7 @@ configuration, using the private-key Property, like this:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -319,7 +319,7 @@ To configure JWT parsing with HS256:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -370,7 +370,7 @@ the policy to get that behavior. Like so:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -400,7 +400,7 @@ To configure JWT parsing with RS256:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -451,7 +451,7 @@ public-key property, like so:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -499,7 +499,7 @@ certificate.
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -523,7 +523,7 @@ or, like so:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -550,7 +550,7 @@ those values:
   </Properties>
 
   <ClassName>com.apigee.callout.jwt.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -562,12 +562,12 @@ URL-safe base64 or non-URL-safe base64.
 
 The order of precedence the callout uses for determining the public key is this:
 
-|  X  | description   |
-| :-- | :------------ |
-|  A  | public-key    |
+|  X  | description          |
+| :-- | :------------------- |
+|  A  | public-key           |
 |  B  | modulus and exponent |
-|  C  | certificate   |
-|  D  | pemfile       |
+|  C  | certificate          |
+|  D  | pemfile              |
 
 If you specify more than one of {A,B,C,D} the callout will use the first
 one it finds.  It's not the order in which the properties appear in the

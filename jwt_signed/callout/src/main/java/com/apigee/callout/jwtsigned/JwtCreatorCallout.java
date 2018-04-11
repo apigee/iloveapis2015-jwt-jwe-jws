@@ -5,7 +5,6 @@ import com.apigee.flow.execution.ExecutionResult;
 import com.apigee.flow.execution.IOIntensive;
 import com.apigee.flow.execution.spi.Execution;
 import com.apigee.flow.message.MessageContext;
-import com.apigee.utils.TemplateString;
 import com.google.common.base.Predicate;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -34,6 +33,7 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -47,17 +47,16 @@ import java.util.regex.Pattern;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.commons.lang3.text.StrSubstitutor;
 import org.apache.commons.lang3.time.DateParser;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.commons.ssl.PKCS8Key;
 import org.bouncycastle.openssl.PEMDecryptorProvider;
 import org.bouncycastle.openssl.PEMEncryptedKeyPair;
+import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
-import org.bouncycastle.openssl.PEMException;
 
 @IOIntensive
 public class JwtCreatorCallout implements Execution {
@@ -69,7 +68,8 @@ public class JwtCreatorCallout implements Execution {
     private final static int DEFAULT_EXPIRY_IN_SECONDS = 60*60; // one hour
     private static final String dateStringPatternString = "[1-2][0-9]{9}";
     private final static Pattern secondsSinceEpochPattern = Pattern.compile(dateStringPatternString);
-
+    private static final String variableReferencePatternString = "(.*?)\\{([^\\{\\} ]+?)\\}(.*?)";
+    private static final Pattern variableReferencePattern = Pattern.compile(variableReferencePatternString);
 
     private static final FastDateFormat fdf = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZ", TimeZone.getTimeZone("UTC")); // 2017-08-14T11:00:21.269-0700
     private static final DateParser DATE_FORMAT_RFC_3339 = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ssXXX"); // 2017-08-14T11:00:21-07:00
@@ -443,31 +443,67 @@ public class JwtCreatorCallout implements Execution {
     //
     // This can return a String or an String[].
     //
+
+    // If the value of a property contains any pairs of curlies,
+    // eg, {apiproxy.name}, then "resolve" the value by de-referencing
+    // the context variables whose names appear between curlies.
     private Object resolvePropertyValue(String spec, MessageContext msgCtxt) {
         int open = spec.indexOf('{'), close = spec.indexOf('}'), L = spec.length();
         if (open == 0 && close == L-1) {
             // if there is a single set of braces around the entire property,
             // the value may resolve to a non-string, for example an array of strings.
-            if (spec.indexOf('{', 1) == -1) {
+            if ((spec.indexOf('{', 1) == -1) && spec.charAt(1)!=' ' && spec.charAt(1)!='"') {
                 String v = spec.substring(1,L-1);
                 return msgCtxt.getVariable(v);
             }
         }
 
-        if (open > -1 && close >-1) {
-            // Replace ALL curly-braced items in the spec string with
-            // the value of the corresponding context variable.
-            TemplateString ts = new TemplateString(spec);
-            Map<String,String> valuesMap = new HashMap<String,String>();
-            for (String s : ts.variableNames) {
-                valuesMap.put(s, msgCtxt.getVariable(s).toString());
+        Matcher matcher = variableReferencePattern.matcher(spec);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(sb, "");
+            sb.append(matcher.group(1));
+            Object v = msgCtxt.getVariable(matcher.group(2));
+            if (v != null){
+                Class clz = v.getClass();
+                if (clz.isArray()) {
+                    sb.append ( Arrays.stream((Object[])v).map(Object::toString).toArray(String[]::new) );
+                }
+                else {
+                    sb.append( v.toString() );
+                }
             }
-            StrSubstitutor sub = new StrSubstitutor(valuesMap);
-            String resolvedString = sub.replace(ts.template);
-            return resolvedString;
+            sb.append(matcher.group(3));
         }
-        return spec;
+        matcher.appendTail(sb);
+        return sb.toString();
     }
+
+    // private Object resolvePropertyValue(String spec, MessageContext msgCtxt) {
+    //     int open = spec.indexOf('{'), close = spec.indexOf('}'), L = spec.length();
+    //     if (open == 0 && close == L-1) {
+    //         // if there is a single set of braces around the entire property,
+    //         // the value may resolve to a non-string, for example an array of strings.
+    //         if (spec.indexOf('{', 1) == -1) {
+    //             String v = spec.substring(1,L-1);
+    //             return msgCtxt.getVariable(v);
+    //         }
+    //     }
+    //
+    //     if (open > -1 && close >-1) {
+    //         // Replace ALL curly-braced items in the spec string with
+    //         // the value of the corresponding context variable.
+    //         TemplateString ts = new TemplateString(spec);
+    //         Map<String,String> valuesMap = new HashMap<String,String>();
+    //         for (String s : ts.variableNames) {
+    //             valuesMap.put(s, msgCtxt.getVariable(s).toString());
+    //         }
+    //         StrSubstitutor sub = new StrSubstitutor(valuesMap);
+    //         String resolvedString = sub.replace(ts.template);
+    //         return resolvedString;
+    //     }
+    //     return spec;
+    // }
 
     private String[] nativeToJavaArray(org.mozilla.javascript.NativeArray a) {
         String [] result = new String[(int) a.getLength()];
@@ -519,12 +555,20 @@ public class JwtCreatorCallout implements Execution {
                     String providedValue = entry.getValue();
                     String[] parts = StringUtils.split(key,"_",2);
                     // sanity check - is this a valid claim?
-                    if (parts.length == 2 && parts[0].equals("claim") &&
-                        providedValue != null) {
+                    if (parts.length == 2 && parts[0].equals("claim") && providedValue != null) {
                         String claimName =  parts[1];
                         Object resolvedValue = resolvePropertyValue(providedValue, msgCtxt);
-                        // special case aud, which can be an array
-                        if (claimName.equals("aud") && resolvedValue instanceof String) {
+                        if (claimName.startsWith("json")) {
+                            String[] nameParts = StringUtils.split(claimName,"_",2);
+                            if (nameParts.length != 2 || StringUtils.isBlank(parts[1])) {
+                                throw new IllegalStateException("invalid json claim configuration: " + claimName);
+                            }
+                            net.minidev.json.parser.JSONParser parser = new net.minidev.json.parser.JSONParser();
+                            net.minidev.json.JSONObject thisClaim = (net.minidev.json.JSONObject) parser.parse(resolvedValue.toString());
+                            claims.setClaim(nameParts[1], thisClaim);
+                        }
+                        else if (claimName.equals("aud") && resolvedValue instanceof String) {
+                            // special case aud, which can be an array
                             audiences = StringUtils.split(providedValue,",");
                             claims.setAudience(java.util.Arrays.asList(audiences));
                         }

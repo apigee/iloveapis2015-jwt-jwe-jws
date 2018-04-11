@@ -346,9 +346,13 @@ public class TestJwtCreation {
         String issuer = "urn:78B13CD0-CEFD-4F6A-BB76-AF236D876239";
         String subject = "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F";
         msgCtxt.setVariable("audienceVar", new String[] {"everyone","anyone"});
-        Arrays.stream(new String[] { "audience","claim_aud"}).forEach(audienceProperty -> {
-            Arrays.stream(new String[]{"everyone,anyone", "{audienceVar}"}).forEach(audience -> {
-                Arrays.stream(new String[]{null, "true", "false"}).forEach((String continueOnErrorString) -> {
+        String[] audienceProperties = new String[] { "audience","claim_aud"};
+        String[] audiences = new String[]{"everyone,anyone", "{audienceVar}"};
+        String[] continueOnErrorStrings = new String[]{null, "true", "false"};
+        for (String audienceProperty : audienceProperties) {
+            for (String audience : audiences) {
+                for (String continueOnErrorString : continueOnErrorStrings) {
+                    String trialLabel = String.format("BasicCreateAndParseMultiAudience (%s,%s,%s)", audienceProperty, audience, continueOnErrorString);
                     ExecutionResult expectedResult = ("true".equals(continueOnErrorString)) ?
                             ExecutionResult.SUCCESS : ExecutionResult.ABORT;
 
@@ -390,10 +394,13 @@ public class TestJwtCreation {
                     String isValid = msgCtxt.getVariable("jwt_isValid");
                     String isExpired = msgCtxt.getVariable("jwt_isExpired");
 
-                    Assert.assertEquals(result, ExecutionResult.SUCCESS);
-                    Assert.assertEquals(jwt_issuer, issuer, "Issuer");
-                    Assert.assertEquals(isValid, "true", "isValid");
-                    Assert.assertEquals(isExpired, "false", "isExpired");
+                    //System.out.printf("**\nBasicCreateAndParseMultiAudience trial: %d\n", trialNumber);
+
+                    Assert.assertEquals(result, ExecutionResult.SUCCESS, trialLabel);
+
+                    Assert.assertEquals(jwt_issuer, issuer, trialLabel + " Issuer");
+                    Assert.assertEquals(isValid, "true", trialLabel + " isValid");
+                    Assert.assertEquals(isExpired, "false", trialLabel + " isExpired");
 
                     // now verify audience "everyone"
                     properties.put("claim_aud", "everyone");
@@ -420,9 +427,9 @@ public class TestJwtCreation {
                     Assert.assertEquals(isValid, "false", "isValid");
                     Assert.assertEquals(isExpired, "false", "isExpired");
                     Assert.assertEquals(reason, "audience violation", "audience");
-                });
-            });
-        });
+                }
+            }
+        }
     }
 
      private void tryDeserializeKey(String key, String password)
@@ -875,6 +882,39 @@ public class TestJwtCreation {
         String jwtClaims = msgCtxt.getVariable("jwt_claims");
         Assert.assertNotNull(jwtClaims, "jwt_claims");
         System.out.println("claims: " + jwtClaims);
+    }
+
+    @Test
+    public void CreateJwt_WithJsonClaim() throws Exception {
+        String jsonClaim = "{ \"id\": 1234, \"verified\": true, \"allocations\" : [4, \"seven\", false] }";
+        String jti = java.util.UUID.randomUUID().toString();
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("private-key", privateKeyMap.get("rsa-private-3"));
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_testname", "CreateJwt_WithJsonClaim");
+        properties.put("claim_jti", jti);
+        properties.put("claim_json_account", jsonClaim);
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+        String jwtClaims = msgCtxt.getVariable("jwt_claims");
+        Assert.assertNotNull(jwtClaims, "jwt_claims");
+        System.out.println("claims: " + jwtClaims);
+
+        JsonNode claimsNode = om.readTree(jwtClaims);
+        JsonNode accountNode = claimsNode.get("account");
+        JsonNode idNode = accountNode.get("id");
+        int idFromClaim = idNode.asInt();
+        Assert.assertEquals( idFromClaim, 1234, "account-id");
     }
 
 

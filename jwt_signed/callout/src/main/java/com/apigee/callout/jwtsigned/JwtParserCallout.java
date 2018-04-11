@@ -556,7 +556,7 @@ public class JwtParserCallout implements Execution {
                                         msgCtxt.setVariable(varName("reason"),
                                                             String.format("mismatch in claim %s, expected:%s provided:null",
                                                                           claimName, expectedValue));
-                                                valid = false;
+                                        valid = false;
                                     }
                                     else {
                                         String type = providedValue.getClass().getCanonicalName();
@@ -622,7 +622,7 @@ public class JwtParserCallout implements Execution {
         }
         catch (Exception e) {
             // unhandled exceptions
-            if (debug) { e.printStackTrace(); /* to MP system.log */ }
+            //if (debug) { e.printStackTrace(); /* to MP system.log */ }
             String error = e.toString();
             msgCtxt.setVariable(varName("error"), error);
             int ch = error.lastIndexOf(':');

@@ -32,13 +32,13 @@ It's three parts, each separated by a dot.  The indivdual parts are each base64-
 * the JWT body
 * the signature
 
-The JWT body, decoded, might look like this:
+The JWT body (payload), decoded, might look like this:
 
 ```json
 {
-  "sub": "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F",
-  "aud": "https://api.example.com/oauth2/token",
-  "iss": "api-key-goes-here-78B13CD0-CEFD-4F6A-BB76",
+  "sub": "api-key-might-go-here-78B13CD0-CEFD-4F6A-BB76",
+  "aud": "https://api.mycompany.com/oauth2/token",
+  "iss": "https://mycompany.net",
   "exp": 1471902991,
   "iat": 1471902961,
   "nbf": 1471902961,
@@ -63,7 +63,7 @@ To use it:
       <DisplayName>Java JWT Creator</DisplayName>
       <Properties>...</Properties>
       <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-      <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+      <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
     </JavaCallout>
    ```
 
@@ -136,7 +136,7 @@ form of properties on the policy.  Some examples follow.
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -234,8 +234,8 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
       <Property name="kid">{key_id}</Property>
 
       <!-- standard claims -->
-      <Property name="subject">{apiproxy.name}</Property>
-      <Property name="issuer">http://dinochiesa.net</Property>
+      <Property name="subject">{subject_uuid}</Property>
+      <Property name="issuer">https://mycompany.net</Property>
       <Property name="audience">Optional-String-or-URI</Property>
       <Property name="expiresIn">86400</Property> <!-- in seconds -->
       <Property name="id"/> <!-- an ID will be dynamically generated -->
@@ -247,8 +247,24 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
+```
+
+The resulting JWT is signed with RSA, using the designated private-key. The payload looks like this:
+
+```json
+{
+  "sub": "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F",
+  "aud": ["Optional-String-or-URI"],
+  "iss": "https://mycompany.net",
+  "exp": 1471902991,
+  "iat": 1471902961,
+  "nbf": 1471902961,
+  "jti": "2e8a36bc-5c14-4105-837f-3245abc03027",
+  "primarylanguage" : "English",
+  "shoesize" : 8.5
+}
 ```
 
 The private key should be in pkcs8 format.
@@ -262,7 +278,6 @@ openssl pkcs8 -topk8 -inform pem -in private.pem -outform pem -nocrypt -out priv
 The private key need not be encrypted. If it is, obviously you need to
 specify the private-key-password. That password can be (should be!) a variable - specify it in curly braces in that case. You should retrieve it from secure storage before invoking this policy.
 
-The resulting JWT is signed with RSA, using the designated private-key.
 
 
 **Generate a JWT using RS256 - specify PEM file as resource in JAR**
@@ -288,7 +303,7 @@ You can also specify the PEM as a named file resource that is bundled in the jar
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -337,7 +352,7 @@ the Properties elements, like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -350,6 +365,39 @@ If you would like to embed an array claim in the JWT, then you should use a vari
 ```
 
 And the context variable api_products_list should resolve to a String[].
+
+
+**Generate a JWT with custom clims, including a compound (JSON) claim**
+
+If you wish to embed claims that are themselves JSON hashes, you can do so by using a specially-named claim:
+
+```xml
+  <JavaCallout name='JavaCallout-JWT-Create'>
+    <DisplayName>JavaCallout-JWT-Create</DisplayName>
+    <Properties>
+      <Property name="algorithm">RS256</Property>
+
+      <!-- pemfile + private-key-password} used only for algorithm = RS256 -->
+      <Property name="pemfile">private.pem</Property>
+      <Property name="private-key-password">{private.pempassphrase}</Property>
+
+      <!-- standard claims to embed -->
+      <Property name="subject">{user_name}</Property>
+      <Property name="issuer">http://apigee.net/{apiproxy.name}</Property>
+      <Property name="audience">Optional-String-or-URI</Property>
+      <Property name="expiresIn">86400</Property> <!-- in seconds -->
+      <Property name="id"/>
+
+      <!-- Property names that begin with claim_json_ are parsed as json -->
+      <Property name="claim_json_account">{"allocations":[4,"seven",false],"verified":true,"id":1234}</Property>
+      <Property name="claim_json_attributes">{variable_name_here}</Property>
+
+    </Properties>
+
+    <ClassName>com.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
+  </JavaCallout>
+```
 
 
 **Parsing and Verifying a JWT - HS256**
@@ -370,7 +418,7 @@ For parsing and verifying a JWT, you need to specify a different Java class. Con
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -443,7 +491,7 @@ For parsing without verifying a JWT, you can specify wantVerify = false.
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -484,7 +532,7 @@ To parse and verify a RS256 JWT, then you need to use a configuration like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -538,7 +586,7 @@ a configuration like this:
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -582,7 +630,7 @@ Do this by specifying Property elements with name attributes that begin with cla
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -622,7 +670,7 @@ To do this, you need to recompile the jar with your desired pemfile contained wi
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -651,7 +699,7 @@ You can also specify a serialized X509 certificate which contains the public key
     </Properties>
 
     <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+    <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -684,7 +732,7 @@ those values, using the modulus and exponent properties:
   </Properties>
 
   <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.14.jar</ResourceURL>
+  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.15.jar</ResourceURL>
 </JavaCallout>
 ```
 
@@ -736,8 +784,7 @@ When verifying a JWT, you may see one of the following errors:
 
 ## Building the Jar
 
-To build the binary JAR yourself, follow
-these instructions.
+To build the binary JAR yourself, follow these instructions.
 
 1. unpack (if you can read this, you've already done that).
 
