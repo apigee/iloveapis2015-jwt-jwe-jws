@@ -860,6 +860,34 @@ public class TestJwtCreation {
     }
 
     @Test
+    public void CreateJwt_3DES_Encrypted_RSAKey_WithVar() throws Exception {
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("private-key", "{private.privateKey}");
+        properties.put("private-key-password", "{private.privateKey.passphrase}");
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_testname", "CreateJwt_3DES_Encrypted_RSAKey_WithVar");
+        properties.put("claim_jti", java.util.UUID.randomUUID().toString());
+
+        msgCtxt.setVariable("private.privateKey.passphrase", "Apigee-IloveAPIs");
+        msgCtxt.setVariable("private.privateKey", privateKeyMap.get("rsa-private-4"));
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+        String jwtClaims = msgCtxt.getVariable("jwt_claims");
+        Assert.assertNotNull(jwtClaims, "jwt_claims");
+        System.out.println("claims: " + jwtClaims);
+    }
+
+    @Test
     public void CreateJwt_AES_Encrypted_RSAKey() throws Exception {
         Map properties = new HashMap();
         properties.put("algorithm", "RS256");
@@ -886,7 +914,7 @@ public class TestJwtCreation {
 
     @Test
     public void CreateJwt_WithJsonClaim() throws Exception {
-        String jsonClaim = "{ \"id\": 1234, \"verified\": true, \"allocations\" : [4, \"seven\", false] }";
+        String jsonClaim = "{\"id\":1234,\"verified\":true,\"allocations\":[4,\"seven\",false]}";
         String jti = java.util.UUID.randomUUID().toString();
         Map properties = new HashMap();
         properties.put("algorithm", "RS256");
@@ -896,6 +924,41 @@ public class TestJwtCreation {
         properties.put("claim_testname", "CreateJwt_WithJsonClaim");
         properties.put("claim_jti", jti);
         properties.put("claim_json_account", jsonClaim);
+
+        JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+        ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+        // check result and output
+        Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+        // retrieve and check output
+        String jwt = msgCtxt.getVariable("jwt_jwt");
+        System.out.println("jwt: " + jwt);
+        String jwtClaims = msgCtxt.getVariable("jwt_claims");
+        Assert.assertNotNull(jwtClaims, "jwt_claims");
+        System.out.println("claims: " + jwtClaims);
+
+        JsonNode claimsNode = om.readTree(jwtClaims);
+        JsonNode accountNode = claimsNode.get("account");
+        JsonNode idNode = accountNode.get("id");
+        int idFromClaim = idNode.asInt();
+        Assert.assertEquals( idFromClaim, 1234, "account-id");
+    }
+
+    @Test
+    public void CreateJwt_WithJsonClaimFromVariable() throws Exception {
+        String jsonClaim = "{ \"id\": 1234, \"verified\": true, \"allocations\" : [4, \"seven\", false] }";
+        String jti = java.util.UUID.randomUUID().toString();
+        Map properties = new HashMap();
+        properties.put("algorithm", "RS256");
+        properties.put("debug", "true");
+        properties.put("private-key", privateKeyMap.get("rsa-private-3"));
+        properties.put("expiresIn", "300"); // seconds
+        properties.put("claim_testname", "CreateJwt_WithJsonClaimFromVariable");
+        properties.put("claim_jti", jti);
+        properties.put("claim_json_account", "{jsonClaimVariable}");
+
+        msgCtxt.setVariable("jsonClaimVariable", jsonClaim);
 
         JwtCreatorCallout callout = new JwtCreatorCallout(properties);
         ExecutionResult result = callout.execute(msgCtxt, exeCtxt);

@@ -44,6 +44,18 @@
       </Response>
     </Flow>
 
+    <Flow name="create jwt token RS256 with json claim">
+      <Condition>(proxy.pathsuffix ~~ "/create-(RS|rs)256-(J|j)son$") and (request.verb = "POST")</Condition>
+      <Description>Create a JWT with alg=RS256 and a json claim</Description>
+      <Request>
+        <Step><Name>JS-SetPrivateKeyVariables</Name></Step>
+        <Step><Name>JWT-Create-RS256-JsonClaim</Name></Step>
+      </Request>
+      <Response>
+        <Step><Name>AM-JWT-Create-Response</Name></Step>
+      </Response>
+    </Flow>
+
     <Flow name="create jwt token RS256-2">
       <Condition>(proxy.pathsuffix ~~ "/create-(RS|rs)256-2$") and (request.verb = "POST")</Condition>
       <Description>Create a JWT with alg=RS256</Description>

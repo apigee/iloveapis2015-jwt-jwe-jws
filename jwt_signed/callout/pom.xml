@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.apigee.callouts</groupId>
   <artifactId>apigee-edge-callout-jwt-signed</artifactId>
-  <version>1.0.15</version>
+  <version>1.0.16</version>
   <name>JwtSignedEdgeCallout</name>
   <url>http://maven.apache.org</url>
   <packaging>jar</packaging>
@@ -225,9 +225,11 @@ these commands:
                   <fileset dir="${project.build.directory}">
                     <include name="${project.artifactId}-${project.version}.jar"/>
                     <!-- the following are the required dependencies -->
+                    <!--
                     <include name="lib/guava-${guava.version}.jar"/>
                     <include name="lib/bcprov-jdk15on-${bcprov.version}.jar"/>
                     <include name="lib/bcpkix-jdk15on-${bcprov.version}.jar"/>
+                    -->
                     <include name="lib/commons-lang3-${commonslang3.version}.jar"/>
                     <include name="lib/json-smart-${jsonsmart.version}.jar"/>
                     <include name="lib/nimbus-jose-jwt-${nimbus.version}.jar"/>

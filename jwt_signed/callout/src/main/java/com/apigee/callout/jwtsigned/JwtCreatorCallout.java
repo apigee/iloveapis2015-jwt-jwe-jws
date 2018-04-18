@@ -68,7 +68,7 @@ public class JwtCreatorCallout implements Execution {
     private final static int DEFAULT_EXPIRY_IN_SECONDS = 60*60; // one hour
     private static final String dateStringPatternString = "[1-2][0-9]{9}";
     private final static Pattern secondsSinceEpochPattern = Pattern.compile(dateStringPatternString);
-    private static final String variableReferencePatternString = "(.*?)\\{([^\\{\\} ]+?)\\}(.*?)";
+    private static final String variableReferencePatternString = "(.*?)\\{([^\\{\\}\\[\\]\" ]+?)\\}(.*?)";
     private static final Pattern variableReferencePattern = Pattern.compile(variableReferencePatternString);
 
     private static final FastDateFormat fdf = FastDateFormat.getInstance("yyyy-MM-dd'T'HH:mm:ss.SSSZ", TimeZone.getTimeZone("UTC")); // 2017-08-14T11:00:21.269-0700
@@ -121,8 +121,14 @@ public class JwtCreatorCallout implements Execution {
             .expireAfterAccess(10, TimeUnit.MINUTES)
             .build(new CacheLoader<PrivateKeyInfo, JWSSigner>() {
                     public JWSSigner load(PrivateKeyInfo info) throws InvalidKeySpecException, GeneralSecurityException, IOException {
-                        RSAPrivateKey privateKey = (RSAPrivateKey) generatePrivateKey(info);
-                        return new RSASSASigner(privateKey);
+                        try {
+                            RSAPrivateKey privateKey = (RSAPrivateKey) generatePrivateKey(info);
+                            return new RSASSASigner(privateKey);
+                        }
+                        catch (java.lang.Exception exc1) {
+                            info.msgCtxt.setVariable(varName("getRsaKey_stacktrace"), ExceptionUtils.getStackTrace(exc1));
+                            throw exc1;
+                        }
                     }
                 }
                 );
@@ -136,12 +142,18 @@ public class JwtCreatorCallout implements Execution {
 
     private JWSSigner getRsaSigner(MessageContext msgCtxt)
         throws IOException, ExecutionException {
-        PrivateKeyInfo info = new PrivateKeyInfo(getPrivateKeyBytes(msgCtxt), getPrivateKeyPassword(msgCtxt));
+        PrivateKeyInfo info = new PrivateKeyInfo(msgCtxt, getPrivateKeyBytes(msgCtxt), getPrivateKeyPassword(msgCtxt));
         return rsaKeyCache.get(info);
     }
 
     class PrivateKeyInfo {
-        public PrivateKeyInfo(byte[] bytes, String p) { keyBytes = bytes; password = p;}
+        public PrivateKeyInfo(MessageContext msgCtxt, byte[] keyBytes, String password) {
+            this.msgCtxt = msgCtxt;
+            this.keyBytes = keyBytes;
+            this.password = password;
+        }
+        //public PrivateKeyInfo(byte[] bytes, String p) { keyBytes = bytes; password = p;}
+        public MessageContext msgCtxt;
         public byte[] keyBytes;
         public String password;
     }
@@ -386,7 +398,7 @@ public class JwtCreatorCallout implements Execution {
     private static PrivateKey generatePrivateKey(PrivateKeyInfo info)
         throws InvalidKeySpecException, GeneralSecurityException, NoSuchAlgorithmException, IOException, PEMException
     {
-        JcaPEMKeyConverter   converter = new JcaPEMKeyConverter().setProvider("BC");
+        JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
         PEMParser pr = new PEMParser(new StringReader(new String(info.keyBytes, StandardCharsets.UTF_8)));
         Object o = pr.readObject();
 
@@ -395,8 +407,9 @@ public class JwtCreatorCallout implements Execution {
         }
         KeyPair kp;
         if (o instanceof PEMEncryptedKeyPair) {
-            PEMDecryptorProvider decProv = new JcePEMDecryptorProviderBuilder().setProvider("BC")
-                .build(info.password.toCharArray());
+            JcePEMDecryptorProviderBuilder bcDecProvider = new JcePEMDecryptorProviderBuilder().setProvider("BC");
+            char[] charArray = info.password.toCharArray();
+            PEMDecryptorProvider decProv = bcDecProvider.build(charArray);
             kp = converter.getKeyPair(((PEMEncryptedKeyPair)o).decryptKeyPair(decProv));
         }
         else {
@@ -450,10 +463,11 @@ public class JwtCreatorCallout implements Execution {
     private Object resolvePropertyValue(String spec, MessageContext msgCtxt) {
         int open = spec.indexOf('{'), close = spec.indexOf('}'), L = spec.length();
         if (open == 0 && close == L-1) {
-            // if there is a single set of braces around the entire property,
+            // if there is a single set of braces around the entire property, and there are no
+            // intervening spaces or double-quotes,
             // the value may resolve to a non-string, for example an array of strings.
-            if ((spec.indexOf('{', 1) == -1) && spec.charAt(1)!=' ' && spec.charAt(1)!='"') {
-                String v = spec.substring(1,L-1);
+            String v = spec.substring(1,L-1);
+            if ((v.indexOf('{') == -1) && (v.indexOf('[') == -1) && (v.indexOf(' ')==-1) && (v.indexOf('"')==-1)) {
                 return msgCtxt.getVariable(v);
             }
         }
@@ -557,15 +571,23 @@ public class JwtCreatorCallout implements Execution {
                     // sanity check - is this a valid claim?
                     if (parts.length == 2 && parts[0].equals("claim") && providedValue != null) {
                         String claimName =  parts[1];
+                        //msgCtxt.setVariable(varName("resolving_")+claimName, providedValue);
                         Object resolvedValue = resolvePropertyValue(providedValue, msgCtxt);
+                        //msgCtxt.setVariable(varName("resolved_")+claimName, resolvedValue.toString());
                         if (claimName.startsWith("json")) {
                             String[] nameParts = StringUtils.split(claimName,"_",2);
                             if (nameParts.length != 2 || StringUtils.isBlank(parts[1])) {
                                 throw new IllegalStateException("invalid json claim configuration: " + claimName);
                             }
-                            net.minidev.json.parser.JSONParser parser = new net.minidev.json.parser.JSONParser();
-                            net.minidev.json.JSONObject thisClaim = (net.minidev.json.JSONObject) parser.parse(resolvedValue.toString());
-                            claims.setClaim(nameParts[1], thisClaim);
+                            try {
+                                net.minidev.json.parser.JSONParser parser = new net.minidev.json.parser.JSONParser();
+                                net.minidev.json.JSONObject thisClaim = (net.minidev.json.JSONObject) parser.parse(resolvedValue.toString());
+                                claims.setClaim(nameParts[1], thisClaim);
+                            }
+                            catch (java.lang.Exception exc1) {
+                                throw new IllegalStateException("cannot parse claim as json: " + claimName);
+                            }
+
                         }
                         else if (claimName.equals("aud") && resolvedValue instanceof String) {
                             // special case aud, which can be an array
@@ -588,7 +610,9 @@ public class JwtCreatorCallout implements Execution {
                                 claims.setClaim(claimName, null);
                             }
                         }
-                        msgCtxt.setVariable(varName("provided_")+claimName, providedValue);
+                        if (debug) {
+                            msgCtxt.setVariable(varName("provided_")+claimName, resolvedValue.toString());
+                        }
                     }
                 }
             }
@@ -626,7 +650,6 @@ public class JwtCreatorCallout implements Execution {
             msgCtxt.setVariable(varName("jwt"), jwt);
         }
         catch (Exception e) {
-            // unhandled exceptions
             //if (debug) { e.printStackTrace(); /* to MP system.log */ }
             String error = e.toString();
             msgCtxt.setVariable(varName("error"), error);

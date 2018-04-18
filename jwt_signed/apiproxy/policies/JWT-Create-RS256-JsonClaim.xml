@@ -1,22 +1,21 @@
-<JavaCallout name='JWT-Create-RS256' >
+<JavaCallout name='JWT-Create-RS256-JsonClaim' >
   <DisplayName>JWT-Create-RS256</DisplayName>
   <Properties>
     <Property name="algorithm">RS256</Property>
 
     <!-- pemfile and private-key-password used only for algorithm = RS256 -->
-    <Property name="pemfile">public-private-keypair1.pem</Property>
-    <Property name="private-key-password">deecee123</Property>
+    <Property name="private-key">{should_be_private.privateKeyPem}</Property>
+    <Property name="private-key-password">{should_be_private.privateKeyPem_passphrase}</Property>
 
     <!-- standard claims -->
     <Property name="subject">{apiproxy.name}</Property>
-    <Property name="issuer">http://dinochiesa.net</Property>
+    <Property name="issuer">https://dinochiesa.net</Property>
     <Property name="audience">Optional-String-or-URI</Property>
     <Property name="expiresIn">3600</Property> <!-- in seconds -->
 
     <!-- custom claims -->
-    <Property name="claim_primarylanguage">English</Property>
-    <Property name="claim_shoesize">8.5</Property>
-    <Property name="claim_motto">Iloveapis</Property>
+    <Property name="claim_json_account">{"allocations":[4,"seven",false],"verified":true,"id":1234}</Property>
+    <Property name="claim_json_attributes">{user_attrs}</Property>
 
   </Properties>
 
