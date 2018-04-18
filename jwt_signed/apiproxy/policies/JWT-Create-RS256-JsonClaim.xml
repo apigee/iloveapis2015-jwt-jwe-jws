@@ -13,7 +13,8 @@
     <Property name="audience">Optional-String-or-URI</Property>
     <Property name="expiresIn">3600</Property> <!-- in seconds -->
 
-    <!-- custom claims -->
+    <!-- custom claims derived from JSON strings -->
+    <!-- the property name must begin with claim_json_ -->
     <Property name="claim_json_account">{"allocations":[4,"seven",false],"verified":true,"id":1234}</Property>
     <Property name="claim_json_attributes">{user_attrs}</Property>
 
