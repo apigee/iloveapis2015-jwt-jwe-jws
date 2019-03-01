@@ -5,23 +5,23 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.apigee.callouts</groupId>
   <artifactId>apigee-edge-callout-jwt-signed</artifactId>
-  <version>1.0.16</version>
+  <version>1.0.17</version>
   <name>JwtSignedEdgeCallout</name>
   <url>http://maven.apache.org</url>
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>1.8</java.version>
+    <jdk.target.version>1.8</jdk.target.version>
     <apiproxy.java.rsrc.dir>../apiproxy/resources/java</apiproxy.java.rsrc.dir>
     <testng.version>6.8.7</testng.version> <!-- current: 6.9.4 -->
     <jmockit.version>1.7</jmockit.version>
-    <jackson.version>2.5.4</jackson.version>
-    <guava.version>18.0</guava.version>
-    <bcprov.version>1.58</bcprov.version>
+    <jackson.version>2.9.8</jackson.version>
+    <guava.version>26.0-jre</guava.version>
+    <bcprov.version>1.60</bcprov.version>
     <nimbus.version>3.10</nimbus.version>
     <jsonsmart.version>1.3</jsonsmart.version>
-    <commonslang3.version>3.4</commonslang3.version>
+    <commons.lang3.version>3.7</commons.lang3.version>
   </properties>
 
   <dependencies>
@@ -40,6 +40,7 @@
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/rhino/js -->
+
     <dependency>
       <groupId>rhino</groupId>
       <artifactId>js</artifactId>
@@ -119,7 +120,7 @@ these commands:
     <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-lang3</artifactId>
-        <version>${commonslang3.version}</version>
+        <version>${commons.lang3.version}</version>
     </dependency>
 
     <dependency>
@@ -184,6 +185,7 @@ these commands:
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <includeScope>runtime</includeScope>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -194,17 +196,18 @@ these commands:
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.6</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.0</version>
+        <configuration>
+          <source>${jdk.target.version}</source>
+          <target>${jdk.target.version}</target>
+        </configuration>
+      </plugin>
 
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.1.1</version>
         <configuration>
           <archive>
             <!-- do not include the pom.xml file in the generated jar -->
@@ -223,17 +226,12 @@ these commands:
               <tasks>
                 <copy todir="${apiproxy.java.rsrc.dir}">
                   <fileset dir="${project.build.directory}">
-                    <include name="${project.artifactId}-${project.version}.jar"/>
-                    <!-- the following are the required dependencies -->
-                    <!--
-                    <include name="lib/guava-${guava.version}.jar"/>
-                    <include name="lib/bcprov-jdk15on-${bcprov.version}.jar"/>
-                    <include name="lib/bcpkix-jdk15on-${bcprov.version}.jar"/>
-                    -->
-                    <include name="lib/commons-lang3-${commonslang3.version}.jar"/>
-                    <include name="lib/json-smart-${jsonsmart.version}.jar"/>
-                    <include name="lib/nimbus-jose-jwt-${nimbus.version}.jar"/>
-                    <include name="lib/not-yet-commons-ssl-0.3.11.jar"/>
+                    <include name="${project.build.finalName}.jar"/>
+                    <!-- copy any required dependencies tht are not
+                         already included in the Edge runtime: -->
+                    <include name="lib/*.jar"/>
+                    <exclude name="lib/message-flow-1.0.0.jar"/>
+                    <exclude name="lib/expressions-1.0.0.jar"/>
                   </fileset>
                   <mapper type="flatten"/>
                 </copy>
@@ -252,13 +250,40 @@ these commands:
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-        </configuration>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0-M2</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.0.5</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.7</version>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>display-dependency-updates</goal>
+              <goal>display-plugin-updates</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 </project>
