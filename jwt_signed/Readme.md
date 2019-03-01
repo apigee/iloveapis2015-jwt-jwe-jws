@@ -2,7 +2,7 @@
 
 # NOTE
 
-Don't use this. As of 2018, there is a JWT policy built-in to Apigee Edge for this purpose now.
+You probably don't want to use this. As of 2018, there are JWT policies built-in to Apigee Edge for this purpose now.
 
 
 This directory contains Java source code for a callout which verifies signed JWT,
