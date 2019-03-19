@@ -7,19 +7,8 @@ parsing / validation of encrypted (JWE) JWT. It uses the Jose4J library.
 Building:
 --------
 
-
-# JWT Encrypted callout
-
-This directory contains the Java source code and pom.xml file required
-to compile a Java callout for Apigee Edge that creates and validates an Encrypted JWT.
-. It uses the Jose4J library for JOSE (JSON Object Signing and
-Encryption) support.
-
-Building:
---------
-
-You can use the Java callout binary, or you can build the binary yourself.
-These instructions describe how to do either.
+You can use the Java callout binary as is.
+Or, if you prefer, you can build the binary yourself.
 
 1. unpack (if you can read this, you've already done that).
 
@@ -28,26 +17,34 @@ These instructions describe how to do either.
    mvn clean package
    ```
 
-3. maven will copy all the required jar files to your apiproxy/resources/java directory.
+
+Using:
+------------
+
+1. maven will copy all the required jar files to your apiproxy/resources/java directory.
    If for some reason your project directory is not set up properly, you can do this manually.
    copy target/jwt-encrypted-callout.jar to your apiproxy/resources/java directory.
    Also copy from the target/lib directory, these jars:
      jose4j-0.4.4.jar
 
-4. be sure to include a Java callout policy in your
+
+2. be sure to include a Java callout policy in your
    apiproxy/resources/policies directory. It should look like
    this:
     ```xml
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<JavaCallout async="false" continueOnError="false" enabled="true" name="JWT_Encrypted_Creator_Callout">
-    <DisplayName>JWT_Encrypted_Creator_Callout</DisplayName>
-    <Properties>
-  <Property name="stepname">JavaCallout-JWE-Create</Property>
-  <Property name="expirationInMinutes">60</Property>
-  <Property name="issuer">{client_id}</Property>
+    <JavaCallout name="JWT_Encrypted_Creator_Callout">
+      <Properties>
+        <Property name="stepname">JavaCallout-JWE-Create</Property>
+        <Property name="expirationInMinutes">60</Property>
+        <Property name="issuer">{client_id}</Property>
+        <Property name="public-key">{verifyapikey.Verify-API-Key-1.public_key}</Property>
+      </Properties>
+      <ClassName>com.apigee.callout.jwt_encrypted.JWT_Encrypted_Creator_Callout</ClassName>
+      <ResourceURL>java://jwt-encrypted-edge-callout-1.0.2.jar</ResourceURL>
+   </JavaCallout>
    ```
 
-5. Deploy your API Proxy, using
+3. Deploy your API Proxy, using
    Maven (explained in the readme for API proxy)
 
 
@@ -80,49 +77,40 @@ depends on configuration information you specify for the callout, in the
 form of properties on the policy.  Some examples follow.
 
 
+## Creating an encrypted JWT
 
-**Creating an encrypted JWT**
+Specify the public key to encrypt a JWT:
 
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<JavaCallout async="false" continueOnError="false" enabled="true" name="JWT_Encrypted_Creator_Callout">
+```
+<JavaCallout name="JWT_Encrypted_Creator_Callout">
     <DisplayName>JWT_Encrypted_Creator_Callout</DisplayName>
     <Properties>
-  <Property name="stepname">JavaCallout-JWE-Create</Property>
-  <Property name="expirationInMinutes">60</Property>
-  <Property name="issuer">{client_id}</Property>
+      <Property name="stepname">JavaCallout-JWE-Create</Property>
+      <Property name="expirationInMinutes">60</Property>
+      <Property name="issuer">{client_id}</Property>
+      <Property name="public-key">{verifyapikey.Verify-API-Key-1.public_key}</Property>
+    </Properties>
+    <ClassName>com.apigee.callout.jwt_encrypted.JWT_Encrypted_Creator_Callout</ClassName>
+    <ResourceURL>java://jwt-encrypted-edge-callout-1.0.2.jar</ResourceURL>
+</JavaCallout>
 ```
-
 
 
 For information on the meaning of these algorithms, see section 5 of the JWS spec:
 https://tools.ietf.org/html/rfc7518.
 
-
-**Validating an encrypted JWT**
+## Validating an encrypted JWT
 
 ```xml
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<JavaCallout async="false" continueOnError="false" enabled="true" name="JWT_Encrypted_Validator_Callout">
-    <DisplayName>JWT_Encrypted_Validator_Callout</DisplayName>
-    <Properties>
-        <Property name="stepname">JavaCallout-JWE-Validate</Property>
-        <Property name="jwt">{request.formparam.jwt}</Property>
-        <!-- private-key and private-key-password used only for algorithm = RS256 -->
-        <Property name="private-key-password">*****</Property>
-    </Properties>
-    <ClassName>com.apigee.callout.jwt_encrypted.JWT_Encrypted_Validator_Callout</ClassName>
-    <ResourceURL>java://jwt-encrypted-edge-callout.jar</ResourceURL>
+<JavaCallout name="JWT_Encrypted_Validator_Callout">
+  <Properties>
+    <Property name="stepname">JavaCallout-JWE-Validate</Property>
+    <Property name="jwt">{request.formparam.jwt}</Property>
+    <!-- private-key and private-key-password used only for algorithm = RS256 -->
+    <Property name="private-key">{verifyapikey.Verify-API-Key-1.private_key}</Property>
+    <Property name="private-key-password">*****</Property>
+  </Properties>
+  <ClassName>com.apigee.callout.jwt_encrypted.JWT_Encrypted_Validator_Callout</ClassName>
+  <ResourceURL>java://jwt-encrypted-edge-callout-1.0.2.jar</ResourceURL>
 </JavaCallout>
 ```
-
-
-More Notes:
---------
-
-
-
-
-
-
-
-....

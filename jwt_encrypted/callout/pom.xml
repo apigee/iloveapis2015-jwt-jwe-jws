@@ -5,14 +5,14 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.apigee</groupId>
   <artifactId>jwt-encrypted-edge-callout</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0.2</version>
   <name>JwtSignedEdgeCallout</name>
   <url>http://maven.apache.org</url>
   <packaging>jar</packaging>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>1.7</java.version>
+    <java.version>1.8</java.version>
     <apiproxy.java.rsrc.dir>../apiproxy/resources/java</apiproxy.java.rsrc.dir>
   </properties>
 
@@ -84,12 +84,12 @@ these commands:
   <dependency>
     <groupId>org.bitbucket.b_c</groupId>
     <artifactId>jose4j</artifactId>
-    <version>0.4.4</version>
+    <version>0.6.5</version>
   </dependency>
 
   </dependencies>
   <build>
-    <finalName>${project.artifactId}</finalName>
+    <finalName>${project.artifactId}-${version}</finalName>
 
     <resources>
       <resource>
@@ -114,6 +114,7 @@ these commands:
             </goals>
             <configuration>
               <outputDirectory>${project.build.directory}/lib</outputDirectory>
+              <includeScope>runtime</includeScope>
               <overWriteReleases>false</overWriteReleases>
               <overWriteSnapshots>false</overWriteSnapshots>
               <overWriteIfNewer>true</overWriteIfNewer>
@@ -121,19 +122,27 @@ these commands:
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.0</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+        </configuration>
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.6</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration />
+        <version>3.1.1</version>
+        <configuration>
+          <archive>
+            <!-- do not include the pom.xml file in the generated jar -->
+            <addMavenDescriptor>false</addMavenDescriptor>
+          </archive>
+        </configuration>
       </plugin>
 
       <plugin>
@@ -145,20 +154,14 @@ these commands:
               <tasks>
                 <copy todir="${apiproxy.java.rsrc.dir}">
                   <fileset dir="${project.build.directory}">
-                    <include name="${project.artifactId}.jar"/>
+                    <include name="${project.build.finalName}.jar"/>
                     <!-- the following are the required dependencies -->
-                    <include name="lib/jose4j-0.4.4.jar"/>
-                    <!--
-                    <include name="lib/json-smart-1.3.jar"/>
-                    <include name="lib/nimbus-jose-jwt-3.1.2.jar"/>
-                    -->
+                    <include name="lib/*.jar"/>
+                    <exclude name="lib/message-flow-1.0.0.jar"/>
+                    <exclude name="lib/expressions-1.0.0.jar"/>
                   </fileset>
                   <mapper type="flatten"/>
                 </copy>
-                <!--
-                <copy file="${project.build.directory}/lib/nimbus-jose-jwt-3.1.2.jar"
-                      todir="${apiproxy.java.rsrc.dir}" />
-                -->
               </tasks>
             </configuration>
             <goals>
@@ -168,15 +171,42 @@ these commands:
         </executions>
       </plugin>
 
-      <plugin>
+     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-        </configuration>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>3.0.0-M2</version>
+        <executions>
+          <execution>
+            <id>enforce-maven</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <requireMavenVersion>
+                  <version>3.0.5</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
+
+       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>versions-maven-plugin</artifactId>
+        <version>2.7</version>
+        <executions>
+          <execution>
+            <phase>compile</phase>
+            <goals>
+              <goal>display-dependency-updates</goal>
+              <goal>display-plugin-updates</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 </project>
