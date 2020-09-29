@@ -35,6 +35,6 @@ H3/bKkLSuDaKLWSqMhozdhXsIIKvJQ==
 
   </Properties>
 
-  <ClassName>com.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
-  <ResourceURL>java://apigee-edge-callout-jwt-signed-1.0.17.jar</ResourceURL>
+  <ClassName>com.google.apigee.callout.jwtsigned.JwtParserCallout</ClassName>
+  <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
 </JavaCallout>

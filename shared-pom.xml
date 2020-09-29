@@ -17,11 +17,11 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>apigee</groupId>
-	<artifactId>parent-pom</artifactId>
-	<packaging>pom</packaging>
-	<version>1.0</version>
+        <modelVersion>4.0.0</modelVersion>
+        <groupId>apigee</groupId>
+        <artifactId>parent-pom</artifactId>
+        <packaging>pom</packaging>
+        <version>1.0</version>
     <pluginRepositories>
         <pluginRepository>
             <id>central</id>
@@ -36,11 +36,11 @@
             </releases>
         </pluginRepository>
     </pluginRepositories>
-	<properties>
+        <properties>
             <main.basedir>${project.basedir}</main.basedir>
     </properties>
 
-	<build>
+        <build>
         <plugins>
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -73,7 +73,7 @@
             <plugin>
                 <groupId>io.apigee.build-tools.enterprise4g</groupId>
                 <artifactId>apigee-edge-maven-plugin</artifactId>
-                <version>1.0.1</version>
+                <version>1.1.7</version>
                 <executions>
                     <execution>
                         <id>configure-bundle</id>
@@ -91,8 +91,8 @@
                     </execution>
                 </executions>
             </plugin>
-		</plugins>
-	</build>
+                </plugins>
+        </build>
 <!-- This is where you add the environment specific properties under various profile names -->
  <profiles>
         <profile>

@@ -1,4 +1,4 @@
-package com.apigee.callout.jwtsigned;
+package com.google.apigee.callout.jwtsigned;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
