@@ -2,7 +2,7 @@
 
 This directory contains the Java source code and Java jars required to compile a
 Java callout for Apigee Edge that does generation and parsing / validation of
-signed JWT. It also can generate and verify signed JWS. This callout uses [the Nimbus
+signed JWT. It also can generate and verify signed JWS. It has support for limited algorithms: HS256, RS256, PS256. This callout uses [the Nimbus
 library for JOSE](https://connect2id.com/products/nimbus-jose-jwt).
 
 You do not need to build this Java code in order to use the JWT Generator or Verifier
@@ -104,10 +104,10 @@ There are four callout classes, all in the com.google.apigee.callout.jwtsigned p
 
 | class name         | description  |
 | ------------------ | ------------ |
-| JwtCreatorCallout  | create a signed JWT, using one of the HS* or RS* algorithms |
-| JwtVerifierCallout | parse and verify a signed JWT that uses an HS* or an RS* algorithm |
-| JwsCreatorCallout  | create a signed JWS with any string as the payload, using one of the HS* or RS* algorithms |
-| JwsVerifierCallout | parse and verify a signed JWS that uses an HS* or an RS* algorithm |
+| JwtCreatorCallout  | create a signed JWT, using HS256, RS256, or PS256 for the algorithm |
+| JwtVerifierCallout | parse and verify a signed JWT that uses HS256, RS256, or PS256 |
+| JwsCreatorCallout  | create a signed JWS with any string as the payload, using HS256, RS256, or PS256 |
+| JwsVerifierCallout | parse and verify a signed JWS that uses HS256, RS256, or PS256 for the algorithm |
 
 How the JWT (or JWS) is generated or validated, respectively,
 depends on configuration information you specify for the callout, in the
@@ -278,6 +278,12 @@ openssl pkcs8 -topk8 -inform pem -in private.pem -outform pem -nocrypt -out priv
 The private key need not be encrypted. If it is, obviously you need to
 specify the private-key-password. That password can be (should be!) a variable - specify it in curly braces in that case. You should retrieve it from secure storage before invoking this policy.
 
+To use `PS256`, just set the algorithm appropriately: 
+```
+    <Properties>
+      <Property name="algorithm">PS256</Property>
+
+```
 
 **Generate a JWS using RS256**
 

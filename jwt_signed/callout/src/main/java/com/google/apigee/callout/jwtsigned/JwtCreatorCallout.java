@@ -20,60 +20,32 @@ import com.apigee.flow.execution.ExecutionResult;
 import com.apigee.flow.execution.IOIntensive;
 import com.apigee.flow.execution.spi.Execution;
 import com.apigee.flow.message.MessageContext;
+import com.google.apigee.util.TimeResolver;
 import com.google.common.base.Predicate;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Maps;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSSigner;
-import com.nimbusds.jose.crypto.MACSigner;
-import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.text.ParseException;
-import java.util.Calendar;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.time.DateParser;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.apache.commons.ssl.PKCS8Key;
-import org.bouncycastle.openssl.PEMDecryptorProvider;
-import org.bouncycastle.openssl.PEMEncryptedKeyPair;
-import org.bouncycastle.openssl.PEMException;
-import org.bouncycastle.openssl.PEMKeyPair;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.bouncycastle.openssl.jcajce.JcePEMDecryptorProviderBuilder;
 
 @IOIntensive
 public class JwtCreatorCallout extends SignerCallout implements Execution {
   private static final JOSEObjectType TYP_JWT = new JOSEObjectType("JWT");
   private static final int DEFAULT_EXPIRY_IN_SECONDS = 60 * 60; // one hour
-  private static final String dateStringPatternString = "[1-2][0-9]{9}";
-  private static final Pattern secondsSinceEpochPattern = Pattern.compile(dateStringPatternString);
+  private static final Pattern secondsSinceEpochPattern = Pattern.compile("[1-2][0-9]{9}");
 
   private static final FastDateFormat fdf =
       FastDateFormat.getInstance(
@@ -177,38 +149,23 @@ public class JwtCreatorCallout extends SignerCallout implements Execution {
     if (StringUtils.isBlank(expiry)) {
       throw new IllegalStateException("variable " + expiry + " resolves to nothing.");
     }
-    int expiresIn = Integer.parseInt(expiry);
-    return expiresIn;
+    Long durationInMilliseconds = TimeResolver.resolveExpression(expiry);
+    return ((Long) (durationInMilliseconds / 1000L)).intValue();
   }
 
-  private Date getExpiryDate(Date current, MessageContext msgCtxt) throws Exception {
-    Calendar cal = Calendar.getInstance();
-    cal.setTime(current);
-    int secondsToAdd = getExpiresIn(msgCtxt);
-    if (secondsToAdd == 0) {
-      return null; /* no expiry */
-    }
-    cal.add(Calendar.SECOND, secondsToAdd);
-    Date then = cal.getTime();
-    return then;
-  }
-
-  private Date getNotBefore(MessageContext msgCtxt, Date now) throws Exception {
-    String key = "not-before";
-    if (!this.properties.containsKey(key)) return null;
-    String value = (String) this.properties.get(key);
-    if (StringUtils.isBlank(value)) return now;
-    value = (String) resolvePropertyValue(value, msgCtxt);
-    if (StringUtils.isBlank(value)) return now;
-    return parseDate(value.trim()); // unparsed date string
-  }
-
-  private static Date parseDate(String dateString) {
+  private static Date parseDateOrTimespan(String dateString, Instant now) {
     if (dateString == null) return null;
+
     Matcher m = secondsSinceEpochPattern.matcher(dateString);
     if (m.matches()) {
       return new Date(Long.parseLong(dateString) * 1000);
     }
+
+    Long durationInMilliseconds = TimeResolver.resolveExpression(dateString);
+    if (durationInMilliseconds >= 0) {
+      return Date.from(now.plus(durationInMilliseconds, ChronoUnit.MILLIS));
+    }
+
     for (DateParser format : allowableInputFormats) {
       try {
         return format.parse(dateString);
@@ -216,6 +173,16 @@ public class JwtCreatorCallout extends SignerCallout implements Execution {
       }
     }
     return null;
+  }
+
+  private Date getNotBefore(MessageContext msgCtxt, Instant now) throws Exception {
+    String key = "not-before";
+    if (!this.properties.containsKey(key)) return null;
+    String value = (String) this.properties.get(key);
+    if (StringUtils.isBlank(value)) return Date.from(now);
+    value = (String) resolvePropertyValue(value, msgCtxt);
+    if (StringUtils.isBlank(value)) return Date.from(now);
+    return parseDateOrTimespan(value.trim(), now);
   }
 
   // Return all properties that begin with claim_
@@ -248,7 +215,7 @@ public class JwtCreatorCallout extends SignerCallout implements Execution {
   public ExecutionResult execute(MessageContext msgCtxt, ExecutionContext exeCtxt) {
     boolean debug = getDebug();
     try {
-      Date now = new Date();
+      Instant now = Instant.now();
       JWSAlgorithm jwsAlg;
       String ISSUER = getIssuer(msgCtxt);
       String ALG = getAlgorithm(msgCtxt);
@@ -257,23 +224,24 @@ public class JwtCreatorCallout extends SignerCallout implements Execution {
       String JTI = getJwtId(msgCtxt);
       String KEYID = getKeyId(msgCtxt);
       Date NOTBEFORE = getNotBefore(msgCtxt, now);
+      int LIFETIME = getExpiresIn(msgCtxt);
       JWSSigner signer;
       String[] audiences = null;
 
       // 1. Prepare JWT with the set of standard claims
-      JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder();
+      JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder().issueTime(Date.from(now));
       if (ISSUER != null) claimsBuilder.issuer(ISSUER);
       if (SUBJECT != null) claimsBuilder.subject(SUBJECT);
       if (AUDIENCE != null) claimsBuilder.audience(java.util.Arrays.asList(AUDIENCE));
       if (JTI != null) claimsBuilder.jwtID(JTI);
-      claimsBuilder.issueTime(now);
 
+      if (LIFETIME > 0) {
+        Instant exp = now.plus(LIFETIME, ChronoUnit.SECONDS);
+        claimsBuilder.expirationTime(Date.from(exp));
+      }
       if (NOTBEFORE != null) {
         claimsBuilder.notBeforeTime(NOTBEFORE);
       }
-
-      Date expiry = getExpiryDate(now, msgCtxt);
-      if (expiry != null) claimsBuilder.expirationTime(expiry);
 
       // 2. add all the provided custom claims to the set
       Map<String, String> customClaims = customClaimsProperties(msgCtxt);
@@ -341,9 +309,11 @@ public class JwtCreatorCallout extends SignerCallout implements Execution {
         signer = getMacSigner(msgCtxt);
         jwsAlg = JWSAlgorithm.HS256;
       } else if (ALG.equals("RS256")) {
-        // Create RSA-signer with the private key
         signer = getRsaSigner(msgCtxt);
         jwsAlg = JWSAlgorithm.RS256;
+      } else if (ALG.equals("PS256")) {
+        signer = getRsaSigner(msgCtxt);
+        jwsAlg = JWSAlgorithm.PS256;
       } else {
         msgCtxt.setVariable(varName("alg-missing"), ALG);
         throw new IllegalStateException("unsupported algorithm: " + ALG);

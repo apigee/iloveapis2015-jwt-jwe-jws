@@ -53,5 +53,5 @@
   </Properties>
 
   <ClassName>com.google.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-  <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+  <ResourceURL>java://apigee-callout-jwt-signed-1.0.19.jar</ResourceURL>
 </JavaCallout>

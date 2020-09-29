@@ -99,7 +99,7 @@ public abstract class JoseCalloutBase {
     if (algorithm == null || algorithm.trim().equals("")) {
       throw new IllegalStateException("issuer is not specified or is empty.");
     }
-    if (!(algorithm.equals("HS256") || algorithm.equals("RS256"))) {
+    if (!(algorithm.equals("HS256") || algorithm.equals("RS256") || algorithm.equals("PS256"))) {
       throw new IllegalStateException("unsupported algorithm: '" + algorithm + "'");
     }
     return algorithm;

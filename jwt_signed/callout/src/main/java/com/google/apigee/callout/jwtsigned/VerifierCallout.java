@@ -182,7 +182,7 @@ public abstract class VerifierCallout extends JoseCalloutBase {
   protected JWSVerifier getVerifier(String alg, MessageContext msgCtxt) throws Exception {
     if (alg.equals("HS256")) {
       return getMacVerifier(msgCtxt);
-    } else if (alg.equals("RS256")) {
+    } else if (alg.equals("RS256") || alg.equals("PS256")) {
       return getRsaVerifier(msgCtxt);
     }
 

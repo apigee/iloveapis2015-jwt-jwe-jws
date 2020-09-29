@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import org.apache.commons.lang3.time.DateParser;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.apache.commons.ssl.PKCS8Key;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -39,7 +38,7 @@ public class TestJwtCreation extends JoseTestBase {
   private static final ObjectMapper om = new ObjectMapper();
 
   @Test()
-  public void BasicCreateAndParse() {
+  public void basicCreateAndParse() {
     String issuer = "urn:78B13CD0-CEFD-4F6A-BB76-AF236D876239";
     String audience = "everyone";
     String subject = "urn:F5CF2B90-DDF3-47EB-82EB-F67A5B561FD2";
@@ -86,7 +85,7 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test()
-  public void CreateAndParseWithGeneratedId() {
+  public void createAndParseWithGeneratedId() {
     String issuer = "urn:78B13CD0-CEFD-4F6A-BB76-AF236D876239";
     String audience = "everyone";
     String subject = "urn:F5CF2B90-DDF3-47EB-82EB-F67A5B561FD2";
@@ -227,33 +226,8 @@ public class TestJwtCreation extends JoseTestBase {
     }
   }
 
-  private void tryDeserializeKey(String key, String password)
-      throws InvalidKeySpecException, GeneralSecurityException, NoSuchAlgorithmException {
-    byte[] keybytes = key.getBytes(StandardCharsets.UTF_8);
-    // If the provided data is encrypted, we need a password to decrypt
-    // it. If the InputStream is not encrypted, then the password is ignored
-    // (can be null).  The InputStream can be DER (raw ASN.1) or PEM (base64).
-    PKCS8Key pkcs8 = new PKCS8Key(keybytes, password.toCharArray());
-
-    // If an unencrypted PKCS8 key was provided, then getDecryptedBytes()
-    // actually returns exactly what was originally passed in (with no
-    // changes). If an OpenSSL key was provided, it gets reformatted as
-    // PKCS #8.
-    byte[] decrypted = pkcs8.getDecryptedBytes();
-    PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decrypted);
-
-    // A Java PrivateKey object is born.
-    PrivateKey pk = null;
-    if (pkcs8.isDSA()) {
-      pk = KeyFactory.getInstance("DSA").generatePrivate(spec);
-    } else if (pkcs8.isRSA()) {
-      pk = KeyFactory.getInstance("RSA").generatePrivate(spec);
-    }
-    return;
-  }
-
   @Test
-  public void CreateBoxJwt() throws Exception {
+  public void createBoxJwt() throws Exception {
     String subject = "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F";
     String issuer = "api-key-goes-here-78B13CD0-CEFD-4F6A-BB76";
     String audience = "https://api.box.com/oauth2/token";
@@ -268,8 +242,6 @@ public class TestJwtCreation extends JoseTestBase {
     properties.put("expiresIn", "30"); // seconds
     properties.put("claim_box_sub_type", "enterprise");
     properties.put("claim_jti", java.util.UUID.randomUUID().toString());
-
-    tryDeserializeKey(privateKeyMap.get("rsa-private-2"), "Secret123");
 
     JwtCreatorCallout callout = new JwtCreatorCallout(properties);
     ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
@@ -309,7 +281,7 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwtWithKid() throws Exception {
+  public void createJwtWithKid() throws Exception {
     String subject = "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F";
     String issuer = "api-key-goes-here-78B13CD0-CEFD-4F6A-BB76";
     String audience = "urn://example.com";
@@ -326,8 +298,6 @@ public class TestJwtCreation extends JoseTestBase {
     properties.put("expiresIn", "30"); // seconds
     properties.put("claim_box_sub_type", "enterprise");
     properties.put("claim_jti", java.util.UUID.randomUUID().toString());
-
-    tryDeserializeKey(privateKeyMap.get("rsa-private-2"), "Secret123");
 
     JwtCreatorCallout callout = new JwtCreatorCallout(properties);
     ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
@@ -370,7 +340,7 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateEdgeMicroJwt() throws Exception {
+  public void edgeMicroJwt() throws Exception {
     String subject = "urn:edge-micro-apigee-com";
     String issuer = "http://apigee.com/edgemicro/";
     String audience = "everybody";
@@ -421,7 +391,7 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwtWithArrayClaim() throws Exception {
+  public void withArrayClaim() throws Exception {
     String subject = "urn:edge-micro-apigee-com";
     String issuer = "http://apigee.com/edgemicro/";
     String audience = "everybody";
@@ -484,14 +454,14 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwt_DefaultNotBefore_None() throws Exception {
+  public void defaultNotBefore_None() throws Exception {
     Date now = new Date();
     Map properties = new HashMap();
     properties.put("algorithm", "RS256");
     properties.put("debug", "true");
     properties.put("private-key", privateKeyMap.get("rsa-private-3"));
     properties.put("expiresIn", "300"); // seconds
-    properties.put("claim_testname", "CreateJwt_DefaultNotBefore_None");
+    properties.put("claim_testname", "defaultNotBefore_None");
     properties.put("claim_jti", java.util.UUID.randomUUID().toString());
 
     JwtCreatorCallout callout = new JwtCreatorCallout(properties);
@@ -519,7 +489,7 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwt_DefaultNotBefore_Empty() throws Exception {
+  public void notBefore_Default_Empty() throws Exception {
     Date now = new Date();
     Map properties = new HashMap();
     properties.put("algorithm", "RS256");
@@ -527,7 +497,7 @@ public class TestJwtCreation extends JoseTestBase {
     properties.put("not-before", "");
     properties.put("private-key", privateKeyMap.get("rsa-private-3"));
     properties.put("expiresIn", "300"); // seconds
-    properties.put("claim_testname", "CreateJwt_DefaultNotBefore_Empty");
+    properties.put("claim_testname", "notBefore_Default_Empty");
     properties.put("claim_jti", java.util.UUID.randomUUID().toString());
 
     JwtCreatorCallout callout = new JwtCreatorCallout(properties);
@@ -556,7 +526,7 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwt_ExplicitNotBeforeTime() throws Exception {
+  public void notBefore_Explicit() throws Exception {
     String notBeforeString = "2017-08-14T11:00:21.269-0700";
     Map properties = new HashMap();
     properties.put("algorithm", "RS256");
@@ -564,7 +534,7 @@ public class TestJwtCreation extends JoseTestBase {
     properties.put("not-before", notBeforeString);
     properties.put("private-key", privateKeyMap.get("rsa-private-3"));
     properties.put("expiresIn", "300"); // seconds
-    properties.put("claim_testname", "CreateJwt_ExplicitNotBeforeTime");
+    properties.put("claim_testname", "notBefore_Explicit");
     properties.put("claim_jti", java.util.UUID.randomUUID().toString());
 
     JwtCreatorCallout callout = new JwtCreatorCallout(properties);
@@ -593,7 +563,7 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwt_ExplicitNotBeforeTime2() throws Exception {
+  public void notBefore_Explicit_2() throws Exception {
     String notBeforeString = "1508536333";
     Map properties = new HashMap();
     properties.put("algorithm", "RS256");
@@ -601,7 +571,7 @@ public class TestJwtCreation extends JoseTestBase {
     properties.put("not-before", notBeforeString);
     properties.put("private-key", privateKeyMap.get("rsa-private-3"));
     properties.put("expiresIn", "300"); // seconds
-    properties.put("claim_testname", "CreateJwt_ExplicitNotBeforeTime2");
+    properties.put("claim_testname", "notBefore_Explicit_2");
     properties.put("claim_jti", java.util.UUID.randomUUID().toString());
 
     JwtCreatorCallout callout = new JwtCreatorCallout(properties);
@@ -626,14 +596,14 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwt_3DES_Encrypted_RSAKey() throws Exception {
+  public void rsa_EncryptedKey_3DES() throws Exception {
     Map properties = new HashMap();
     properties.put("algorithm", "RS256");
     properties.put("debug", "true");
     properties.put("private-key", privateKeyMap.get("rsa-private-4"));
     properties.put("private-key-password", "Apigee-IloveAPIs");
     properties.put("expiresIn", "300"); // seconds
-    properties.put("claim_testname", "CreateJwt_3DES_Encrypted_RSAKey");
+    properties.put("claim_testname", "rsa_EncryptedKey_3DES");
     properties.put("claim_jti", java.util.UUID.randomUUID().toString());
 
     JwtCreatorCallout callout = new JwtCreatorCallout(properties);
@@ -651,14 +621,14 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwt_3DES_Encrypted_RSAKey_WithVar() throws Exception {
+  public void rsa_EncryptedKey_3DES_2() throws Exception {
     Map properties = new HashMap();
     properties.put("algorithm", "RS256");
     properties.put("debug", "true");
     properties.put("private-key", "{private.privateKey}");
     properties.put("private-key-password", "{private.privateKey.passphrase}");
     properties.put("expiresIn", "300"); // seconds
-    properties.put("claim_testname", "CreateJwt_3DES_Encrypted_RSAKey_WithVar");
+    properties.put("claim_testname", "rsa_EncryptedKey_3DES_2");
     properties.put("claim_jti", java.util.UUID.randomUUID().toString());
 
     msgCtxt.setVariable("private.privateKey.passphrase", "Apigee-IloveAPIs");
@@ -679,14 +649,14 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwt_AES_Encrypted_RSAKey() throws Exception {
+  public void rsa_EncryptedKey_AES() throws Exception {
     Map properties = new HashMap();
     properties.put("algorithm", "RS256");
     properties.put("debug", "true");
     properties.put("private-key", privateKeyMap.get("rsa-private-1"));
     properties.put("private-key-password", "deecee123");
     properties.put("expiresIn", "300"); // seconds
-    properties.put("claim_testname", "CreateJwt_AES_Encrypted_RSAKey");
+    properties.put("claim_testname", "rsa_EncryptedKey_AES");
     properties.put("claim_jti", java.util.UUID.randomUUID().toString());
 
     JwtCreatorCallout callout = new JwtCreatorCallout(properties);
@@ -737,7 +707,7 @@ public class TestJwtCreation extends JoseTestBase {
   }
 
   @Test
-  public void CreateJwt_WithJsonClaimFromVariable() throws Exception {
+  public void withJsonClaimFromVariable() throws Exception {
     String jsonClaim =
         "{ \"id\": 1234, \"verified\": true, \"allocations\" : [4, \"seven\", false] }";
     String jti = java.util.UUID.randomUUID().toString();
@@ -746,7 +716,7 @@ public class TestJwtCreation extends JoseTestBase {
     properties.put("debug", "true");
     properties.put("private-key", privateKeyMap.get("rsa-private-3"));
     properties.put("expiresIn", "300"); // seconds
-    properties.put("claim_testname", "CreateJwt_WithJsonClaimFromVariable");
+    properties.put("claim_testname", "withJsonClaimFromVariable");
     properties.put("claim_jti", jti);
     properties.put("claim_json_account", "{jsonClaimVariable}");
 
@@ -771,4 +741,61 @@ public class TestJwtCreation extends JoseTestBase {
     int idFromClaim = idNode.asInt();
     Assert.assertEquals(idFromClaim, 1234, "account-id");
   }
+
+  @Test
+  public void ps256Basic() throws Exception {
+    String subject = "urn:75E70AF6-B468-4BCE-B096-88F13D6DB03F";
+    String issuer = "api-key-goes-here-78B13CD0-CEFD-4F6A-BB76";
+    String audience = "urn://example.com";
+    String kid = java.util.UUID.randomUUID().toString().replace("-", "");
+    Map properties = new HashMap();
+    properties.put("algorithm", "PS256");
+    properties.put("debug", "true");
+    properties.put("private-key", privateKeyMap.get("rsa-private-2"));
+    properties.put("private-key-password", "Secret123");
+    properties.put("subject", subject);
+    properties.put("issuer", issuer);
+    properties.put("kid", kid);
+    properties.put("audience", audience);
+    properties.put("expiresIn", "30"); // seconds
+
+    JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+    // check result and output
+    Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+    // retrieve and check output
+    String jwt = msgCtxt.getVariable("jwt_jwt");
+    System.out.println("jwt: " + jwt);
+
+    // now parse and verify the token. Check that all the claim_* claims are present.
+    properties = new HashMap();
+    properties.put("algorithm", "PS256");
+    properties.put("jwt", jwt);
+    properties.put("debug", "true");
+    properties.put("claim_aud", audience);
+    properties.put("claim_sub", subject);
+    properties.put("public-key", publicKeyMap.get("rsa-public-2"));
+    JwtVerifierCallout callout2 = new JwtVerifierCallout(properties);
+    result = callout2.execute(msgCtxt, exeCtxt);
+
+    String reason = msgCtxt.getVariable("jwt_reason");
+    Assert.assertEquals(reason, null, "reason");
+
+    // check result and output
+    Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+    String isValid = msgCtxt.getVariable("jwt_isValid");
+    Assert.assertEquals(isValid, "true", "isValid");
+
+    String jwt_issuer = msgCtxt.getVariable("jwt_issuer");
+    String isExpired = msgCtxt.getVariable("jwt_isExpired");
+    Assert.assertEquals(jwt_issuer, issuer, "Issuer");
+    Assert.assertEquals(isExpired, "false", "isExpired");
+
+    String jwt_kid = msgCtxt.getVariable("jwt_kid");
+    Assert.assertEquals(jwt_kid, kid, "jwt_kid");
+  }
+
 }

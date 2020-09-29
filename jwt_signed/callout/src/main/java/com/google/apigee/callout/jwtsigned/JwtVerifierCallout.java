@@ -155,7 +155,7 @@ public class JwtVerifierCallout extends VerifierCallout implements Execution {
         // 2. check that the provided algorithm matches what is required
         String requiredAlgorithm = getAlgorithm(msgCtxt);
         String providedAlgorithm = jwsh.getAlgorithm().toString();
-        if (!providedAlgorithm.equals("HS256") && !providedAlgorithm.equals("RS256")) {
+        if (!providedAlgorithm.equals("HS256") && !providedAlgorithm.equals("RS256") && !providedAlgorithm.equals("PS256")) {
           // invalid configuration, throw an exception (fault)
           throw new UnsupportedOperationException("provided Algorithm=" + providedAlgorithm);
         }
