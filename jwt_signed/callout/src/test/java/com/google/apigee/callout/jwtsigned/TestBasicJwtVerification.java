@@ -672,4 +672,28 @@ public class TestBasicJwtVerification extends JoseTestBase {
       Assert.assertEquals(isValid, "false");
     }
   }
+
+  @Test()
+  public void verifyViaJwks() {
+    ExecutionResult expectedResult = ExecutionResult.SUCCESS;
+    Map properties = new HashMap();
+    properties.put("algorithm", "RS256");
+    properties.put("debug", "true");
+    properties.put("jwt", "eyJraWQiOiIwNTZlZGM0OCIsInR5cCI6IkpXVCIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJSdXNsYW4iLCJhdWQiOiJSdXNsYW4iLCJpc3MiOiJqd2tzLXNlcnZpY2UuYXBwc3BvdC5jb20iLCJpYXQiOjE2MDE1MDk4MjQsImp0aSI6IjEwNTQ3NjMwLWZhNGEtNGQ3Ni04NDA1LWM3NTcxZGVkYTZjYiJ9.UzPZzSv0A0VTmu3vjJAGbEtD4Sn7ITGVkcUUm9Bm3Z3SddTrNhsnbNWd38RwWqhIZF2mVDN944-ZsATH96-23aV9mlgq8HUYJtes9j43VPwt0ZPGvYIkoJ_3_UL4LTIzSuIDlvKM_07QNdZ1ogkJFoLfMJudMr6bAZ620fzTrJJoIRd1ujzuSS2KHuNMsPAyvbmW10HukEhLHJXnlY3O6_4k-ECBaJS_6uFAJUeOjGlR7kCFIJIx9epo_vH7ZVjCstix4JQTbkPdcXzXQ_LOeH5LzMuYtIIwvi78cd2oKh46JNqqw8mvF3FHd1Tvkb7J3SPUZl86CupsiOxDbYxARA");
+    properties.put("jwks-uri", "https://jwks-service.appspot.com/.well-known/jwks.json");
+
+    JwtVerifierCallout callout = new JwtVerifierCallout(properties);
+    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+    // retrieve output
+    String isValid = msgCtxt.getVariable("jwt_isValid");
+    String reason = msgCtxt.getVariable("jwt_reason");
+
+    // check result and output
+    Assert.assertEquals(result, expectedResult);
+    Assert.assertEquals(isValid, "true");
+  }
+
+
+
 }

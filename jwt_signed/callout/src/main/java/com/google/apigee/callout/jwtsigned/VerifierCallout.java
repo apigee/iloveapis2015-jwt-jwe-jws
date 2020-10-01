@@ -20,6 +20,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
@@ -31,7 +32,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.text.ParseException;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 
@@ -71,7 +74,8 @@ public abstract class VerifierCallout extends JoseCalloutBase {
                   public JWSVerifier load(PublicKeySource source)
                       throws NoSuchAlgorithmException, InvalidKeySpecException,
                           IllegalArgumentException, CertificateException,
-                          UnsupportedEncodingException {
+                          UnsupportedEncodingException, ExecutionException, ParseException,
+                          JOSEException {
                     RSAPublicKey publicKey = (RSAPublicKey) source.getPublicKey();
                     if (publicKey == null) {
                       throw new IllegalArgumentException("there was no public key specified.");
@@ -99,8 +103,15 @@ public abstract class VerifierCallout extends JoseCalloutBase {
     return Boolean.parseBoolean(wantVerify);
   }
 
-  private PublicKeySource getPublicKeySource(MessageContext msgCtxt) throws IOException {
+  private PublicKeySource getPublicKeySource(JWSHeader jwsh, MessageContext msgCtxt)
+      throws IOException {
     // There are various ways to specify the public key in configuration
+
+    // 0. try JWKS URI and kid
+    String jwksUri = (String) this.properties.get("jwks-uri");
+    if (jwksUri != null && !jwksUri.trim().equals("")) {
+      return PublicKeySource.fromJwksUriAndKid(jwksUri, jwsh.getKeyID());
+    }
 
     // 1. Try "public-key"
     String publicKeyString = (String) this.properties.get("public-key");
@@ -174,16 +185,17 @@ public abstract class VerifierCallout extends JoseCalloutBase {
     return macVerifierCache.get(key);
   }
 
-  private JWSVerifier getRsaVerifier(MessageContext msgCtxt) throws Exception {
-    PublicKeySource source = getPublicKeySource(msgCtxt);
+  private JWSVerifier getRsaVerifier(JWSHeader jwsh, MessageContext msgCtxt) throws Exception {
+    PublicKeySource source = getPublicKeySource(jwsh, msgCtxt);
     return rsaVerifierCache.get(source);
   }
 
-  protected JWSVerifier getVerifier(String alg, MessageContext msgCtxt) throws Exception {
+  protected JWSVerifier getVerifier(String alg, JWSHeader jwsh, MessageContext msgCtxt)
+      throws Exception {
     if (alg.equals("HS256")) {
       return getMacVerifier(msgCtxt);
     } else if (alg.equals("RS256") || alg.equals("PS256")) {
-      return getRsaVerifier(msgCtxt);
+      return getRsaVerifier(jwsh, msgCtxt);
     }
 
     throw new IllegalStateException("algorithm is unsupported: " + alg);
