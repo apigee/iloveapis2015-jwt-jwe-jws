@@ -169,7 +169,7 @@ public class JwtVerifierCallout extends VerifierCallout implements Execution {
         }
 
         // 3. conditionally verify the signature
-        JWSVerifier verifier = getVerifier(requiredAlgorithm, msgCtxt);
+        JWSVerifier verifier = getVerifier(requiredAlgorithm, jwsh, msgCtxt);
         if (signedJWT.verify(verifier)) {
           verified = true;
           msgCtxt.setVariable(varName("verified"), "true");

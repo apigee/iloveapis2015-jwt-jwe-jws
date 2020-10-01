@@ -64,8 +64,8 @@ The above indicates a subject, audience, issuer, expiry, issued-at time, and JTI
 
 ## What's a JWS?
 
-A JWS is a generic version of a JWT in which the "body" or payload is not JSON. It's any arbitrary content. 
-The resulting structure of the output is the same - three parts separated by dots. The key difference is the middle-part cannot necessarily be base64-decoded into a JSON string. 
+A JWS is a generic version of a JWT in which the "body" or payload is not JSON. It's any arbitrary content.
+The resulting structure of the output is the same - three parts separated by dots. The key difference is the middle-part cannot necessarily be base64-decoded into a JSON string.
 
 ## Using the Jar
 
@@ -163,9 +163,16 @@ issued, by including this property:
       <Property name="not-before"/>
 ```
 
-You may specify an explicit not-before time by providing a value that is
-the number of seconds since epoch, a relative time (like 10m to indicate 10 minutes from now, 3h to indicate 3 hours from now), or a timestring in
-one of these forms:
+You may specify an explicit not-before time by providing a value that is the
+number of seconds since epoch, a relative time (like 10m to indicate 10 minutes
+from now, 3h to indicate 3 hours from now), like this:
+
+```
+      <Property name="not-before">3m</Property>
+```
+
+...or a timestring in one of these
+forms:
 
 - ISO-8601: 2017-08-14T11:00:21.269-0700
 - RFC-3339: 2017-08-14T11:00:21-07:00
@@ -278,7 +285,7 @@ openssl pkcs8 -topk8 -inform pem -in private.pem -outform pem -nocrypt -out priv
 The private key need not be encrypted. If it is, obviously you need to
 specify the private-key-password. That password can be (should be!) a variable - specify it in curly braces in that case. You should retrieve it from secure storage before invoking this policy.
 
-To use `PS256`, just set the algorithm appropriately: 
+To use `PS256`, just set the algorithm appropriately:
 ```
     <Properties>
       <Property name="algorithm">PS256</Property>
@@ -544,9 +551,9 @@ For parsing without verifying a JWT, you can specify wantVerify = false.
 This will simply parse the JWT and set the appropriate context variables from the payload, without verifying the signature.
 wantVerify defaults to true.
 
-**Parsing and Verifying a JWT - RS256**
+**Verifying and Decoding a JWT - RS256**
 
-To parse and verify a RS256 JWT, you need to use a configuration like this:
+To verify and decode a RS256 JWT, you can use a configuration like this:
 
 ```xml
   <JavaCallout name='JavaCallout-JWT-Parse-RS256-2'>
@@ -582,7 +589,7 @@ To parse and verify a RS256 JWT, you need to use a configuration like this:
   </JavaCallout>
 ```
 
-By default, the Parser callout, whether using HS256 or RS256, verifies
+By default, the Verifier callout, whether using HS256 or RS256, verifies
 that the nbf (not-before) and exp (expiry) claims are valid - in other
 words the JWT is within it's documented valid time range. By default the
 Parser allows a 1s skew for iat, exp and nbf claims. You can modify this with
@@ -592,7 +599,7 @@ validating system. Set this value in milliseconds. In the example above,
 the value 30000 means that a JWT with a nbf time that is less than 30
 seconds in the future will be treated as valid.  Similarly a JWT with an
 exp which is less than 30 seconds in the past will also be treated as
-valid. Use a negative value (eg, -1) to disable validity checks on nbf
+valid. Use a negative value (eg, -1) to completely disable validity checks on nbf
 and exp.
 
 Beyond times, you may wish to verify other arbitrary claims on the
@@ -680,8 +687,8 @@ To verify a RS256-signed JWS, use a configuration like this:
   </JavaCallout>
 ```
 
-You can also verify a JWS that uses detached content by specifying the `detached-content` property. This should specify 
-a string value that has been signed. 
+You can also verify a JWS that uses detached content by specifying the `detached-content` property. This should specify
+a string value that has been signed.
 
 ```xml
     <Properties>
@@ -692,9 +699,9 @@ a string value that has been signed.
 ```
 
 
-**Parse a JWT, and Verify specific claims**
+**Verify the signature on a JWT, and also Verify specific claims**
 
-To verify specific claims in the JWT, use additional properties.
+To verify specific claims in the JWT after verifying the signature, use additional properties.
 Do this by specifying Property elements with name attributes that begin with claim_ :
 
 ```xml
@@ -730,118 +737,85 @@ are valid AND if all of the claims listed as required in the
 configuration are present in the JWT, and their respective values
 are equal to the values provided in the <Property> elements.
 
-To specify required claims, you must use the claim names as used within the JSON-serialized JWT.  Hence "claim_sub", "claim_jti", and "claim_iss", not "claim_subject" and
-"claim_issuer".
+To specify required claims, you must use the claim names as used within the
+JSON-serialized JWT.  Hence "claim_sub", "claim_jti", and "claim_iss", not
+"claim_subject" and "claim_issuer".
 
 Verifying specific claims works whether the algorithm is HS256 or RS256.
 
-If you do not include such claims to verify, then the callout doesn't check claims at all.
-You may wish to include checks for claims in the Edge flow, after the callout returns. To do that, you can reference the context variables, set by the policy.
+If you do not include such claims to verify, then the callout doesn't check
+claims at all.  You may wish to include checks for claims in the Edge flow,
+after the callout returns. To do that, you can reference the context variables,
+set by the policy.
 
 
-**Parsing and Verifying a JWT - RS256 - pemfile**
+**Key sources for Verifying a JWT signed with RS256 and PS256**
 
-You can also specify the public key as a named file resource in the jar.
-To do this, you need to recompile the jar with your desired pemfile contained within it. The class looks for the file in the jarfile under the /resources directory. The configuration looks like this:
+There are different ways to specify the public key to use, to verify the
+signature on the JWT. Each one uses a different property to specify that value
+to the callout.
 
-```xml
-  <JavaCallout name='JavaCallout-JWT-Parse'>
-    <DisplayName>JavaCallout-JWT-Parse</DisplayName>
-    <Properties>
-      <Property name="algorithm">RS256</Property>
+* `public-key` - specify the PEM-encoded public key directly.
 
-      <Property name="jwt">{request.formparam.jwt}</Property>
+  ```xml
+      <Property name="public-key">
+      -----BEGIN PUBLIC KEY-----
+      MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtxlohiBDbI/jejs5WLKe
+      Vpb4SCNM9puY+poGkgMkurPRAUROvjCUYm2g9vXiFQl+ZKfZ2BolfnEYIXXVJjUm
+      zzaX9lBnYK/v9GQz1i2zrxOnSRfhhYEb7F8tvvKWMChK3tArrOXUDdOp2YUZBY2b
+      sl1iBDkc5ul/UgtjhHntA0r2FcUE4kEj2lwU1di9EzJv7sdE/YKPrPtFoNoxmthI
+      OvvEC45QxfNJ6OwpqgSOyKFwE230x8UPKmgGDQmED3PNrio3PlcM0XONDtgBewL0
+      3+OgERo/6JcZbs4CtORrpPxpJd6kvBiDgG07pUxMNKC2EbQGxkXer4bvlyqLiVzt
+      bwIDAQAB
+      -----END PUBLIC KEY-----
+      </Property>
+  ```
 
-      <!-- name of the pemfile. This must be a resource in the JAR. -->
-      <Property name="pemfile">rsa-public.pem</Property>
+* `pemfile` - specify the name of a resource which is compiled into the JAR file.
+  ```xml
+     <!-- name of the pemfile. This must be a resource in the JAR. -->
+     <Property name="pemfile">rsa-public.pem</Property>
+  ```
 
-    </Properties>
-
-    <ClassName>com.google.apigee.callout.jwtsigned.JwtVerifierCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
-  </JavaCallout>
-```
-
-**Parsing and Verifying a JWT - RS256 - certificate**
-
-You can also specify a serialized X509 certificate which contains the public key.
-
-```xml
-  <JavaCallout name='JavaCallout-JWT-Parse-RS256-3'>
-    <DisplayName>JavaCallout-JWT-Parse-RS256-3</DisplayName>
-    <Properties>
-      <Property name="algorithm">RS256</Property>
-      <Property name="jwt">{request.formparam.jwt}</Property>
-
+* `certificate`
+  ```xml
       <!-- certificate used only for algorithm = RS256 -->
       <Property name="certificate">
       -----BEGIN CERTIFICATE-----
       MIIC4jCCAcqgAwIBAgIQ.....aKLWSqMhozdhXsIIKvJQ==
       -----END CERTIFICATE-----
       </Property>
+   ```
 
-      <!-- claims to verify -->
-      <Property name="claim_iss">https://sts.windows.net/fa2613dd-1c7b-469b-8f92-88cd26856240/</Property>
-      <Property name="claim_ver">1.0</Property>
+* `jwks-uri` - string specifying the JWKS URI.
+  ```
+    <Property name="jwks-uri">https://www.googleapis.com/oauth2/v3/certs</Property>
+  ```
+  When you use this, the JWKS will be cached for 10 minutes.
 
-    </Properties>
-
-    <ClassName>com.google.apigee.callout.jwtsigned.JwtVerifierCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
-  </JavaCallout>
-```
-
-This particular example verifies the issuer is a given URL from windows.net.  This is what Azure Active Directory uses when generating JWT. (This URL is unique to the Active Directory instance, so it is not re-usable when verifying your own AAD-generated tokens.)
-
-
-
-**Parsing and Verifying a JWT - RS256 - using modulus + exponent**
-
-Suppose you have not the PEM-representation of the public key, and not a
-certificate, but the modulus and public exponent of the RSA key, in
-base64 encoded format. In this case you can specify the public key with
-those values, using the modulus and exponent properties:
-
-
-```xml
-<JavaCallout name='JavaCallout-JWT-Parse-xxx'>
-  <Properties>
-    <Property name="algorithm">RS256</Property>
-    <Property name="jwt">{request.formparam.jwt}</Property>
-
+* `modulus` and `exponent` - you need to specify two properties for this one.
+  ```
     <!-- these properties are used only for algorithm = RS256 -->
     <Property name="modulus">{context.var.containing.modulus}</Property>
     <Property name="exponent">{context.var.containing.public.exponent}</Property>
+  ```
 
-    <!-- claims to verify -->
-    <Property name="claim_iss">http://server.example.com</Property>
-    <Property name="claim_aud">s6BhdRkqt3</Property>
-
-  </Properties>
-
-  <ClassName>com.google.apigee.callout.jwtsigned.JwtVerifierCallout</ClassName>
-  <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
-</JavaCallout>
-```
-
-This is useful when, for example, verifying keys that have been issued
-by Salesforce.com, which publishes its keys in JWK form, with modulus
-and exponent.  The modulus and exponent should be in base64 format.
-The policy will eliminate any whitespace in these strings. They can be
-URL-safe base64 or non-URL-safe base64.
-
-You can also specify these values statically in the configuration file.
 
 The order of precedence the callout uses for determining the public key is this:
 
-A. public-key
-B. modulus and exponent
-C. certificate
-D. pemfile
+A. jwks-uri
+B. public-key
+C. modulus and exponent
+D. certificate
+E. pemfile
 
-If you specify more than one of {A,B,C,D} the callout will use the first
+If you specify more than one of the above, the callout will use the first
 one it finds. It's not the order in which the properties appear in the
-file; it's the order described here.
+configuration file; it's the order described here.
+
+The way you specify the public key does not affect the way the callout verifies
+the signature or claims in a JWT or JWS.  It only affects how the public key is
+retrieved.
 
 
 ## Some comments about Performance
@@ -891,12 +865,12 @@ To build the binary JAR yourself, follow these instructions.
 
 3. maven will copy all the required jar files to your apiproxy/resources/java directory.
    If for some reason your project directory is not set up properly, you can do this manually.
-   copy target/apigee-callout-jwt-signed-1.0.18.jar to your apiproxy/resources/java directory, as well as all the dependencies. 
+   copy target/apigee-callout-jwt-signed-1.0.18.jar to your apiproxy/resources/java directory, as well as all the dependencies.
 
 
 ## License
 
-This project and all the code contained within is Copyright 2017-2018 Google Inc, and is licensed under the [Apache 2.0 Source license](LICENSE).
+This project and all the code contained within is Copyright 2017-2020 Google Inc, and is licensed under the [Apache 2.0 Source license](LICENSE).
 
 
 ## Limitations

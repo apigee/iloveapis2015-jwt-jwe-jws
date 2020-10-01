@@ -121,7 +121,7 @@ public class JwsVerifierCallout extends VerifierCallout implements Execution {
         }
 
         // 3. conditionally verify the signature
-        JWSVerifier verifier = getVerifier(requiredAlgorithm, msgCtxt);
+        JWSVerifier verifier = getVerifier(requiredAlgorithm, jwsh, msgCtxt);
         if (jwsObject.verify(verifier)) {
           verified = true;
           msgCtxt.setVariable(varName("verified"), "true");
