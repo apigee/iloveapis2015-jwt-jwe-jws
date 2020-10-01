@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateParser;
 import org.apache.commons.lang3.time.FastDateFormat;
@@ -83,6 +85,18 @@ public class JwtCreatorCallout extends SignerCallout implements Execution {
       return null; // subject is OPTIONAL
     }
     return subject;
+  }
+
+  private String getJsonPayload(MessageContext msgCtxt) throws Exception {
+    String payload = (String) this.properties.get("json-payload");
+    if (StringUtils.isBlank(payload)) {
+      return null;
+    }
+    payload = (String) resolvePropertyValue(payload, msgCtxt);
+    if (StringUtils.isBlank(payload)) {
+      return null;
+    }
+    return payload;
   }
 
   private String getIssuer(MessageContext msgCtxt) throws Exception {
@@ -212,11 +226,20 @@ public class JwtCreatorCallout extends SignerCallout implements Execution {
     return result;
   }
 
+  private JWTClaimsSet.Builder getClaimsBuilder(final String payload)
+    throws net.minidev.json.parser.ParseException, java.text.ParseException {
+    if (payload == null) {
+      return new JWTClaimsSet.Builder();
+    }
+    return new JWTClaimsSet.Builder(JWTClaimsSet.parse((JSONObject) JSONValue.parseWithException(payload)));
+  }
+
   public ExecutionResult execute(MessageContext msgCtxt, ExecutionContext exeCtxt) {
     boolean debug = getDebug();
     try {
       Instant now = Instant.now();
       JWSAlgorithm jwsAlg;
+      String JSON_PAYLOAD = getJsonPayload(msgCtxt);
       String ISSUER = getIssuer(msgCtxt);
       String ALG = getAlgorithm(msgCtxt);
       String[] AUDIENCE = getAudience(msgCtxt);
@@ -228,8 +251,10 @@ public class JwtCreatorCallout extends SignerCallout implements Execution {
       JWSSigner signer;
       String[] audiences = null;
 
-      // 1. Prepare JWT with the set of standard claims
-      JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder().issueTime(Date.from(now));
+      // 1. Prepare JWT with the desired set of claims
+      JWTClaimsSet.Builder claimsBuilder = getClaimsBuilder(JSON_PAYLOAD);
+      if (!claimsBuilder.getClaims().containsKey("iat"))
+        claimsBuilder.issueTime(Date.from(now));
       if (ISSUER != null) claimsBuilder.issuer(ISSUER);
       if (SUBJECT != null) claimsBuilder.subject(SUBJECT);
       if (AUDIENCE != null) claimsBuilder.audience(java.util.Arrays.asList(AUDIENCE));
@@ -271,7 +296,6 @@ public class JwtCreatorCallout extends SignerCallout implements Execution {
               } catch (java.lang.Exception exc1) {
                 throw new IllegalStateException("cannot parse claim as json: " + claimName, exc1);
               }
-
             } else if (claimName.equals("aud") && resolvedValue instanceof String) {
               // special case aud, which can be an array
               audiences = StringUtils.split(providedValue, ",");

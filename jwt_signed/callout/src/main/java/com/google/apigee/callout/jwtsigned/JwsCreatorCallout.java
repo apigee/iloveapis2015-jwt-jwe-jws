@@ -40,10 +40,10 @@ public class JwsCreatorCallout extends SignerCallout implements Execution {
       throw new IllegalStateException("payload is not specified.");
     }
     if (payload.equals("")) {
-      return ""; // empty payload
+      return ""; // empty payload. Weird but not illegal.
     }
     payload = (String) resolvePropertyValue(payload, msgCtxt);
-    // TODO: deal with payload encoding
+    // TODO: maybe deal with payload encoding
     // String encoding = (String) this.properties.get("payload-encoding");
     return payload;
   }

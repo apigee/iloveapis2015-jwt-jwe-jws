@@ -3,6 +3,7 @@ package com.google.apigee.callout.jwtsigned;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.io.BaseEncoding;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
 import java.io.BufferedReader;
@@ -26,11 +27,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
 
 public class PublicKeySource {
   private static final LoadingCache<String, String> jwksUriCache;
@@ -173,7 +170,7 @@ public class PublicKeySource {
     s = s.replaceAll("\\\\n", "");
     s = s.replaceAll("[\\r|\\n| ]", "");
     // base64-decode it, and  produce a public key from the result
-    byte[] certBytes = Base64.decodeBase64(s);
+    byte[] certBytes = BaseEncoding.base64().decode(s);
     ByteArrayInputStream is = new ByteArrayInputStream(certBytes);
     CertificateFactory fact = CertificateFactory.getInstance("X.509");
     X509Certificate cer = (X509Certificate) fact.generateCertificate(is);
@@ -202,7 +199,7 @@ public class PublicKeySource {
       s = s.replaceAll("\\\\n", "");
       s = s.replaceAll("[\\r|\\n| ]", "");
 
-      byte[] keyBytes = Base64.decodeBase64(s);
+      byte[] keyBytes = BaseEncoding.base64().decode(s);
       X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
       KeyFactory keyFactory = KeyFactory.getInstance("RSA");
       PublicKey key = keyFactory.generatePublic(spec);
@@ -226,11 +223,11 @@ public class PublicKeySource {
 
     exponent_b64 = unUrlSafe(exponent_b64).replaceAll("\\\\n", "").replaceAll("[\\r|\\n| ]", "");
 
-    byte[] decodedModulus = Base64.decodeBase64(modulus_b64);
-    byte[] decodedExponent = Base64.decodeBase64(exponent_b64);
+    byte[] decodedModulus = BaseEncoding.base64().decode(modulus_b64);
+    byte[] decodedExponent = BaseEncoding.base64().decode(exponent_b64);
 
-    String modulus_hex = Hex.encodeHexString(decodedModulus);
-    String exponent_hex = Hex.encodeHexString(decodedExponent);
+    String modulus_hex = BaseEncoding.base16().lowerCase().encode(decodedModulus);
+    String exponent_hex = BaseEncoding.base16().lowerCase().encode(decodedExponent);
 
     BigInteger modulus = new BigInteger(modulus_hex, 16);
     BigInteger publicExponent = new BigInteger(exponent_hex, 16);
@@ -242,12 +239,8 @@ public class PublicKeySource {
   }
 
   private static String publicKeyPem(PublicKey rsaKey) {
-    byte[] data = rsaKey.getEncoded();
-    String base64encoded = Base64.encodeBase64String(data);
-    Pattern p = Pattern.compile(".{1,64}");
-    Matcher m = p.matcher(base64encoded);
-    String pem =
-        "-----BEGIN PUBLIC KEY-----\n" + m.replaceAll("$0\n") + "-----END PUBLIC KEY-----\n";
-    return pem;
+    String base64encoded =
+        BaseEncoding.base64().withSeparator("\n", 64).encode(rsaKey.getEncoded());
+    return "-----BEGIN PUBLIC KEY-----\n" + base64encoded + "-----END PUBLIC KEY-----\n";
   }
 }

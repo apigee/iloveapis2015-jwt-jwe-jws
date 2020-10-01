@@ -20,21 +20,11 @@ import com.apigee.flow.execution.ExecutionResult;
 import com.apigee.flow.execution.IOIntensive;
 import com.apigee.flow.execution.spi.Execution;
 import com.apigee.flow.message.MessageContext;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Maps;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.JWSObject;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.Payload;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-import java.util.Date;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.commons.lang3.time.FastDateFormat;
 
 @IOIntensive
 public class JwsVerifierCallout extends VerifierCallout implements Execution {
@@ -61,7 +51,7 @@ public class JwsVerifierCallout extends VerifierCallout implements Execution {
       return null;
     }
     if (content.equals("")) {
-    return content;
+      return content;
     }
     content = resolvePropertyValue(content, msgCtxt);
     return content;
@@ -88,9 +78,9 @@ public class JwsVerifierCallout extends VerifierCallout implements Execution {
 
       try {
         jwsObject =
-          (detachedContent != null)
-              ? JWSObject.parse(jws, new Payload(detachedContent))
-              : JWSObject.parse(jws);
+            (detachedContent != null)
+                ? JWSObject.parse(jws, new Payload(detachedContent))
+                : JWSObject.parse(jws);
 
       } catch (java.text.ParseException pe1) {
         msgCtxt.setVariable(varName("reason"), "the JWS did not parse.");

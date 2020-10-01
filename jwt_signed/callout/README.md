@@ -1,4 +1,4 @@
-# jwt_signed callout
+ # jwt_signed callout
 
 This directory contains the Java source code and Java jars required to compile a
 Java callout for Apigee Edge that does generation and parsing / validation of
@@ -30,7 +30,7 @@ Proxy to validate that JWT.
 A JWT is just a payload of JSON, with claims about something or someone. The claims
 state the identity of the someone/something, the identity of the token issuer, the time
 the token was issued, the time the token expires, and maybe some other information about
-the person or token holder. A typical JWT looks like this:
+the person or token holder. A typical signed JWT looks like this:
 
 ```
 eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.
@@ -38,13 +38,13 @@ eyJzdWIiOiJ1cm46NzVFNzBBRjYtQjQ2OC00QkNFLxxxxxx.
 D1OlHFCXAF4DPF7TfOphJ7AzpUOXHh7owZF
 ```
 
-It's three parts, each separated by a dot.  The indivdual parts are each base64-encoded payloads.  They represent:
+(newlines added for clarity) It's three parts, each separated by a dot.  The indivdual parts are each base64url-encoded payloads.  They represent:
 
 * the header
 * the JWT body
 * the signature
 
-The JWT body (payload), decoded, might look like this:
+The JWT body (payload), base64url-decoded, might look like this:
 
 ```json
 {
@@ -59,13 +59,21 @@ The JWT body (payload), decoded, might look like this:
 }
 ```
 
-The above indicates a subject, audience, issuer, expiry, issued-at time, and JTI or unique identifier of the token.  These are all "standard" claims for a JWT. The final thing included in the body is a "scope" claim, which is non-standard. All of this is signed, and a receiver can then validate the signature value against that payload, to determine whether the JWT should be considered valid.
+The payload can actually be *any* JSON. The JWT spec defines a set of particular claims to have well-defined meanings. These "registered" claim names include iss, sub, aud, exp, nbf, iat, and jti, to indicate issuer, ubject, audience, expiry, not-before time, issued-at time, and JTI or unique identifier of the token.  The "scope" claim shown above is not a registered claim name, which means it can mean anything the issuer wants it to mean.  This payload, plus the JWT Header, is signed; then the JWT is formed by the dot-concatenation of the base64url-encoded version of the three parts: header, payload signature.
+
+Someone who receives that JWT can then cryptographically verify the signature value against the payload and header, to determine whether the claims within the JWT should be trusted.
 
 
 ## What's a JWS?
 
-A JWS is a generic version of a JWT in which the "body" or payload is not JSON. It's any arbitrary content.
-The resulting structure of the output is the same - three parts separated by dots. The key difference is the middle-part cannot necessarily be base64-decoded into a JSON string.
+A signed JWT is a special case of JWS. Whereas in a JWT, the payload must be
+JSON and there are registered names of some of the JSON properties, in a JWS,
+the payload is any bytestream. It need not be JSON, and there is no special
+meaning attributed to the properties if it is JSON. You could use JWS to sign an
+XML document, for example, or a .png image.  A JWS is structured just like a
+JWT - the dot-concatenation of three base64url-encoded parts: header, payload,
+and signature. The key difference is the middle-part cannot necessarily be
+base64-decoded into a JSON string.
 
 ## Using the Jar
 
@@ -80,7 +88,7 @@ To use it:
       <DisplayName>Java JWT Creator</DisplayName>
       <Properties>...</Properties>
       <ClassName>com.google.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-      <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+      <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
     </JavaCallout>
    ```
 
@@ -130,7 +138,7 @@ form of properties on the policy. Some examples follow.
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -156,23 +164,33 @@ There is no way to explicitly set the "issued at" (iat) time.  The iat
 time automatically gets the value accurately indicating when the JWT is
 generated.
 
-Starting in v1.0.13 of the callout, you can set a not-before (nbf) time, to the same time the JWT was
+You can set a not-before (nbf) time, to the same time the JWT was
 issued, by including this property:
 
 ```
       <Property name="not-before"/>
 ```
 
-You may specify an explicit not-before time by providing a value that is the
-number of seconds since epoch, a relative time (like 10m to indicate 10 minutes
-from now, 3h to indicate 3 hours from now), like this:
+You can configure the policy to compute a not-before relative to "now"
+using a time-span expression, like 10m to indicate 10 minutes
+from now, 3h to indicate 3 hours from now. It looks like this:
 
 ```
-      <Property name="not-before">3m</Property>
+   <!-- three minutes from now -->
+   <Property name="not-before">3m</Property>
 ```
 
-...or a timestring in one of these
-forms:
+You can also
+specify an explicit not-before time as
+number of seconds since epoch:
+
+```
+   <Property name="not-before">1601582274</Property>
+```
+
+
+And you can specify an explicit not-before as a string,
+in one of these forms:
 
 - ISO-8601: 2017-08-14T11:00:21.269-0700
 - RFC-3339: 2017-08-14T11:00:21-07:00
@@ -180,25 +198,32 @@ forms:
 - RFC 850: Monday, 14-Aug-17 11:00:21 PDT
 - ANSI-C: Mon Aug 14 11:00:21 2017
 
-examples:
 
 ```
-   <Property name="not-before">1508537209</Property>
+   <Property name="not-before">2017-08-14T11:00:21-07:00</Property>
 ```
 
-```
-   <!-- 5 minutes from now -->
-   <Property name="not-before">5m</Property>
-```
+**Properties supported by JwtCreatorCallout**
 
-```
-   <Property name="not-before">2017-08-14T11:00:21.269-0700</Property>
-```
+| property     | description  |
+| ------------ | ------------ |
+| issuer       | set "iss" claim in payload |
+| algorithm    | set "alg" in header        |
+| audience     | set "aud" claim in payload |
+| subject      | set "sub" claim in payload |
+| id           | set "jti" claim in payload |
+| kid          | set "kid" in header        |
+| secret-key   | specify the secret key to use for HS256 signing. Used only when algorithm=HS256. |
+| private-key  | specify the PEM-encoded RSA private key.  Used for algorithm=RS256 or PS256 |
+| private-key-password | the password for the private key, if there is one. |
+| claim_xxx    | set an arbitrary claim in the JWT.  The `xxx` will be the name of the claim in the JWT, and must not be a registered claim name. |
+| json-payload | a JSON payload to use for the JWT; can use this in lieu of specifying individual claims. |
 
 
-As per the JWT specification (RFC 7519), subject, issuer, audience, and
-id are all optional claims. If you include them, they'll be inserted as
-claims into the generated JWT. If you don't include them, the generated
+As per [the JWT specification (IETF RFC 7519)](https://tools.ietf.org/html/rfc7519), all claims are optional.
+If you include `Property` elements for subject, issuer, audience, and
+id, or if you specify  `json-payload` property with any of those claims, they'll be inserted as
+claims into the generated JWT. If you don't include that configuration, the generated
 JWT won't include those claims. In either case, the JWT is valid.
 
 The continueOnError property is optional. If present, and the value is
@@ -254,7 +279,7 @@ To generate a key signed with RS256, you can specify the private RSA key inside 
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -319,7 +344,7 @@ To use `PS256`, just set the algorithm appropriately:
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwsCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -356,7 +381,7 @@ You can also specify the PEM as a named file resource that is bundled in the jar
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -405,7 +430,7 @@ the Properties elements, like this:
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -420,9 +445,9 @@ If you would like to embed an array claim in the JWT, then you should use a vari
 And the context variable api_products_list should resolve to a String[].
 
 
-**Generate a JWT with custom clims, including a compound (JSON) claim**
+**Generate a JWT with custom claims from raw JSON**
 
-If you wish to embed claims that are themselves JSON hashes, you can do so by using a specially-named claim:
+You can also use the `json-payload` property to just specify claims to include:
 
 ```xml
   <JavaCallout name='JavaCallout-JWT-Create'>
@@ -434,26 +459,23 @@ If you wish to embed claims that are themselves JSON hashes, you can do so by us
       <Property name="pemfile">private.pem</Property>
       <Property name="private-key-password">{private.pempassphrase}</Property>
 
-      <!-- standard claims to embed -->
-      <Property name="subject">{user_name}</Property>
-      <Property name="issuer">http://apigee.net/{apiproxy.name}</Property>
-      <Property name="audience">Optional-String-or-URI</Property>
-      <Property name="expiresIn">86400</Property> <!-- in seconds -->
-      <Property name="id"/>
+      <Property name="expiresIn">1h</Property>
 
-      <!-- Property names that begin with claim_json_ are parsed as json -->
-      <Property name="claim_json_account">{"allocations":[4,"seven",false],"verified":true,"id":1234}</Property>
-      <Property name="claim_json_attributes">{variable_name_here}</Property>
-
+      <Property name="json-payload">{
+      "sub" : "{user_name}",
+      "iss" : "https://apigee.net/{apiproxy.name}",
+      "aud" : "Optional-String-or-URI",
+      "custom-claim" : { "foo": "bar", "quan": 123}
+      }
+      </Property>
     </Properties>
-
     <ClassName>com.google.apigee.callout.jwtsigned.JwtCreatorCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
 
-**Parsing and Verifying a JWT - HS256**
+**Verifying a JWT - HS256**
 
 For parsing and verifying a JWT, you need to specify a different Java class. Configure it like so for HS256:
 
@@ -471,7 +493,7 @@ For parsing and verifying a JWT, you need to specify a different Java class. Con
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwtVerifierCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -515,6 +537,15 @@ the policy to not validate that iat was in the past - by using this property:
 ```
 
 
+**Properties supported by JwtVerifierCallout**
+
+| property     | description  |
+| ------------ | ------------ |
+| algorithm    | require that the specified "alg" appear in the header        |
+| claim\_xxx    | verify the claim "xxx" (replace with whatever you like) has the given value in the payload |
+| secret-key  | specify the Symmetric key.  Used for algorithm=HS256 |
+| public-key  | specify the PEM-encoded RSA public key.  Used for algorithm=RS256 or PS256 |
+
 
 ### Let's talk about Verification
 
@@ -544,7 +575,7 @@ For parsing without verifying a JWT, you can specify wantVerify = false.
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwtVerifierCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -585,7 +616,7 @@ To verify and decode a RS256 JWT, you can use a configuration like this:
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwtVerifierCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -639,12 +670,12 @@ a configuration like this:
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwtVerifierCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
 
-Regarding audience - the spec states that the audience is an array of
+Regarding audience - [the spec](https://tools.ietf.org/html/rfc7519) states that the audience is an array of
 strings. The parser class validates that the audience value you pass
 here (as a string) is present as one of the elements in that array.
 Currently there is no way to verify that the JWT is directed to more
@@ -683,7 +714,7 @@ To verify a RS256-signed JWS, use a configuration like this:
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwsVerifierCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -725,7 +756,7 @@ Do this by specifying Property elements with name attributes that begin with cla
     </Properties>
 
     <ClassName>com.google.apigee.callout.jwtsigned.JwtVerifierCallout</ClassName>
-    <ResourceURL>java://apigee-callout-jwt-signed-1.0.18.jar</ResourceURL>
+    <ResourceURL>java://apigee-callout-jwt-signed-1.0.21.jar</ResourceURL>
   </JavaCallout>
 ```
 
@@ -865,7 +896,7 @@ To build the binary JAR yourself, follow these instructions.
 
 3. maven will copy all the required jar files to your apiproxy/resources/java directory.
    If for some reason your project directory is not set up properly, you can do this manually.
-   copy target/apigee-callout-jwt-signed-1.0.18.jar to your apiproxy/resources/java directory, as well as all the dependencies.
+   copy target/apigee-callout-jwt-signed-1.0.21.jar to your apiproxy/resources/java directory, as well as all the dependencies.
 
 
 ## License

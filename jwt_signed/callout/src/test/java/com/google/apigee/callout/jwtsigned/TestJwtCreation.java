@@ -18,6 +18,7 @@ package com.google.apigee.callout.jwtsigned;
 import com.apigee.flow.execution.ExecutionResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.BaseEncoding;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
@@ -29,6 +30,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
+import net.minidev.json.JSONObject;
+import net.minidev.json.JSONValue;
 import org.apache.commons.lang3.time.DateParser;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.testng.Assert;
@@ -796,6 +799,42 @@ public class TestJwtCreation extends JoseTestBase {
 
     String jwt_kid = msgCtxt.getVariable("jwt_kid");
     Assert.assertEquals(jwt_kid, kid, "jwt_kid");
+  }
+
+  @Test
+  public void viaPayloadProperty() throws Exception {
+    String jsonPayload = "{ \"sub\" : \"someone\", \"iat\":1601582274, \"iss\" : \"anyone\" }";
+    String kid = java.util.UUID.randomUUID().toString().replace("-", "");
+    Map properties = new HashMap();
+    properties.put("algorithm", "PS256");
+    properties.put("debug", "true");
+    properties.put("private-key", privateKeyMap.get("rsa-private-2"));
+    properties.put("private-key-password", "Secret123");
+    properties.put("expiresIn", "-1");
+    properties.put("json-payload", jsonPayload);
+
+    JwtCreatorCallout callout = new JwtCreatorCallout(properties);
+    ExecutionResult result = callout.execute(msgCtxt, exeCtxt);
+
+    // check result and output
+    Assert.assertEquals(result, ExecutionResult.SUCCESS);
+
+    // retrieve and check output
+    String jwt = msgCtxt.getVariable("jwt_jwt");
+    System.out.println("jwt: " + jwt);
+
+    // split and decode to get the payload.
+    String[] parts = jwt.split("[.]");
+    Assert.assertEquals(parts.length, 3);
+
+    String jsonClaims = new String(BaseEncoding.base64Url().decode(parts[1]), StandardCharsets.UTF_8);
+    JSONObject json = (JSONObject) JSONValue.parseWithException(jsonClaims);
+    Assert.assertTrue(json.containsKey("sub"));
+    Assert.assertEquals(json.get("sub").toString(), "someone");
+    Assert.assertTrue(json.containsKey("iat"));
+    Assert.assertEquals(json.get("iat").toString(), "1601582274");
+    Assert.assertTrue(json.containsKey("iss"));
+    Assert.assertEquals(json.get("iss").toString(), "anyone");
   }
 
 }
