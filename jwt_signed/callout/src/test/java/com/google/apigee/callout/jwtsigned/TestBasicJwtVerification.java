@@ -674,12 +674,15 @@ public class TestBasicJwtVerification extends JoseTestBase {
   }
 
   @Test()
-  public void verifyViaJwks() {
+  public void verifyViaJwks() throws Exception {
     ExecutionResult expectedResult = ExecutionResult.SUCCESS;
     Map properties = new HashMap();
+
+    Map<String, Object> tokenResult = HTTPUtil.post("https://jwks-service.appspot.com/token?alg=RS256", null, null);
+
     properties.put("algorithm", "RS256");
     properties.put("debug", "true");
-    properties.put("jwt", "eyJraWQiOiIwNTZlZGM0OCIsInR5cCI6IkpXVCIsImFsZyI6IlJTMjU2In0.eyJzdWIiOiJSdXNsYW4iLCJhdWQiOiJSdXNsYW4iLCJpc3MiOiJqd2tzLXNlcnZpY2UuYXBwc3BvdC5jb20iLCJpYXQiOjE2MDE1MDk4MjQsImp0aSI6IjEwNTQ3NjMwLWZhNGEtNGQ3Ni04NDA1LWM3NTcxZGVkYTZjYiJ9.UzPZzSv0A0VTmu3vjJAGbEtD4Sn7ITGVkcUUm9Bm3Z3SddTrNhsnbNWd38RwWqhIZF2mVDN944-ZsATH96-23aV9mlgq8HUYJtes9j43VPwt0ZPGvYIkoJ_3_UL4LTIzSuIDlvKM_07QNdZ1ogkJFoLfMJudMr6bAZ620fzTrJJoIRd1ujzuSS2KHuNMsPAyvbmW10HukEhLHJXnlY3O6_4k-ECBaJS_6uFAJUeOjGlR7kCFIJIx9epo_vH7ZVjCstix4JQTbkPdcXzXQ_LOeH5LzMuYtIIwvi78cd2oKh46JNqqw8mvF3FHd1Tvkb7J3SPUZl86CupsiOxDbYxARA");
+    properties.put("jwt", tokenResult.get("content"));
     properties.put("jwks-uri", "https://jwks-service.appspot.com/.well-known/jwks.json");
 
     JwtVerifierCallout callout = new JwtVerifierCallout(properties);

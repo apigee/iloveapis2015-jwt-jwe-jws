@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.apigee.callouts</groupId>
   <artifactId>apigee-callout-jwt-signed</artifactId>
-  <version>1.0.21</version>
+  <version>1.0.22</version>
   <name>JwtSignedApigeeCallout</name>
   <url>http://maven.apache.org</url>
   <packaging>jar</packaging>
@@ -21,6 +21,7 @@
     <bcprov.version>1.62</bcprov.version>
     <nimbus.version>8.20.1</nimbus.version>
     <commons.lang3.version>3.7</commons.lang3.version>
+    <commonsio.version>2.7</commonsio.version>
   </properties>
 
   <dependencies>
@@ -137,7 +138,7 @@ these commands:
     <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
-        <version>2.0.1</version>
+        <version>${commonsio.version}</version>
         <scope>test</scope>
     </dependency>
 
@@ -245,7 +246,7 @@ these commands:
             <configuration>
               <rules>
                 <requireMavenVersion>
-                  <version>3.0.5</version>
+                  <version>3.5.0</version>
                 </requireMavenVersion>
               </rules>
             </configuration>
