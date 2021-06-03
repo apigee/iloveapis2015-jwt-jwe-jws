@@ -80,21 +80,21 @@ public class HTTPUtil {
     return result;
   }
 
-  Map<String, Object> get(String urlToRead) throws Exception {
-    HashMap<String, Object> result = new HashMap<String, Object>();
-    URL url = new URL(urlToRead);
-    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-    conn.setInstanceFollowRedirects(false);
-    conn.setRequestMethod("GET");
-    conn.setRequestProperty("Accept-Charset", "UTF-8");
-    conn.connect();
-
-    int code = conn.getResponseCode();
-    result.put("code", new Integer(code));
-    result.put("headers", conn.getHeaderFields()); // Map<String, List<String>>
-    result.put("content", getResponsePayload(conn)); // String
-    conn.disconnect();
-    return result;
-  }
+  // public static Map<String, Object> get(String urlToRead) throws Exception {
+  //   HashMap<String, Object> result = new HashMap<String, Object>();
+  //   URL url = new URL(urlToRead);
+  //   HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+  //   conn.setInstanceFollowRedirects(false);
+  //   conn.setRequestMethod("GET");
+  //   conn.setRequestProperty("Accept-Charset", "UTF-8");
+  //   conn.connect();
+  //
+  //   int code = conn.getResponseCode();
+  //   result.put("code", new Integer(code));
+  //   result.put("headers", conn.getHeaderFields()); // Map<String, List<String>>
+  //   result.put("content", getResponsePayload(conn)); // String
+  //   conn.disconnect();
+  //   return result;
+  // }
 
 }
