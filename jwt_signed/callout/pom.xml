@@ -19,7 +19,7 @@
     <jackson.version>[2.9.10.5,)</jackson.version>
     <guava.version>26.0-jre</guava.version>
     <bcprov.version>1.62</bcprov.version>
-    <nimbus.version>8.20.1</nimbus.version>
+    <nimbus.version>9.37.2</nimbus.version>
     <commons.lang3.version>3.7</commons.lang3.version>
     <commonsio.version>2.7</commonsio.version>
   </properties>
